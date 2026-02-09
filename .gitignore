@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.bun/
+bun.lockb
+
+# Build output
+dist/
+build/
+
+# IDEs and Editors
+.vscode/
+.idea/
+.trae/
+.github/
+*.swp
+*.swo
+.DS_Store
+
+# Version control (just in case, though usually not needed here)
+.svn/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Axon runtime files
+.ax/logs/
+.axon/logs/
+*.log
+.ax/usage.db
+.axon/usage.db
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/

@@ -1,0 +1,90 @@
+/**
+ * Default configuration constants
+ */
+
+import type { AxonConfig } from '../../types';
+import { homedir } from 'os';
+import { join } from 'path';
+
+export const DEFAULT_CONFIG: AxonConfig = {
+    version: '1.0',
+
+    project: {
+        name: 'my-project',
+        description: '',
+    },
+
+    tools: {
+        openspec: {
+            enabled: true,
+            path: '.openspec',
+        },
+        beads: {
+            enabled: true,
+            path: '.beads',
+            auto_commit: true,
+            commit_template: '✅ {bead_id}: {title}',
+        },
+        skills: {
+            enabled: true,
+            local_path: '.skills',
+            global_path: join(homedir(), '.axon', 'skills'),
+            auto_match: true,
+        },
+    },
+
+    agents: {
+        sisyphus: {
+            model: 'claude-sonnet-4-20250514',
+            provider: 'anthropic',
+            temperature: 0.7,
+            max_tokens: 8000,
+        },
+        oracle: {
+            model: 'claude-sonnet-4-20250514',
+            provider: 'anthropic',
+            temperature: 0.3,
+            max_tokens: 4000,
+        },
+        background: {
+            model: 'gemini-2.0-flash-exp',
+            provider: 'google',
+            temperature: 0.5,
+            max_tokens: 4000,
+        },
+    },
+
+    safety: {
+        daily_token_limit: 1000000,
+        cost_alert_threshold: 10.0,
+        auto_pause_on_error: true,
+        max_retries: 3,
+    },
+
+    logging: {
+        level: 'info',
+        file: '.axon/logs/axon.log',
+    },
+};
+
+/**
+ * Default directories structure for an Axon project
+ */
+export const DEFAULT_DIRECTORIES = [
+    '.axon',
+    '.axon/logs',
+    '.openspec',
+    '.beads',
+    '.skills',
+];
+
+/**
+ * Model pricing (per 1M tokens)
+ */
+export const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+    'claude-sonnet-4-20250514': { input: 3.0, output: 15.0 },
+    'claude-opus-4-5-20251101': { input: 15.0, output: 75.0 },
+    'gemini-2.0-flash-exp': { input: 0.5, output: 0.5 },
+    'gpt-4-turbo': { input: 10.0, output: 30.0 },
+    'gpt-4o': { input: 5.0, output: 15.0 },
+};

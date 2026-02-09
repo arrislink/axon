@@ -1,0 +1,47 @@
+version: "1.0"
+
+project:
+  name: "{{PROJECT_NAME}}"
+  description: ""
+
+tools:
+  openspec:
+    enabled: true
+    path: ".openspec"
+  beads:
+    enabled: true
+    path: ".beads"
+    auto_commit: true
+    commit_template: "✅ {bead_id}: {title}"
+  skills:
+    enabled: true
+    local_path: ".skills"
+    global_path: "~/.ax/skills"
+    auto_match: true
+
+agents:
+  sisyphus:
+    model: "claude-sonnet-4-20250514"
+    provider: "anthropic"
+    temperature: 0.7
+    max_tokens: 8000
+  oracle:
+    model: "claude-sonnet-4-20250514"
+    provider: "anthropic"
+    temperature: 0.3
+    max_tokens: 4000
+  background:
+    model: "gemini-2.0-flash-exp"
+    provider: "google"
+    temperature: 0.5
+    max_tokens: 4000
+
+safety:
+  daily_token_limit: 1000000
+  cost_alert_threshold: 10.0
+  auto_pause_on_error: true
+  max_retries: 3
+
+logging:
+  level: "info"
+  file: ".ax/logs/ax.log"
