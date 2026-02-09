@@ -24,11 +24,11 @@ Axon is a unified AI-assisted development environment that solves context loss, 
 ### Global Installation (Recommended)
 
 ```bash
-# Install globally via npm (coming soon)
-npm install -g axon
+# Install globally via npm
+npm install -g @arrislink/axon
 
 # Or use with bunx
-bunx axon init my-project
+bunx @arrislink/axon init my-project
 ```
 
 ### Development Installation

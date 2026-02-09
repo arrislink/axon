@@ -24,11 +24,11 @@ Axon 是一个统一的 AI 辅助开发环境，通过深度集成规格驱动�
 ### 全局安装（推荐）
 
 ```bash
-# 通过 npm 全局安装（即将推出）
-npm install -g axon
+# 通过 npm 全局安装
+npm install -g @arrislink/axon
 
 # 或使用 bunx
-bunx axon init my-project
+bunx @arrislink/axon init my-project
 ```
 
 ### 开发安装
