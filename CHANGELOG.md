@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-02-10
+
+### Fixed
+- **CLI Language Consistency**: Fixed mixed Chinese/English descriptions across all commands by implementing consistent bilingual support using i18n wrapper. All command descriptions now display in the user's system locale (English or Chinese).
+  - Updated `ax spec`, `ax plan`, `ax work`, `ax skills`, `ax status`, `ax doctor`, `ax config` commands with bilingual descriptions.
+  - Separated help text examples into distinct English and Chinese sections for clarity.
+  - All subcommands (e.g., `ax spec init`, `ax config test`, etc.) now support locale-aware descriptions.
+
 ## [1.1.0] - 2026-02-10
 
 ### Added

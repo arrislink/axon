@@ -5,21 +5,21 @@
  * Entry point for the CLI application
  */
 
-import { Command } from 'commander';
-import chalk from 'chalk';
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import chalk from 'chalk';
+import { Command } from 'commander';
 import {
-    initCommand,
-    specCommand,
-    planCommand,
-    workCommand,
-    skillsCommand,
-    statusCommand,
-    doctorCommand,
-    configCommand,
-    docsCommand,
+  configCommand,
+  docsCommand,
+  doctorCommand,
+  initCommand,
+  planCommand,
+  skillsCommand,
+  specCommand,
+  statusCommand,
+  workCommand,
 } from './commands';
 import { handleError } from './utils/errors';
 
@@ -32,14 +32,14 @@ const VERSION = pkg.version;
 const program = new Command();
 
 program
-    .name('ax')
-    .description(
-        `${chalk.green('🧠')} ${chalk.bold('Axon')} - AI-Powered Development Operating System (v${VERSION})
+  .name('ax')
+  .description(
+    `${chalk.green('🧠')} ${chalk.bold('Axon')} - AI-Powered Development Operating System (v${VERSION})
 
-  ${chalk.dim('从需求到代码，让 AI 成为你的开发伙伴，而非工具。')}`
-    )
-    .version(VERSION, '-v, --version', '显示版本号')
-    .helpOption('-h, --help', '显示帮助信息');
+  ${chalk.dim('从需求到代码，让 AI 成为你的开发伙伴，而非工具。')}`,
+  )
+  .version(VERSION, '-v, --version', '显示版本号')
+  .helpOption('-h, --help', '显示帮助信息');
 
 // Register commands
 program.addCommand(initCommand);
@@ -53,35 +53,53 @@ program.addCommand(configCommand);
 program.addCommand(docsCommand);
 
 // Custom help
-program.addHelpText('after', `
-${chalk.bold('示例:')}
-  ${chalk.cyan('ax init my-project')}     初始化新项目
-  ${chalk.cyan('ax spec init')}           交互式创建规格
-  ${chalk.cyan('ax config keys anthropic')} 配置 API 密钥
-  ${chalk.cyan('ax plan')}                生成任务图
-  ${chalk.cyan('ax work')}                执行下一个任务
-  ${chalk.cyan('ax status')}              查看项目状态
+program.addHelpText(
+  'after',
+  `
+${chalk.bold('Examples (English):')}
+  ${chalk.cyan('ax init my-project')}          Initialize a new project
+  ${chalk.cyan('ax spec init')}                Create specification interactively
+  ${chalk.cyan('ax config keys anthropic')}   Configure API key
+  ${chalk.cyan('ax plan')}                     Generate task graph
+  ${chalk.cyan('ax work')}                     Execute next task
+  ${chalk.cyan('ax status')}                   View project status
 
-${chalk.bold('快速开始:')}
-  1. ${chalk.cyan('ax init my-app')}        创建项目
+${chalk.bold('Quick Start (English):')}
+  1. ${chalk.cyan('ax init my-app')}           Create project
   2. ${chalk.cyan('cd my-app')}
-  3. ${chalk.cyan('ax spec init')}          定义需求
-  4. ${chalk.cyan('ax plan')}               拆解任务
-  5. ${chalk.cyan('ax work')}               开始执行
+  3. ${chalk.cyan('ax spec init')}             Define requirements
+  4. ${chalk.cyan('ax plan')}                  Break down tasks
+  5. ${chalk.cyan('ax work')}                  Start execution
 
-${chalk.dim('文档: https://github.com/arrislink/axon')}
-${chalk.dim('问题反馈: https://github.com/arrislink/axon/issues')}
-`);
+${chalk.bold('示例（中文）:')}
+  ${chalk.cyan('ax init my-project')}          初始化新项目
+  ${chalk.cyan('ax spec init')}                交互式创建规格
+  ${chalk.cyan('ax config keys anthropic')}   配置 API 密钥
+  ${chalk.cyan('ax plan')}                     生成任务图
+  ${chalk.cyan('ax work')}                     执行下一个任务
+  ${chalk.cyan('ax status')}                   查看项目状态
+
+${chalk.bold('快速开始（中文）:')}
+  1. ${chalk.cyan('ax init my-app')}           创建项目
+  2. ${chalk.cyan('cd my-app')}
+  3. ${chalk.cyan('ax spec init')}             定义需求
+  4. ${chalk.cyan('ax plan')}                  拆解任务
+  5. ${chalk.cyan('ax work')}                  开始执行
+
+${chalk.dim('Documentation: https://github.com/arrislink/axon')}
+${chalk.dim('Issues: https://github.com/arrislink/axon/issues')}
+`,
+);
 
 // Global error handler
 process.on('uncaughtException', handleError);
 process.on('unhandledRejection', (reason) => {
-    handleError(reason as Error);
+  handleError(reason as Error);
 });
 
 // Parse and execute
 try {
-    await program.parseAsync(process.argv);
+  await program.parseAsync(process.argv);
 } catch (error) {
-    handleError(error as Error);
+  handleError(error as Error);
 }

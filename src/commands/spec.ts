@@ -8,17 +8,20 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
 import { AxonError } from '../utils/errors';
+import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
 
-export const specCommand = new Command('spec').description('管理项目规格文档');
+export const specCommand = new Command('spec').description(
+  t('Manage project specifications', '管理项目规格文档'),
+);
 
 // ax spec init
 specCommand
   .command('init')
-  .description('交互式创建项目规格')
-  .option('--from-file <path>', '从现有文档导入')
-  .option('--no-ai', '不使用 AI 生成')
+  .description(t('Create project specification interactively', '交互式创建项目规格'))
+  .option('--from-file <path>', t('Import from existing document', '从现有文档导入'))
+  .option('--no-ai', t('Do not use AI generation', '不使用 AI 生成'))
   .action(async (options) => {
     // Dynamic import
     const { SpecCollector, SpecGenerator } = await import('../core/spec');
@@ -84,7 +87,7 @@ specCommand
 // ax spec edit
 specCommand
   .command('edit')
-  .description('编辑项目规格文档')
+  .description(t('Edit the project specification', '编辑项目规格文档'))
   .action(async () => {
     const projectRoot = process.cwd();
 
@@ -128,7 +131,7 @@ specCommand
 // ax spec show
 specCommand
   .command('show')
-  .description('显示当前规格文档')
+  .description(t('Display the current specification', '显示当前规格文档'))
   .action(() => {
     const projectRoot = process.cwd();
 
@@ -153,7 +156,7 @@ specCommand
 // ax spec validate
 specCommand
   .command('validate')
-  .description('验证规格文档完整性')
+  .description(t('Validate specification completeness', '验证规格文档完整性'))
   .action(() => {
     const projectRoot = process.cwd();
 
