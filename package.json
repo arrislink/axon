@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AI-Powered Development Operating System with unified LLM provider support",
   "type": "module",
   "main": "dist/index.js",
@@ -12,7 +12,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "files": [
-    "dist",
+    "dist/index.js",
     "templates",
     "README.md",
     "README.zh-CN.md",
@@ -27,7 +27,7 @@
     "format": "bunx @biomejs/biome format --write .",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "prepublishOnly": "bun run build:js"
+    "prepublishOnly": "npm run clean && npm run build:js"
   },
   "keywords": [
     "ai",

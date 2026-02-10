@@ -1,0 +1,13 @@
+# Exclude large compiled binaries
+dist/ax
+
+# Dev/Test artifacts
+.axon/
+.beads/
+.openspec/
+.skills/
+tests/
+biome.json
+tsconfig.json
+bun.lockb
+*.log

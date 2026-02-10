@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for 75+ LLM providers via OhMyOpenCode
 - Bilingual documentation (English and Chinese)
 
+## [1.0.3] - 2026-02-10
+
+### Changed
+- **Optimization**: Significantly reduced npm package size (from 61MB to <1MB) by excluding self-compiled binaries.
+- **Improved Visibility**: Fixed README display issue on npm registry.
+
 ## [1.0.2] - 2026-02-10
 
 ### Added
