@@ -10,7 +10,7 @@ export interface Document {
   path: string;
   title: string;
   content?: string; // Extracted text content
-  metadata?: Record<string, any>; // AI-enriched metadata (tags, tech stack, etc.)
+  metadata?: Record<string, unknown>; // AI-enriched metadata (tags, tech stack, etc.)
   added_at: string;
   tags?: string[];
 }

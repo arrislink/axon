@@ -6,6 +6,15 @@ import { t } from '../../utils/i18n';
 import { logger } from '../../utils/logger';
 import { AxonLLMClient } from '../llm';
 
+interface EnrichedMetadata {
+  title?: string;
+  tags?: string[];
+  type?: string;
+  tech_stack?: string[];
+  key_points?: string[];
+  summary?: string;
+}
+
 export class DocumentManager {
   private library: DocumentLibrary;
   private libraryPath: string;
@@ -64,7 +73,7 @@ export class DocumentManager {
 
     const type = this.detectDocType(filePath);
     let content = '';
-    let metadata: any = {};
+    let metadata: Record<string, unknown> = {};
 
     try {
       switch (type) {
@@ -383,7 +392,7 @@ ${doc.content?.slice(0, 10000)}
     return files;
   }
 
-  private async enrichMetadata(content: string, _type: DocumentType): Promise<any> {
+  private async enrichMetadata(content: string, _type: DocumentType): Promise<EnrichedMetadata> {
     const prompt = `分析以下文档，提取关键信息：
 
 ${content.slice(0, 10000)}

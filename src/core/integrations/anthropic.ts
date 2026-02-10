@@ -17,6 +17,20 @@ export interface ChatOptions {
   system?: string;
 }
 
+interface AnthropicResponse {
+  content?: Array<{
+    type: string;
+    text?: string;
+  }>;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+  };
+  error?: {
+    message?: string;
+  };
+}
+
 /**
  * Generic HTTP client for Anthropic-compatible APIs (Anthropic, Antigravity, OMO)
  */
@@ -76,7 +90,7 @@ export class AnthropicClient {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
-        let errorData: any = {};
+        let errorData: AnthropicResponse = { usage: { input_tokens: 0, output_tokens: 0 } };
         try {
           errorData = JSON.parse(errorText);
         } catch {
@@ -90,7 +104,7 @@ export class AnthropicClient {
       }
 
       const responseText = await response.text();
-      let data: any;
+      let data: AnthropicResponse;
       try {
         data = JSON.parse(responseText);
       } catch (err) {
@@ -100,7 +114,7 @@ export class AnthropicClient {
         );
       }
 
-      const textContent = data.content?.find((c: any) => c.type === 'text');
+      const textContent = data.content?.find((c) => c.type === 'text');
       const content = textContent?.text || '';
 
       return {

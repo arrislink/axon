@@ -15,7 +15,24 @@ interface OMOConfig {
 
 interface OpenCodeConfig {
   agents?: Record<string, { model?: string; variant?: string }>;
-  provider?: Record<string, any>;
+  provider?: Record<
+    string,
+    {
+      models?: Record<string, unknown>;
+      endpoint?: string;
+    }
+  >;
+}
+
+interface AntigravityAccount {
+  token?: string;
+  refreshToken?: string;
+  enabled?: boolean;
+}
+
+interface AntigravityAccounts {
+  accounts: AntigravityAccount[];
+  activeIndex?: number;
 }
 
 /**
@@ -108,12 +125,12 @@ export class OMOConfigReader {
     try {
       const accountsPath = `${homedir()}/.config/opencode/antigravity-accounts.json`;
       if (existsSync(accountsPath)) {
-        const accounts = JSON.parse(readFileSync(accountsPath, 'utf-8'));
+        const accounts = JSON.parse(readFileSync(accountsPath, 'utf-8')) as AntigravityAccounts;
         if (accounts.accounts?.length > 0) {
           // Find the first enabled account, or use activeIndex
           const activeIdx = accounts.activeIndex ?? 0;
           const account =
-            accounts.accounts.find((a: any) => a.enabled !== false) || accounts.accounts[activeIdx];
+            accounts.accounts.find((a) => a.enabled !== false) || accounts.accounts[activeIdx];
           if (account) {
             this.antigravityToken = account.token || account.refreshToken;
           }

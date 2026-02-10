@@ -22,7 +22,7 @@ export interface ResolvedConfig {
 
 export class ConfigPriorityResolver {
   resolve(context: {
-    cliOptions: Record<string, any>;
+    cliOptions: Record<string, unknown>;
     projectConfig?: AxonConfig;
     omoConfig: OMOConfigReader;
     env: NodeJS.ProcessEnv;
@@ -32,7 +32,7 @@ export class ConfigPriorityResolver {
     // 1. Provider Resolution
     // CLI > Project > OMO > Defaults
     const providerName =
-      context.cliOptions.provider ||
+      (context.cliOptions['provider'] as string) ||
       projectConfig?.agents?.sisyphus?.provider ||
       omoConfig.getPrimaryProvider()?.name ||
       'anthropic'; // Default fallback
@@ -43,14 +43,14 @@ export class ConfigPriorityResolver {
     const omoDefaultModel = omoProvider?.models?.[0];
 
     const model =
-      context.cliOptions.model ||
+      (context.cliOptions['model'] as string) ||
       projectConfig?.agents?.sisyphus?.model ||
       omoDefaultModel ||
-      env.AXON_MODEL;
+      env['AXON_MODEL'];
 
     // 3. API Key Resolution
     // CLI > OMO > Env
-    let apiKey = context.cliOptions.apiKey;
+    let apiKey = context.cliOptions['apiKey'] as string | undefined;
 
     if (!apiKey && omoProvider) {
       // OMO Config (handled by OMOConfigReader's resolution logic if available, or manual here)
@@ -61,22 +61,22 @@ export class ConfigPriorityResolver {
 
     if (!apiKey) {
       // Env Fallback
-      if (providerName.includes('anthropic')) apiKey = env.ANTHROPIC_API_KEY;
-      else if (providerName.includes('openai')) apiKey = env.OPENAI_API_KEY;
+      if (providerName.includes('anthropic')) apiKey = env['ANTHROPIC_API_KEY'];
+      else if (providerName.includes('openai')) apiKey = env['OPENAI_API_KEY'];
       else if (providerName.includes('google') || providerName.includes('gemini'))
-        apiKey = env.GOOGLE_API_KEY;
-      else if (providerName.includes('deepseek')) apiKey = env.DEEPSEEK_API_KEY;
+        apiKey = env['GOOGLE_API_KEY'];
+      else if (providerName.includes('deepseek')) apiKey = env['DEEPSEEK_API_KEY'];
     }
 
     // 4. Other Parameters
     const temperature =
-      context.cliOptions.temperature !== undefined
-        ? Number(context.cliOptions.temperature)
+      context.cliOptions['temperature'] !== undefined
+        ? Number(context.cliOptions['temperature'])
         : (projectConfig?.agents?.sisyphus?.temperature ?? 0.7);
 
     const maxTokens =
-      context.cliOptions.maxTokens !== undefined
-        ? Number(context.cliOptions.maxTokens)
+      context.cliOptions['maxTokens'] !== undefined
+        ? Number(context.cliOptions['maxTokens'])
         : projectConfig?.agents?.sisyphus?.max_tokens;
 
     return {

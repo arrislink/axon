@@ -4,7 +4,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AxonConfig, Bead, BeadExecutionResult, BeadsGraph } from '../../types';
+import type { AxonConfig, Bead, BeadExecutionResult, BeadsGraph, Skill } from '../../types';
 import { BeadsError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { AgentOrchestrator } from '../agents/orchestrator';
@@ -116,7 +116,7 @@ export class BeadsExecutor {
       const spec = existsSync(specPath) ? readFileSync(specPath, 'utf-8') : '';
 
       // Search for relevant skills
-      let skills: any[] = [];
+      let skills: Skill[] = [];
       if (this.config.tools.skills.enabled) {
         // Search by bead title and required skills
         const query = `${bead.title} ${bead.skills_required.join(' ')}`;

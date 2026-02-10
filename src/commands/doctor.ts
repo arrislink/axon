@@ -10,6 +10,7 @@ import { ConfigManager, DEFAULT_DIRECTORIES } from '../core/config';
 import { AnthropicClient } from '../core/integrations/anthropic';
 import { GitOperations } from '../core/integrations/git';
 import { OMOConfigReader } from '../core/llm/omo-config-reader';
+import type { Provider } from '../types';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
@@ -79,7 +80,7 @@ export const doctorCommand = new Command('doctor')
 
     // Check 3: API Keys
     const omoReader = new OMOConfigReader();
-    const providers = ['anthropic', 'openai', 'google'];
+    const providers: Provider[] = ['anthropic', 'openai', 'google'];
 
     for (const name of providers) {
       const envVar = `${name.toUpperCase()}_API_KEY`;
@@ -112,7 +113,7 @@ export const doctorCommand = new Command('doctor')
           try {
             const client = new AnthropicClient(apiKey, {
               model: name === 'anthropic' ? 'claude-sonnet-4-20250514' : 'unknown',
-              provider: name as any,
+              provider: name,
             });
             const valid = await client.validateKey();
             spinner.stop();

@@ -8,6 +8,38 @@ import { AnthropicClient } from '../integrations/anthropic';
 import { OMOConfigReader } from './omo-config-reader';
 import type { LLMMessage, LLMOptions, LLMResponse, OMOProvider } from './types';
 
+interface GoogleResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+  };
+  error?: {
+    message?: string;
+  };
+}
+
+interface OpenAIResponse {
+  choices?: Array<{
+    message?: {
+      content?: string;
+    };
+  }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+  };
+  error?: {
+    message?: string;
+  };
+}
+
 /**
  * Unified LLM Client that reads OMO config and makes direct API calls
  */
@@ -233,17 +265,14 @@ export class UnifiedLLMClient {
     const endpoint = provider.endpoint || 'https://generativelanguage.googleapis.com/v1beta';
     const url = `${endpoint}/models/${model}:generateContent?key=${apiKey}`;
 
-    const body: any = {
+    const body = {
       contents: chatMessages,
       generationConfig: {
         temperature: options?.temperature ?? 0.7,
         maxOutputTokens: options?.maxTokens || 8000,
       },
+      systemInstruction: systemMessage ? { parts: [{ text: systemMessage.content }] } : undefined,
     };
-
-    if (systemMessage) {
-      body.systemInstruction = { parts: [{ text: systemMessage.content }] };
-    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -252,13 +281,13 @@ export class UnifiedLLMClient {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as any;
+      const errorData = (await response.json().catch(() => ({}))) as GoogleResponse;
       throw new Error(
         `Google API 调用失败 (${response.status}): ${errorData.error?.message || response.statusText}`,
       );
     }
 
-    const data = (await response.json()) as any;
+    const data = (await response.json()) as GoogleResponse;
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const usageMetadata = data.usageMetadata || {};
 
@@ -330,13 +359,13 @@ export class UnifiedLLMClient {
     });
 
     if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({}))) as any;
+      const errorData = (await response.json().catch(() => ({}))) as OpenAIResponse;
       throw new Error(
         `OpenAI API 调用失败 (${response.status}): ${errorData.error?.message || response.statusText}`,
       );
     }
 
-    const data = (await response.json()) as any;
+    const data = (await response.json()) as OpenAIResponse;
     const content = data.choices?.[0]?.message?.content || '';
     const usage = data.usage || {};
 
