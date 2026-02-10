@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2026-02-10
+
+### Fixed
+- Updated unit tests to match OMO-native architecture.
+- Cleaned up lint and TypeScript configuration conflicts.
+
 ## [1.5.0] - 2026-02-10
 
 ### Added
