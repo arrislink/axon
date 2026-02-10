@@ -2,184 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [1.1.2] - 2026-02-10
+## [1.2.0] - 2026-02-10
 
 ### Added
-- **Google Gemini Support**: Added native support for Google Gemini models in `UnifiedLLMClient`, including direct REST API calls and proxy routing via Antigravity.
-- **Antigravity Authentication**: Implemented automatic resolution of Antigravity tokens from `~/.config/opencode/antigravity-accounts.json`. Axon now uses these tokens as a universal authentication source for proxy-based provider access.
-
-### Improved
-- **LLM Configuration Resolution**: 
-  - Rewrote `OMOConfigReader` to properly map model prefixes (e.g., `opencode/*` → `antigravity`, `google/*` → `google`) to their respective provider types.
-  - Enhanced config merging to combine agent definitions from `oh-my-opencode.json` with provider definitions from `opencode.json`.
-  - Added multi-environment variable lookup for API keys in `getProviderApiKey()`.
-- **Diagnostics & Troubleshooting**:
-  - Enhanced `ax doctor` to correctly detect and verify API keys sourced from Antigravity tokens and OMO configurations.
-  - Improved error messages in `AxonLLMClient` with detailed diagnostic information (config source, provider count, token status) when no valid LLM configuration is found.
-  - Updated `ax config show` and `ax config list` to display accurate provider types and diagnostic states.
-
-## [1.1.1] - 2026-02-10
-
-### Fixed
-- **CLI Language Consistency**: Fixed mixed Chinese/English descriptions across all commands by implementing consistent bilingual support using i18n wrapper. All command descriptions now display in the user's system locale (English or Chinese).
-  - Updated `ax spec`, `ax plan`, `ax work`, `ax skills`, `ax status`, `ax doctor`, `ax config` commands with bilingual descriptions.
-  - Separated help text examples into distinct English and Chinese sections for clarity.
-  - All subcommands (e.g., `ax spec init`, `ax config test`, etc.) now support locale-aware descriptions.
-
-## [1.1.0] - 2026-02-10
-
-### Added
-- **Document Integration**: Introduced `ax docs` command suite for managing project reference materials.
-  - `ax docs add <file>`: Add documents (Markdown, WORD .docx, PDF, etc.) to the project library.
-  - `ax docs list`: List all indexed documents.
-  - `ax docs search <query>`: Semantic search within project documents.
-  - `ax docs summarize <id>`: AI-powered document summarization.
-  - `DocumentManager`: Core logic for file parsing, metadata enrichment, and context management.
-- **Format Support**: Added `.docx` (Word) support to `ax docs add` using `mammoth`.
-- **Spec Generation**: fast-track `ax spec init` with `--from-docs` support (experimental) to generate specifications directly from added documents.
-
-## [1.0.10] - 2026-02-10
-
-### Fixed
-- **`ax spec init` Multi-line Input Loop**: Fixed infinite loop when entering long multi-line additional requirements. Now uses external editor instead of text input for better UX with detailed requirements. Prevents prompt library from repeating question on pasted/multi-line input.
-
-## [1.0.9] - 2026-02-10
-
-### Fixed
-- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured. Addresses issue where command hung waiting for editor input.
-
-## [1.0.8] - 2026-02-10
-
-### Fixed
-- **Missing `ax spec edit` Command**: Implemented the `edit` subcommand that was referenced in `ax spec init` output but not available. Users can now edit existing specification documents interactively with `ax spec edit`.
-- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured.
-
-## [1.0.7] - 2026-02-10
-
-### Added
-- **Bilingual CLI Support**: Integrated `i18n` utility to provide consistent English and Chinese prompts based on system locale.
-- **Improved CLI Metadata**: Added version number to the main help description and updated documentation links to point to GitHub.
-
-## [1.0.6] - 2026-02-10
-
-### Added
-- **Skill Development Support**: Added "Axon Skill" as a first-class project type in `ax spec init` with specialized prompts and feature options (Spec, Examples, Logic, Deps).
-
-### Fixed
-- **LLM Reliability**: 
-  - Improved `OpenCodeLLMClient` to detect and handle silent CLI crashes (Exit 0 with stderr errors).
-  - Added automatic fallback to `fallback` mode when any provider returns an empty response.
-  - Enhanced JSON parsing for fragmented or non-standard `opencode` JSON streams.
-
-## [1.0.5] - 2026-02-10
-
-### Fixed
-- **Empty Spec Issue**: Added robust JSON parsing for `opencode` CLI events and a safety fallback to templates if AI generation fails or returns empty content.
-- **Model Tracking**: Improved model ID extraction in `OpenCodeLLMClient` to correctly identify the active model in logs and `ax config test`.
-- **Keywords**: Added related open-source projects (`opencode`, `oh-my-opencode`, `omo`, `findskills`, `beads`) as keywords in `package.json`.
-
-## [1.0.4] - 2026-02-10
-
-### Fixed
-- **Empty Spec Issue**: Added robust JSON parsing for `opencode` CLI events and a safety fallback to templates if AI generation fails or returns empty content.
-- **Model Tracking**: Improved model ID extraction in `OpenCodeLLMClient` to correctly identify the active model in logs and `ax config test`.
-
-## [1.0.3] - 2026-02-10
+- **OMO-Native Delegation**: Axon now treats OMO (OhMyOpenCode) agents as the Single Source of Truth for LLM management.
+- **Role-Based Execution**: Added support for generic roles (`sisyphus`, `oracle`, `background`) that map directly to OMO agents.
+- **Environment Variable `AXON_LLM_MODE`**: Forced LLM mode support (e.g., `AXON_LLM_MODE=cli`).
+- **Enhanced CLI Detection**: Used `Bun.which` for more robust path resolution of the `opencode` binary.
 
 ### Changed
-- **Optimization**: Significantly reduced npm package size (from 61MB to <1MB) by excluding self-compiled binaries.
-- **Improved Visibility**: Fixed README display issue on npm registry.
-
-## [1.0.2] - 2026-02-10
-
-### Added
-- Integrated Skills system: Automatic skill matching and injection in `BeadsExecutor`.
-
-### Changed
-- Improved documentation clarity regarding OpenCode/OMO core roles.
-- Enhanced Git safety checks and branch protection.
-
-## [1.0.1] - 2026-02-10
-
-### Added
-- Comprehensive User Guides: `docs/GUIDE.md` and `docs/GUIDE.zh-CN.md`.
-- Full-flow tutorial (REST API building) in the new guides.
-- Detailed Team Collaboration workflow documentation (Git strategy, shared skills).
-- Automatic Skill matching and injection in `BeadsExecutor`.
-- Intelligent conflict detection and resolution in `ax init`.
-- Performance-oriented dynamic imports for command handlers.
-
-### Changed
-- Explicitly credited **OpenCode** and **OhMyOpenCode (OMO)** as core engines in all docs.
-- Refined `README.md` and `README.zh-CN.md` with better value propositions.
-- Replaced `inquirer` with `prompts` for significant bundle size reduction.
-- Switched to dynamic imports for improved CLI startup speed.
-- Optimized API documentation by consolidating it into the User Guide.
+- **Config Schema**: Made `model` and `provider` optional in `AgentConfig` to favor OMO delegation.
+- **Simplified Defaults**: Removed hardcoded models from default project templates.
+- **Improved CLI Diagnostics**: Environment variables are now preserved during CLI spawning to fix "node not found" errors.
+- **Strict Mode**: Disabled automatic fallback when in CLI mode to ensure configuration issues are visible.
 
 ### Fixed
-- Fixed missing skill search integration during `ax work` execution.
-- Resolved type-check and linting errors in `version-check.ts`.
-- Improved Git safety checks (branch protection and dirty tree prevention).
-- Corrected internal PRD links in documentation.
+- Fixed Anthropic client crashing on non-JSON error responses from proxies.
+- Corrected default Antigravity endpoint to `api.antigravity.ai`.
 
-## [1.0.0] - 2026-02-09
+## [1.1.3] - 2026-02-10
 
-### Added
-- Initial release of Axon CLI
-- Core commands: `init`, `spec`, `plan`, `work`, `skills`, `status`, `doctor`
-- OpenSpec integration for specification-driven development
-- Beads engine for task graph generation and execution
-- Skills library with search and matching
-- Agent orchestration with multiple AI models
-- Cost tracking and safety limits
-- Configuration management with YAML
-- Template system for skills
-- Unit tests for core modules (29 tests)
-- TypeScript + Bun runtime
-- Comprehensive error handling
-- Interactive prompts with Inquirer
-- Progress indicators with Ora
-- Colorized CLI output with Chalk
+### Fixed
+- Hotfix for proxy error handling and endpoint correction.
 
-### Features
-- **Specification-Driven Development**: Define requirements before coding
-- **Task Traceability**: Every code line maps to a task bead
-- **Knowledge Reuse**: Auto-match validated skill templates
-- **Cost Control**: Smart token usage tracking
-- **Multi-Agent Support**: Sisyphus, Oracle, Background agents
-- **Provider Flexibility**: Anthropic, OpenAI, Google support
-
-### Technical
-- Built with TypeScript 5.3
-- Powered by Bun 1.1+
-- Zod schema validation
-- Biome for linting and formatting
-- Vitest for unit testing
-
-## [0.1.0] - 2026-02-01
+## [1.1.0] - 2026-02-09
 
 ### Added
-- Project structure and initial setup
-- Basic CLI scaffolding
-- Configuration schema design
-- PRD and technical documentation
-
----
-
-[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.7...HEAD
-[1.1.0]: https://github.com/arrislink/axon/compare/v1.0.10...v1.1.0
-[1.0.10]: https://github.com/arrislink/axon/compare/v1.0.9...v1.0.10
-[1.0.9]: https://github.com/arrislink/axon/compare/v1.0.8...v1.0.9
-[1.0.8]: https://github.com/arrislink/axon/compare/v1.0.7...v1.0.8
-[1.0.7]: https://github.com/arrislink/axon/compare/v1.0.6...v1.0.7
-[1.0.6]: https://github.com/arrislink/axon/compare/v1.0.5...v1.0.6
-[1.0.5]: https://github.com/arrislink/axon/compare/v1.0.4...v1.0.5
-[1.0.4]: https://github.com/arrislink/axon/compare/v1.0.3...v1.0.4
-[1.0.3]: https://github.com/arrislink/axon/compare/v1.0.2...v1.0.3
-[1.0.2]: https://github.com/arrislink/axon/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/arrislink/axon/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/arrislink/axon/releases/tag/v1.0.0
-[0.1.0]: https://github.com/arrislink/axon/releases/tag/v0.1.0
+- Initial support for OMO configuration reading.
+- Document management system with `ax docs` suite.

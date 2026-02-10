@@ -35,20 +35,14 @@ export const DEFAULT_CONFIG: AxonConfig = {
 
     agents: {
         sisyphus: {
-            model: 'claude-sonnet-4-20250514',
-            provider: 'anthropic',
             temperature: 0.7,
             max_tokens: 8000,
         },
         oracle: {
-            model: 'claude-sonnet-4-20250514',
-            provider: 'anthropic',
             temperature: 0.3,
             max_tokens: 4000,
         },
         background: {
-            model: 'gemini-2.0-flash-exp',
-            provider: 'google',
             temperature: 0.5,
             max_tokens: 4000,
         },

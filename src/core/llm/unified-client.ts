@@ -22,34 +22,52 @@ export class UnifiedLLMClient {
      * Send chat messages using the best available provider
      */
     async chat(messages: LLMMessage[], options?: LLMOptions): Promise<LLMResponse> {
-        const provider = this.omoConfig.getPrimaryProvider();
+        let provider: OMOProvider | null = null;
+        let modelOverride = options?.model;
+
+        // 1. Resolve agent from OMO if specified
+        if (options?.agent) {
+            const agentInfo = this.omoConfig.getProvider(options.agent);
+            if (agentInfo) {
+                provider = agentInfo;
+                if (!modelOverride && agentInfo.models?.[0]) {
+                    modelOverride = agentInfo.models[0];
+                }
+            }
+        }
+
+        // 2. Fallback to primary provider if not resolved by agent
+        if (!provider) {
+            provider = this.omoConfig.getPrimaryProvider();
+        }
 
         if (!provider) {
             throw new Error('未找到可用的 LLM Provider');
         }
 
         const providerType = provider.type || provider.name;
+        const mergedOptions = { ...options, model: modelOverride };
 
         switch (providerType) {
             case 'anthropic':
-                return this.chatAnthropic(provider, messages, options);
+                return this.chatAnthropic(provider, messages, mergedOptions);
 
             case 'antigravity':
-                return this.chatAntigravity(provider, messages, options);
+                return this.chatAntigravity(provider, messages, mergedOptions);
 
             case 'google':
-                return this.chatGoogle(provider, messages, options);
+                return this.chatGoogle(provider, messages, mergedOptions);
 
             case 'openai':
-                return this.chatOpenAI(provider, messages, options);
+                return this.chatOpenAI(provider, messages, mergedOptions);
 
             case 'deepseek':
-                return this.chatOpenAI(provider, messages, options, 'https://api.deepseek.com/v1');
+                return this.chatOpenAI(provider, messages, mergedOptions, 'https://api.deepseek.com/v1');
 
             default:
                 // Default to Anthropic-compatible API (most providers support this)
                 console.warn(`🧠 Axon: 未知 provider type '${providerType}'，使用 Anthropic 兼容模式`);
-                return this.chatAnthropic(provider, messages, options);
+                return this.chatAnthropic(provider, messages, mergedOptions);
         }
     }
 

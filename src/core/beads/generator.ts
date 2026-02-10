@@ -9,10 +9,8 @@ import { BeadsError } from '../../utils/errors';
 
 export class BeadsGenerator {
     private llm: AxonLLMClient;
-    private config: AxonConfig;
 
-    constructor(config: AxonConfig) {
-        this.config = config;
+    constructor(_config: AxonConfig) {
         this.llm = new AxonLLMClient();
     }
 
@@ -23,9 +21,8 @@ export class BeadsGenerator {
         const prompt = this.buildPrompt(specContent);
 
         const response = await this.llm.chat([{ role: 'user', content: prompt }], {
-            model: this.config.agents.sisyphus.model,
+            agent: 'sisyphus',
             temperature: 0.7,
-            maxTokens: 8000,
         });
 
         const beadsData = this.parseResponse(response.content);

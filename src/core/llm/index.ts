@@ -33,22 +33,25 @@ export class AxonLLMClient {
    * Detect the best available LLM mode
    */
   private detectMode(): LLMMode {
-    // 1. Check if opencode CLI is available
-    try {
-      const proc = Bun.spawnSync(['opencode', '--version']);
-      if (proc.success) {
-        this.detectedCommand = ['opencode'];
-        return 'cli';
-      }
-    } catch { }
+    // 0. Force mode via environment variable
+    const forcedMode = process.env['AXON_LLM_MODE'];
+    if (forcedMode === 'cli' || forcedMode === 'direct' || forcedMode === 'fallback') {
+      return forcedMode as LLMMode;
+    }
 
-    try {
-      const proc = Bun.spawnSync(['bunx', 'opencode', '--version']);
-      if (proc.success) {
-        this.detectedCommand = ['bunx', 'opencode'];
-        return 'cli';
-      }
-    } catch { }
+    // 1. Check if opencode CLI is available using Bun.which for robustness
+    const opencodePath = Bun.which('opencode');
+    if (opencodePath) {
+      this.detectedCommand = [opencodePath];
+      return 'cli';
+    }
+
+    // Fallback to bunx if not globally installed
+    const bunxOpencode = Bun.spawnSync(['bunx', 'opencode', '--version']);
+    if (bunxOpencode.success) {
+      this.detectedCommand = ['bunx', 'opencode'];
+      return 'cli';
+    }
 
     // 2. Check if OMO config exists with usable providers
     if (hasOMOConfig() && this.omoConfig.hasProviders()) {
@@ -117,15 +120,30 @@ export class AxonLLMClient {
    */
   async chat(messages: LLMMessage[], options?: LLMOptions): Promise<LLMResponse> {
     try {
-      // Primary path based on detected mode
+      // 1. CLI Mode (Primary for OMO-Native)
       if (this.mode === 'cli' && this.openCodeClient) {
-        return await this.openCodeClient.chat(messages, options);
+        // Optimization: In CLI mode, if we have an agent, use it directly.
+        // If not, try to determine which agent to use based on Axon defaults.
+        const chatOptions = { ...options };
+        if (!chatOptions.agent && chatOptions.model) {
+          // If model matches a default, clear it to use CLI's agent default
+          const isDefaultModel = [
+            'claude-sonnet-4-20250514',
+            'gemini-2.0-flash-exp',
+            'gpt-4o'
+          ].includes(chatOptions.model);
+          if (isDefaultModel) chatOptions.model = undefined;
+        }
+
+        return await this.openCodeClient.chat(messages, chatOptions);
       }
 
+      // 2. Direct Mode (OMO-aware)
       if (this.mode === 'direct' && this.unifiedClient) {
         return await this.unifiedClient.chat(messages, options);
       }
 
+      // 3. Fallback Mode (Env Vars or last-resort Unified)
       if (this.mode === 'fallback') {
         // Fallback may have initialized either anthropicClient or unifiedClient
         if (this.anthropicClient) {
@@ -154,31 +172,16 @@ export class AxonLLMClient {
     messages: LLMMessage[],
     options?: LLMOptions
   ): Promise<LLMResponse> {
-    // CLI → Direct fallback
+    // CLI mode - DO NOT fallback as requested by user
     if (this.mode === 'cli') {
-      console.warn('🧠 Axon: CLI 模式调用失败，尝试 Direct 模式...');
-      if (process.env['DEBUG']) console.error(error);
-
-      // Try direct mode with OMO config
-      if (this.omoConfig.hasProviders()) {
-        const primary = this.omoConfig.getPrimaryProvider();
-        if (primary && this.omoConfig.getProviderApiKey(primary)) {
-          this.mode = 'direct';
-          this.initClient();
-          return await this.chat(messages, options);
-        }
-      }
-
-      // Skip directly to fallback
-      console.warn('🧠 Axon: Direct 模式无可用 Provider，尝试 Fallback 模式...');
-      this.mode = 'fallback';
-      this.initClient();
-      return await this.chat(messages, options);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      throw new APIError(`CLI 模式调用失败: ${errMsg.split('\n')[0]}`, 500);
     }
 
     // Direct → Fallback
     if (this.mode === 'direct' || (this.mode === 'fallback' && this.unifiedClient)) {
-      console.warn('🧠 Axon: Direct/Proxy 模式调用失败，尝试环境变量 Fallback...');
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.warn(`🧠 Axon: Direct/Proxy 模式调用失败 (${errMsg.split('\n')[0]})，尝试环境变量 Fallback...`);
       if (process.env['DEBUG']) console.error(error);
 
       // Clear unifiedClient to prevent re-trying it in fallback

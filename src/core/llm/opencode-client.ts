@@ -37,8 +37,9 @@ export class OpenCodeLLMClient {
         options?: LLMOptions
     ): AsyncGenerator<string, LLMResponse, unknown> {
         const prompt = this.formatMessages(messages);
+        const agent = options?.agent || this.agent;
 
-        const args = [...this.command, 'run', '--agent', this.agent, '--format', 'json'];
+        const args = [...this.command, 'run', '--agent', agent, '--format', 'json'];
 
         if (options?.model) {
             // If model is "provider/model", pass it directly. 
@@ -51,6 +52,7 @@ export class OpenCodeLLMClient {
             stdin: new Blob([prompt]),
             stdout: 'pipe',
             stderr: 'pipe',
+            env: process.env, // Ensure node and other tools are in PATH
         });
 
         let fullResponse = '';

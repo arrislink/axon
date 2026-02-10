@@ -6,8 +6,8 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type Provider = 'anthropic' | 'openai' | 'google';
 
 export interface AgentConfig {
-    model: string;
-    provider: Provider;
+    model?: string;
+    provider?: Provider;
     temperature?: number;
     max_tokens?: number;
 }

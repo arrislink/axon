@@ -5,8 +5,8 @@
 import { z } from 'zod';
 
 export const AgentConfigSchema = z.object({
-    model: z.string(),
-    provider: z.enum(['anthropic', 'openai', 'google']),
+    model: z.string().optional(),
+    provider: z.enum(['anthropic', 'openai', 'google']).optional(),
     temperature: z.number().min(0).max(2).optional(),
     max_tokens: z.number().positive().optional(),
 });

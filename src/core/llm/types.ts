@@ -28,6 +28,8 @@ export interface LLMResponse {
  */
 export interface LLMOptions {
     model?: string;
+    agent?: string; // OMO agent name (e.g., 'sisyphus', 'oracle')
+    provider?: string;
     temperature?: number;
     maxTokens?: number;
     system?: string;
