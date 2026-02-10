@@ -66,7 +66,7 @@ describe('ConfigManager', () => {
 
     const sisyphus = manager.getAgentConfig('sisyphus');
     expect(sisyphus).toBeDefined();
-    expect(sisyphus?.provider).toBe('anthropic');
+    expect(sisyphus?.temperature).toBe(0.7);
   });
 
   test('returns safety limits', () => {
