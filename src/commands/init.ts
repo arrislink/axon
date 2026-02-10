@@ -153,21 +153,28 @@ export const initCommand = new Command('init')
                     });
 
                     if (response.skills && response.skills.length > 0) {
-                        const { SkillsLibrary } = await import('../core/skills/library');
-                        const config = new ConfigManager(projectPath).get();
-                        const library = new SkillsLibrary(
-                            join(projectPath, config.tools.skills.local_path),
-                            config.tools.skills.global_path
-                        );
+                        if (response.skills && response.skills.length > 0) {
+                            const { spawnSync } = await import('child_process');
+                            // Install from the official Axon skills repository
+                            // TODO: Make this configurable or discoverable
+                            const packageSource = 'arrislink/axon-skills';
 
-                        for (const name of response.skills) {
-                            spinner.start(t(`Installing skill: ${name}...`, `正在安装技能: ${name}...`));
-                            const results = await library.search(name, 1);
-                            if (results.length > 0 && results[0].skill.metadata.name.toLowerCase() === name.toLowerCase()) {
-                                await library.save(results[0].skill, join(projectPath, config.tools.skills.local_path, `${name}.md`));
-                                spinner.succeed();
-                            } else {
-                                spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
+                            spinner.start(t('Installing recommended skills...', '正在安装推荐技能...'));
+
+                            const args = ['skills', 'add', packageSource, '--yes'];
+                            for (const name of response.skills) {
+                                args.push('--skill', name);
+                            }
+
+                            try {
+                                const result = spawnSync('npx', args, { stdio: 'inherit', cwd: projectPath });
+                                if (result.status === 0) {
+                                    spinner.succeed(t('Skills installed successfully', '技能安装成功'));
+                                } else {
+                                    spinner.warn(t('Failed to install some skills. Please try manually with `ax skills install`.', '部分技能安装失败，请尝试手动运行 `ax skills install`。'));
+                                }
+                            } catch (e) {
+                                spinner.fail(t('Failed to run npx skills add', '无法运行 npx skills add'));
                             }
                         }
                     }

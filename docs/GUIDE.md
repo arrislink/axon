@@ -55,7 +55,11 @@ graph TD
 *   **Beads**: A task graph system that breaks complex features into small, manageable units of work (beads).
 *   **OpenCode**: The underlying agentic engine that performs the actual coding work for each bead.
 *   **OhMyOpenCode (OMO)**: The universal LLM provider middleware that powers Axon, supporting 75+ providers (Anthropic, OpenAI, etc.).
-*   **Skills**: A library of reusable prompts and code templates.
+*   **Skills**: A library of reusable prompts and code templates. Axon supports multiple skill directory conventions:
+    - `.skills/`: Local project-specific skills (configured in `.axon/config.yaml`).
+    - `.agents/skills/`: Universal skills following the OpenCode/Official convention.
+    - `.agent/skills/`: Skills following the Antigravity agent convention.
+    - `~/.axon/skills/`: User-wide global skills.
 
 ---
 

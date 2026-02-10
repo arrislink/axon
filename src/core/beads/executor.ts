@@ -16,6 +16,7 @@ export class BeadsExecutor {
     private graph: BeadsGraph;
     private graphPath: string;
     private config: AxonConfig;
+    private projectRoot: string;
     private orchestrator: AgentOrchestrator;
     private git: GitOperations;
     private skillsLibrary: SkillsLibrary;
@@ -26,13 +27,20 @@ export class BeadsExecutor {
         apiKey: string
     ) {
         this.config = config;
+        this.projectRoot = projectRoot;
         this.graphPath = join(projectRoot, config.tools.beads.path, 'graph.json');
         this.graph = this.loadGraph();
         this.orchestrator = new AgentOrchestrator(config, apiKey);
         this.git = new GitOperations(projectRoot);
 
-        const localSkillsPath = join(projectRoot, config.tools.skills.local_path);
-        this.skillsLibrary = new SkillsLibrary(localSkillsPath, config.tools.skills.global_path);
+        const agentsSkillsPath = join(this.projectRoot, '.agents', 'skills');
+        const agentSkillsPath = join(this.projectRoot, '.agent', 'skills');
+        this.skillsLibrary = new SkillsLibrary([
+            join(this.projectRoot, this.config.tools.skills.local_path),
+            agentsSkillsPath,
+            agentSkillsPath,
+            this.config.tools.skills.global_path
+        ]);
     }
 
     private loadGraph(): BeadsGraph {

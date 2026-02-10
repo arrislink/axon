@@ -228,10 +228,12 @@ specCommand
       const { SkillsLibrary } = await import('../core/skills/library');
 
       // Load local skills for better analysis
-      const library = new SkillsLibrary(
+      const officialLocalPath = join(projectRoot, '.agents', 'skills');
+      const library = new SkillsLibrary([
         join(projectRoot, config.tools.skills.local_path),
+        officialLocalPath,
         config.tools.skills.global_path
-      );
+      ]);
       const relevantSkills = await library.search('brainsstorm', 2);
       const skillContext = relevantSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
 

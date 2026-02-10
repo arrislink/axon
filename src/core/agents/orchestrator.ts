@@ -61,7 +61,7 @@ export class AgentOrchestrator {
 
         // Track cost
         const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
-        const cost = this.costTracker.recordUsage(agentConfig.model, tokensUsed);
+        const cost = this.costTracker.recordUsage(agentConfig.model || 'unknown', tokensUsed);
 
         // Parse and write files
         const artifacts = await this.processResponse(response.content);

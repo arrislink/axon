@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-02-10
+
+### Added
+- **Multi-Path Skill Support**: Axon now supports both `.agents/skills` (Universal) and `.agent/skills` (Antigravity) directory conventions.
+- **Enhanced Documentation**: Updated guides to clarify skill management and directory structures.
+
+### Changed
+- **Skill Architecture Decoupling**: Completely removed hardcoded skill templates. Axon now exclusively uses external skill repositories via `npx skills add`.
+- **Core Cleanup**: Removed deprecated path utilities and optimized `SkillsLibrary` to prioritize official skill discovery patterns.
+
 ## [1.4.0] - 2026-02-10
 
 ### Added

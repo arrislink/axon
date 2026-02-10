@@ -54,8 +54,18 @@ export class SkillsLibrary {
     private indexed = false;
     private paths: string[];
 
-    constructor(localPath: string, globalPath: string) {
-        this.paths = [localPath, globalPath].filter((p) => existsSync(p));
+    constructor(paths: string[]) {
+        this.paths = paths.filter((p) => p && existsSync(p));
+    }
+
+    /**
+     * Add a path to the library
+     */
+    public addPath(path: string): void {
+        if (path && existsSync(path) && !this.paths.includes(path)) {
+            this.paths.push(path);
+            this.indexed = false;
+        }
     }
 
     /**
@@ -74,6 +84,15 @@ export class SkillsLibrary {
     private async indexDirectory(dir: string): Promise<void> {
         if (!existsSync(dir)) return;
 
+        // Check for SKILL.md (official skills.sh format)
+        const skillMdPath = join(dir, 'SKILL.md');
+        if (existsSync(skillMdPath)) {
+            await this.loadSkillFile(skillMdPath);
+            // If it's a skill directory, we don't need to recurse for more skills 
+            // unless the user specifically wants that. Usually one dir = one skill.
+            return;
+        }
+
         const entries = await readdir(dir, { withFileTypes: true });
 
         for (const entry of entries) {
@@ -81,28 +100,32 @@ export class SkillsLibrary {
 
             if (entry.isDirectory()) {
                 await this.indexDirectory(fullPath);
-            } else if (entry.name.endsWith('.md')) {
-                try {
-                    const content = await readFile(fullPath, 'utf-8');
-                    const { metadata, body } = parseFrontmatter(content);
-
-                    this.skills.push({
-                        metadata: {
-                            name: (metadata['name'] as string) || basename(fullPath, '.md'),
-                            description: (metadata['description'] as string) || '',
-                            tags: (metadata['tags'] as string[]) || [],
-                            models: (metadata['models'] as string[]) || [],
-                            tokens_avg: Number(metadata['tokens_avg']) || 2000,
-                            difficulty: (metadata['difficulty'] as 'easy' | 'medium' | 'hard') || 'medium',
-                            last_updated: (metadata['last_updated'] as string) || new Date().toISOString(),
-                        },
-                        content: body,
-                        path: fullPath,
-                    });
-                } catch {
-                    // Skip invalid files
-                }
+            } else if (entry.name.endsWith('.md') && entry.name !== 'SKILL.md') {
+                await this.loadSkillFile(fullPath);
             }
+        }
+    }
+
+    private async loadSkillFile(fullPath: string): Promise<void> {
+        try {
+            const content = await readFile(fullPath, 'utf-8');
+            const { metadata, body } = parseFrontmatter(content);
+
+            this.skills.push({
+                metadata: {
+                    name: (metadata['name'] as string) || (metadata['Skills'] as string) || basename(fullPath, '.md').replace('SKILL', basename(dirname(fullPath))),
+                    description: (metadata['description'] as string) || '',
+                    tags: (metadata['tags'] as string[]) || [],
+                    models: (metadata['models'] as string[]) || [],
+                    tokens_avg: Number(metadata['tokens_avg']) || 2000,
+                    difficulty: (metadata['difficulty'] as 'easy' | 'medium' | 'hard') || 'medium',
+                    last_updated: (metadata['last_updated'] as string) || new Date().toISOString(),
+                },
+                content: body,
+                path: fullPath,
+            });
+        } catch {
+            // Skip invalid files
         }
     }
 

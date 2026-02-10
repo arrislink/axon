@@ -72,9 +72,12 @@ export const planCommand = new Command('plan')
 
     // Find and load relevant local skills for planning
     const { SkillsLibrary } = await import('../core/skills/library');
-    const localSkillsPath = join(projectRoot, config.tools.skills.local_path);
-    const globalSkillsPath = config.tools.skills.global_path;
-    const skillsLibrary = new SkillsLibrary(localSkillsPath, globalSkillsPath);
+    const officialLocalPath = join(projectRoot, '.agents', 'skills');
+    const skillsLibrary = new SkillsLibrary([
+      join(projectRoot, config.tools.skills.local_path),
+      officialLocalPath,
+      config.tools.skills.global_path
+    ]);
     const planningSkills = await skillsLibrary.search('write-plan', 3);
     const skillContext = planningSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
 

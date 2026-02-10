@@ -5,9 +5,6 @@
  * Entry point for the CLI application
  */
 
-import { readFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import {
@@ -23,11 +20,9 @@ import {
 } from './commands';
 import { handleError } from './utils/errors';
 
-// Dynamically get version from package.json
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkgPath = join(__dirname, '../package.json');
-const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-const VERSION = pkg.version;
+// Dynamically get version from package.json - use import to inline during build
+import pkg from '../package.json';
+const VERSION = pkg.version || '1.5.0';
 
 const program = new Command();
 

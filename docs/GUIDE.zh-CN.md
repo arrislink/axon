@@ -55,7 +55,11 @@ graph TD
 *   **Beads**: 任务图系统，将复杂功能分解为小的、可管理的任务单元 (珠子)。
 *   **OpenCode**: 执行每个珠子实际编码工作的底层智能体引擎。
 *   **OhMyOpenCode (OMO)**: 为 Axon 提供动力的通用 LLM 提供商中间件，支持 75+ 提供商。
-*   **Skills**: 可复用的提示词和代码模板库。
+*   **Skills**: 可复用的提示词和代码模板库。Axon 支持多种技能目录规范：
+    - `.skills/`: 项目本地技能（在 `.axon/config.yaml` 中配置）。
+    - `.agents/skills/`: 遵循 OpenCode/官方规范的通用技能。
+    - `.agent/skills/`: 遵循 Antigravity 智能体规范的技能。
+    - `~/.axon/skills/`: 用户级别的全局技能。
 
 ---
 

@@ -56,10 +56,10 @@ Database content here.
     });
 
     test('indexes skills from directories', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         await library.index();
         const skills = await library.list();
@@ -68,10 +68,10 @@ Database content here.
     });
 
     test('searches by name', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const results = await library.search('Database');
 
@@ -80,10 +80,10 @@ Database content here.
     });
 
     test('searches by tag', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const results = await library.search('auth');
 
@@ -92,10 +92,10 @@ Database content here.
     });
 
     test('filters by tags', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const filtered = await library.list({ tags: ['database'] });
 
@@ -104,10 +104,10 @@ Database content here.
     });
 
     test('filters by difficulty', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const easy = await library.list({ difficulty: 'easy' });
 
@@ -116,10 +116,10 @@ Database content here.
     });
 
     test('gets stats correctly', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const stats = await library.getStats();
 
@@ -131,10 +131,10 @@ Database content here.
     });
 
     test('saves new skill', async () => {
-        const library = new SkillsLibrary(
+        const library = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
 
         const newSkill = {
             metadata: {
@@ -156,10 +156,10 @@ Database content here.
         expect(existsSync(targetPath)).toBe(true);
 
         // Re-index and check
-        const updated = new SkillsLibrary(
+        const updated = new SkillsLibrary([
             join(TEST_DIR, 'local'),
             join(TEST_DIR, 'global')
-        );
+        ]);
         const skills = await updated.list();
         expect(skills.length).toBe(3);
     });

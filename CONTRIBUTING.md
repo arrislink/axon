@@ -109,7 +109,7 @@ tests/
 └── unit/           # Unit tests
 
 templates/
-└── skills/         # Built-in skill templates
+└── skills/         # (Deprecated) Skills are now managed via external repositories
 ```
 
 ## Coding Guidelines
@@ -194,21 +194,9 @@ bun test tests/unit/config.test.ts
 
 ### Adding a New Skill Template
 
-1. Create skill file in `templates/skills/`:
-   ```markdown
-   ---
-   name: "my-skill"
-   description: "Skill description"
-   tags: [tag1, tag2]
-   difficulty: "intermediate"
-   models: [claude-sonnet-4]
-   ---
-   
-   # Skill content
-   ```
-
-2. Update skills index
-3. Add tests if applicable
+1. Skills are now managed in external repositories (e.g., [axon-skills](https://github.com/arrislink/axon-skills)).
+2. To create a new skill, please contribute to the skills repository following the standard `folder/SKILL.md` format.
+3. Once published, users can install it via `ax skills install <name>`.
 
 ## Documentation
 
