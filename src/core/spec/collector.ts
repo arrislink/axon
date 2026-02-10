@@ -1,123 +1,170 @@
-import { input, select, multiSelect, confirm } from '../../utils/prompt';
-import { logger } from '../../utils/logger';
 import { t } from '../../utils/i18n';
+import { logger } from '../../utils/logger';
+import { confirm, editor, input, multiSelect, select } from '../../utils/prompt';
 
 interface CollectedSpec {
-    projectType: string;
-    features: string[];
-    techStack: string;
-    description: string;
-    additionalRequirements: string;
+  projectType: string;
+  features: string[];
+  techStack: string;
+  description: string;
+  additionalRequirements: string;
 }
 
 export class SpecCollector {
-    // Reserved for future AI-assisted spec collection
-    constructor() {
-        // Config and API key will be used in future versions via AxonLLMClient
+  // Reserved for future AI-assisted spec collection
+  constructor() {
+    // Config and API key will be used in future versions via AxonLLMClient
+  }
+
+  /**
+   * Run interactive spec collection
+   */
+  async collect(): Promise<CollectedSpec> {
+    logger.title(t('Axon Requirements Collection', 'Axon 需求收集'));
+    console.log(t("Let's start defining your project!\n", '让我们开始定义你的项目！\n'));
+
+    // Step 1: Project description
+    const description = await input({
+      message: t('🍀 What project do you want to build?', '🍀 你想构建什么项目？'),
+      validate: (val) =>
+        val.length > 5 || t('Please provide a more detailed description', '请提供更详细的描述'),
+    });
+
+    // Step 2: Project type
+    const projectType = await select<string>(t('📦 Project type?', '📦 项目类型？'), [
+      {
+        name: 'Web API',
+        value: 'api',
+        description: t('RESTful or GraphQL backend service', 'RESTful 或 GraphQL 后端服务'),
+      },
+      {
+        name: 'Web App',
+        value: 'webapp',
+        description: t('Frontend + Backend full application', '前端 + 后端完整应用'),
+      },
+      {
+        name: 'Axon Skill',
+        value: 'skill',
+        description: t('Reusable AI skill/plugin', '可复用的 AI 技能/插件'),
+      },
+      { name: 'CLI Tool', value: 'cli', description: t('Command line tool', '命令行工具') },
+      {
+        name: 'Library/SDK',
+        value: 'library',
+        description: t('Reusable code library', '可复用的代码库'),
+      },
+      { name: 'Other', value: 'other', description: t('Other types of projects', '其他类型项目') },
+    ]);
+
+    // Step 3: Features (based on project type)
+    const featureOptions = this.getFeatureOptions(projectType);
+    const features = await multiSelect<string>(
+      t('✨ Which features do you need?', '✨ 需要哪些功能？'),
+      featureOptions,
+    );
+
+    // Step 4: Tech stack
+    const techStack = await select<string>(t('🛠️ Tech stack preference?', '🛠️ 技术栈偏好？'), [
+      {
+        name: 'TypeScript + Bun',
+        value: 'typescript-bun',
+        description: t('Fast, modern JS runtime', '快速、现代的 JS 运行时'),
+      },
+      {
+        name: 'TypeScript + Node.js',
+        value: 'typescript-node',
+        description: t('Mature and stable JS runtime', '成熟稳定的 JS 运行时'),
+      },
+      {
+        name: 'Go',
+        value: 'go',
+        description: t('High performance, concise language', '高性能、简洁的语言'),
+      },
+      {
+        name: 'Python + FastAPI',
+        value: 'python-fastapi',
+        description: t('Fast API development', '快速 API 开发'),
+      },
+      {
+        name: 'Rust',
+        value: 'rust',
+        description: t('Memory safe, high performance', '内存安全、高性能'),
+      },
+      {
+        name: 'Let AI Recommend',
+        value: 'auto',
+        description: t('Automatically choose based on requirements', '根据项目需求自动选择'),
+      },
+    ]);
+
+    // Step 5: Additional requirements
+    let additionalRequirements = '';
+    const hasMore = await confirm({
+      message: t('📝 Any other requirements to add?', '📝 还有其他需求要补充吗？'),
+      default: false,
+    });
+    if (hasMore) {
+      additionalRequirements = await editor(
+        t('Please describe other requirements (open in editor):', '请在编辑器中描述其他需求:'),
+      );
     }
 
-    /**
-     * Run interactive spec collection
-     */
-    async collect(): Promise<CollectedSpec> {
-        logger.title(t('Axon Requirements Collection', 'Axon 需求收集'));
-        console.log(t('Let\'s start defining your project!\n', '让我们开始定义你的项目！\n'));
+    return {
+      projectType,
+      features,
+      techStack,
+      description,
+      additionalRequirements,
+    };
+  }
 
-        // Step 1: Project description
-        const description = await input({
-            message: t('🍀 What project do you want to build?', '🍀 你想构建什么项目？'),
-            validate: (val) => val.length > 5 || t('Please provide a more detailed description', '请提供更详细的描述'),
-        });
+  private getFeatureOptions(projectType: string) {
+    const common = [
+      { name: t('Logging', '日志记录'), value: 'logging' },
+      { name: t('Error Handling', '错误处理'), value: 'error-handling' },
+      { name: t('Config Management', '配置管理'), value: 'config' },
+      { name: t('Unit Testing', '单元测试'), value: 'testing' },
+    ];
 
-        // Step 2: Project type
-        const projectType = await select<string>(t('📦 Project type?', '📦 项目类型？'), [
-            { name: 'Web API', value: 'api', description: t('RESTful or GraphQL backend service', 'RESTful 或 GraphQL 后端服务') },
-            { name: 'Web App', value: 'webapp', description: t('Frontend + Backend full application', '前端 + 后端完整应用') },
-            { name: 'Axon Skill', value: 'skill', description: t('Reusable AI skill/plugin', '可复用的 AI 技能/插件') },
-            { name: 'CLI Tool', value: 'cli', description: t('Command line tool', '命令行工具') },
-            { name: 'Library/SDK', value: 'library', description: t('Reusable code library', '可复用的代码库') },
-            { name: 'Other', value: 'other', description: t('Other types of projects', '其他类型项目') },
-        ]);
-
-        // Step 3: Features (based on project type)
-        const featureOptions = this.getFeatureOptions(projectType);
-        const features = await multiSelect<string>(t('✨ Which features do you need?', '✨ 需要哪些功能？'), featureOptions);
-
-        // Step 4: Tech stack
-        const techStack = await select<string>(t('🛠️ Tech stack preference?', '🛠️ 技术栈偏好？'), [
-            { name: 'TypeScript + Bun', value: 'typescript-bun', description: t('Fast, modern JS runtime', '快速、现代的 JS 运行时') },
-            { name: 'TypeScript + Node.js', value: 'typescript-node', description: t('Mature and stable JS runtime', '成熟稳定的 JS 运行时') },
-            { name: 'Go', value: 'go', description: t('High performance, concise language', '高性能、简洁的语言') },
-            { name: 'Python + FastAPI', value: 'python-fastapi', description: t('Fast API development', '快速 API 开发') },
-            { name: 'Rust', value: 'rust', description: t('Memory safe, high performance', '内存安全、高性能') },
-            { name: 'Let AI Recommend', value: 'auto', description: t('Automatically choose based on requirements', '根据项目需求自动选择') },
-        ]);
-
-        // Step 5: Additional requirements
-        let additionalRequirements = '';
-        const hasMore = await confirm({ message: t('📝 Any other requirements to add?', '📝 还有其他需求要补充吗？'), default: false });
-        if (hasMore) {
-            additionalRequirements = await input({
-                message: t('Please describe other requirements:', '请描述其他需求:'),
-            });
-        }
-
-        return {
-            projectType,
-            features,
-            techStack,
-            description,
-            additionalRequirements,
-        };
-    }
-
-    private getFeatureOptions(projectType: string) {
-        const common = [
-            { name: t('Logging', '日志记录'), value: 'logging' },
-            { name: t('Error Handling', '错误处理'), value: 'error-handling' },
-            { name: t('Config Management', '配置管理'), value: 'config' },
-            { name: t('Unit Testing', '单元测试'), value: 'testing' },
+    switch (projectType) {
+      case 'api':
+        return [
+          { name: t('Authentication (JWT)', '用户认证 (JWT)'), value: 'auth-jwt' },
+          { name: 'OAuth 2.0', value: 'oauth' },
+          { name: t('CRUD Basic API', 'CRUD 基础接口'), value: 'crud' },
+          { name: t('Data Validation', '数据验证'), value: 'validation' },
+          { name: t('API Docs (OpenAPI)', 'API 文档 (OpenAPI)'), value: 'openapi' },
+          { name: t('Rate Limit', '速率限制'), value: 'rate-limit' },
+          ...common,
         ];
-
-        switch (projectType) {
-            case 'api':
-                return [
-                    { name: t('Authentication (JWT)', '用户认证 (JWT)'), value: 'auth-jwt' },
-                    { name: 'OAuth 2.0', value: 'oauth' },
-                    { name: t('CRUD Basic API', 'CRUD 基础接口'), value: 'crud' },
-                    { name: t('Data Validation', '数据验证'), value: 'validation' },
-                    { name: t('API Docs (OpenAPI)', 'API 文档 (OpenAPI)'), value: 'openapi' },
-                    { name: t('Rate Limit', '速率限制'), value: 'rate-limit' },
-                    ...common,
-                ];
-            case 'webapp':
-                return [
-                    { name: t('Authentication', '用户认证'), value: 'auth' },
-                    { name: t('Responsive UI', '响应式 UI'), value: 'responsive' },
-                    { name: t('State Management', '状态管理'), value: 'state' },
-                    { name: t('Routing', '路由'), value: 'routing' },
-                    { name: t('API Integration', 'API 集成'), value: 'api-integration' },
-                    ...common,
-                ];
-            case 'cli':
-                return [
-                    { name: t('Interactive Prompts', '交互式提示'), value: 'interactive' },
-                    { name: t('Config File Support', '配置文件支持'), value: 'config-file' },
-                    { name: t('Help Docs', '帮助文档'), value: 'help' },
-                    { name: t('Progress Indicators', '进度显示'), value: 'progress' },
-                    { name: t('Colorized Output', '颜色输出'), value: 'colors' },
-                    ...common,
-                ];
-            case 'skill':
-                return [
-                    { name: t('Skill Spec', '功能描述 (Skill Spec)'), value: 'skill-spec' },
-                    { name: t('Skill Examples', '使用示例 (Examples)'), value: 'skill-examples' },
-                    { name: t('Core Logic (Beads)', '核心逻辑 (Beads)'), value: 'skill-logic' },
-                    { name: t('Dependency Management', '依赖管理'), value: 'skill-deps' },
-                    ...common,
-                ];
-            default:
-                return common;
-        }
+      case 'webapp':
+        return [
+          { name: t('Authentication', '用户认证'), value: 'auth' },
+          { name: t('Responsive UI', '响应式 UI'), value: 'responsive' },
+          { name: t('State Management', '状态管理'), value: 'state' },
+          { name: t('Routing', '路由'), value: 'routing' },
+          { name: t('API Integration', 'API 集成'), value: 'api-integration' },
+          ...common,
+        ];
+      case 'cli':
+        return [
+          { name: t('Interactive Prompts', '交互式提示'), value: 'interactive' },
+          { name: t('Config File Support', '配置文件支持'), value: 'config-file' },
+          { name: t('Help Docs', '帮助文档'), value: 'help' },
+          { name: t('Progress Indicators', '进度显示'), value: 'progress' },
+          { name: t('Colorized Output', '颜色输出'), value: 'colors' },
+          ...common,
+        ];
+      case 'skill':
+        return [
+          { name: t('Skill Spec', '功能描述 (Skill Spec)'), value: 'skill-spec' },
+          { name: t('Skill Examples', '使用示例 (Examples)'), value: 'skill-examples' },
+          { name: t('Core Logic (Beads)', '核心逻辑 (Beads)'), value: 'skill-logic' },
+          { name: t('Dependency Management', '依赖管理'), value: 'skill-deps' },
+          ...common,
+        ];
+      default:
+        return common;
     }
+  }
 }
