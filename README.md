@@ -10,14 +10,15 @@
 
 Axon is a unified AI-assisted development environment that solves context loss, wheel reinvention, and planning chaos in AI-powered programming. **Powered by [OpenCode](https://github.com/anomalyco/opencode) and [OhMyOpenCode](https://github.com/code-yeongyu/oh-my-opencode)**, Axon orchestrates these powerful tools through specification-driven development and task management.
 
-## ✨ Features
+## ✨ Why Axon?
 
-- **📝 Spec-Driven Development** - Define clear requirements before coding
-- **🔗 Task Traceability** - Every line of code maps to a specific task bead
-- **🎯 Knowledge Reuse** - Automatically match and apply validated skill templates
-- **💰 Cost Control** - Smart token usage tracking to prevent overspending
-- **🤖 Multi-Provider Support** - Integrate with OMO for 75+ LLM providers (Anthropic, OpenAI, Antigravity, etc.)
-- **🎭 Agent Orchestration** - Multiple AI agents collaborate intelligently
+**Axon transforms AI from a "Code Autocompleter" into a "Development Partner".**
+
+- **🧠 Spec-First**: Don't just chat. Define requirements in `spec.md` to keep the AI focused.
+- **🗺️ Bead Planning**: Complex features are broken into atomic, dependency-sorted tasks (Beads).
+- **🤖 Agentic Execution**: **OpenCode** agents execute tasks one-by-one, ensuring context and quality.
+- **♻️ Skill Reuse**: Automatically apply proven patterns (e.g., "Secure Auth") from your team's library.
+- **🛡️ Enterprise Safe**: Token budgeting, Git safety checks, and multi-provider failover via **OMO**.
 
 ## 🎯 Applicable Scenarios
 

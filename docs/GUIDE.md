@@ -85,6 +85,73 @@ Axon searches your local `.skills` directory and the global library for relevant
 
 ---
 
+## 🚀 Tutorial: Building a REST API
+
+Let's walk through a real-world scenario: **Building a simple User API with Hono.**
+
+### Step 1: Initialize Project
+Create a standard Axon project structure.
+
+```bash
+ax init my-user-api
+cd my-user-api
+```
+
+### Step 2: Define Requirements (Spec)
+Tell Axon what you want to build.
+
+```bash
+ax spec init
+```
+
+*Axon will ask:* "What are you building?"
+*You allow:* "A Hono-based REST API with a `GET /users` endpoint that returns a list of mock users."
+
+Axon generates `.openspec/spec.md`:
+```markdown
+# User API Specification
+## Requirements
+1.  **Server**: Use Hono framework.
+2.  **API**: Implement `GET /users` returning JSON array.
+3.  **Data**: Use in-memory mock data.
+```
+
+### Step 3: Generate Plan (Plan)
+Convert the spec into executable tasks.
+
+```bash
+ax plan
+```
+
+Axon analyzes the spec and creates `.beads/graph.json`:
+1.  **Setup Hono**: Install dependencies (`hono`, `tsx`).
+2.  **Create Server**: Implement basic server structure.
+3.  **Implement Route**: Add `GET /users` handler.
+
+### Step 4: Execute (Work)
+Let the AI agents build it.
+
+```bash
+ax work
+```
+
+*   **Agent** picks up "Setup Hono".
+*   **Agent** runs `npm install hono`.
+*   **Axon** commits: "✅ setup: Install Hono".
+*   **Agent** picks up "Create Server".
+*   **Agent** writes `src/index.ts`.
+*   **Axon** commits: "✅ feature: Basic server setup".
+
+### Step 5: Verify
+Run the generated code.
+
+```bash
+bun start
+# Server running on http://localhost:3000
+```
+
+---
+
 ## 🆚 Comparison with Other Tools
 
 | Feature | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
