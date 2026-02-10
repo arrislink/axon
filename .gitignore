@@ -26,6 +26,7 @@ build/
 !.env.example
 
 # Axon runtime files
+.axon
 .ax/logs/
 .axon/logs/
 *.log
