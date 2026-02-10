@@ -98,7 +98,7 @@ export function handleError(error: Error): never {
   }
 
   console.error(`\n${chalk.red('❌ 未预期的错误')}: ${error.message}`);
-  if (process.env['DEBUG']) {
+  if (process.env.DEBUG) {
     console.error(chalk.dim(error.stack));
   }
   process.exit(1);

@@ -172,7 +172,7 @@ configCommand
       console.log(chalk.dim('----------------------------------------'));
     } catch (error) {
       spinner.fail(`连接失败: ${(error as Error).message}`);
-      if (process.env['DEBUG']) {
+      if (process.env.DEBUG) {
         console.error(error);
       }
     }

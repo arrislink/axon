@@ -10,7 +10,7 @@ let currentLocale: Locale = 'en';
  * Detect system language
  */
 export function detectLocale(): Locale {
-  const lang = process.env['LANG'] || process.env['LANGUAGE'] || process.env['LC_ALL'] || 'en';
+  const lang = process.env.LANG || process.env.LANGUAGE || process.env.LC_ALL || 'en';
   if (lang.toLowerCase().includes('zh')) {
     currentLocale = 'zh';
   } else {

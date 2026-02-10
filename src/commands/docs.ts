@@ -186,9 +186,9 @@ docsCommand
     console.log(`${t('Path', '路径')}:     ${doc.path}`);
     console.log(`${t('Added', '添加时间')}: ${new Date(doc.added_at).toLocaleString()}`);
 
-    if (doc.metadata?.['summary']) {
+    if (doc.metadata?.summary) {
       console.log(`\n${t('Summary', '摘要')}:`);
-      console.log(doc.metadata['summary']);
+      console.log(doc.metadata.summary);
     }
 
     if (options.content && doc.content) {

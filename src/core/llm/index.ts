@@ -34,7 +34,7 @@ export class AxonLLMClient {
    */
   private detectMode(): LLMMode {
     // 0. Force mode via environment variable
-    const forcedMode = process.env['AXON_LLM_MODE'];
+    const forcedMode = process.env.AXON_LLM_MODE;
     if (forcedMode === 'cli' || forcedMode === 'direct' || forcedMode === 'fallback') {
       return forcedMode as LLMMode;
     }
@@ -192,7 +192,7 @@ export class AxonLLMClient {
       console.warn(
         `🧠 Axon: Direct/Proxy 模式调用失败 (${errMsg.split('\n')[0]})，尝试环境变量 Fallback...`,
       );
-      if (process.env['DEBUG']) console.error(error);
+      if (process.env.DEBUG) console.error(error);
 
       // Clear unifiedClient to prevent re-trying it in fallback
       this.unifiedClient = undefined;
@@ -213,9 +213,9 @@ export class AxonLLMClient {
       `配置文件: ${this.omoConfig.getConfigSource() || '未找到'}`,
       `Providers: ${this.omoConfig.getAllProviders().length}`,
       `Antigravity Token: ${this.omoConfig.hasAntigravityAuth() ? '已找到' : '未找到'}`,
-      `ANTHROPIC_API_KEY: ${process.env['ANTHROPIC_API_KEY'] ? '已设置' : '未设置'}`,
-      `OPENAI_API_KEY: ${process.env['OPENAI_API_KEY'] ? '已设置' : '未设置'}`,
-      `GOOGLE_API_KEY: ${process.env['GOOGLE_API_KEY'] ? '已设置' : '未设置'}`,
+      `ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '已设置' : '未设置'}`,
+      `OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '已设置' : '未设置'}`,
+      `GOOGLE_API_KEY: ${process.env.GOOGLE_API_KEY ? '已设置' : '未设置'}`,
     ].join(', ');
   }
 

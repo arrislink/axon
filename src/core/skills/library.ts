@@ -114,15 +114,15 @@ export class SkillsLibrary {
       this.skills.push({
         metadata: {
           name:
-            (metadata['name'] as string) ||
-            (metadata['Skills'] as string) ||
+            (metadata.name as string) ||
+            (metadata.Skills as string) ||
             basename(fullPath, '.md').replace('SKILL', basename(dirname(fullPath))),
-          description: (metadata['description'] as string) || '',
-          tags: (metadata['tags'] as string[]) || [],
-          models: (metadata['models'] as string[]) || [],
-          tokens_avg: Number(metadata['tokens_avg']) || 2000,
-          difficulty: (metadata['difficulty'] as 'easy' | 'medium' | 'hard') || 'medium',
-          last_updated: (metadata['last_updated'] as string) || new Date().toISOString(),
+          description: (metadata.description as string) || '',
+          tags: (metadata.tags as string[]) || [],
+          models: (metadata.models as string[]) || [],
+          tokens_avg: Number(metadata.tokens_avg) || 2000,
+          difficulty: (metadata.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
+          last_updated: (metadata.last_updated as string) || new Date().toISOString(),
         },
         content: body,
         path: fullPath,

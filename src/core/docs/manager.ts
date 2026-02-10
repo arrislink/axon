@@ -220,7 +220,7 @@ ${doc.content?.slice(0, 50000)}
 
     // Save summary to metadata
     doc.metadata = doc.metadata || {};
-    doc.metadata['summary'] = summary;
+    doc.metadata.summary = summary;
     this.save();
 
     return summary;
@@ -254,7 +254,7 @@ ${doc.content?.slice(0, 50000)}
 **Source**: ${doc.path}
 ${doc.tags?.length ? `**Tags**: ${doc.tags.join(', ')}` : ''}
 
-${doc.metadata?.['summary'] ? `**Summary**:\n${doc.metadata['summary']}\n` : ''}
+${doc.metadata?.summary ? `**Summary**:\n${doc.metadata.summary}\n` : ''}
 
 **Content**:
 ${doc.content?.slice(0, 10000)}
