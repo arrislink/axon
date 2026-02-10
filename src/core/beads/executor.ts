@@ -10,6 +10,7 @@ import { AgentOrchestrator } from '../agents/orchestrator';
 import { GitOperations } from '../integrations/git';
 import { BeadsError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { SkillsLibrary } from '../skills/library';
 
 export class BeadsExecutor {
     private graph: BeadsGraph;
@@ -17,6 +18,7 @@ export class BeadsExecutor {
     private config: AxonConfig;
     private orchestrator: AgentOrchestrator;
     private git: GitOperations;
+    private skillsLibrary: SkillsLibrary;
 
     constructor(
         config: AxonConfig,
@@ -28,6 +30,9 @@ export class BeadsExecutor {
         this.graph = this.loadGraph();
         this.orchestrator = new AgentOrchestrator(config, apiKey);
         this.git = new GitOperations(projectRoot);
+
+        const localSkillsPath = join(projectRoot, config.tools.skills.local_path);
+        this.skillsLibrary = new SkillsLibrary(localSkillsPath, config.tools.skills.global_path);
     }
 
     private loadGraph(): BeadsGraph {
@@ -109,11 +114,25 @@ export class BeadsExecutor {
             );
             const spec = existsSync(specPath) ? readFileSync(specPath, 'utf-8') : '';
 
+            // Search for relevant skills
+            let skills: any[] = [];
+            if (this.config.tools.skills.enabled) {
+                // Search by bead title and required skills
+                const query = `${bead.title} ${bead.skills_required.join(' ')}`;
+                const searchResults = await this.skillsLibrary.search(query, 3);
+                skills = searchResults.map(r => r.skill);
+
+                if (skills.length > 0) {
+                    logger.info(`📚 匹配技能模板:`);
+                    skills.forEach(s => logger.info(`   - ${s.metadata.name}`));
+                }
+            }
+
             // Execute with orchestrator
             const result = await this.orchestrator.execute({
                 bead,
                 spec,
-                skills: [], // TODO: integrate skills search
+                skills,
             });
 
             // Auto commit if enabled

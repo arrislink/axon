@@ -8,7 +8,7 @@
  */
 
 import { logger } from '../../utils/logger';
-import chalk from 'chalk';
+
 
 export interface CompatibilityCheckResult {
     tool: string;
@@ -64,7 +64,7 @@ export async function checkCompatibility(): Promise<void> {
         required: '>=18.0.0'
     });
 
-    if (process.env.DEBUG) {
+    if (process.env['DEBUG']) {
         logger.debug('Compatibility Checks:');
         checks.forEach(c => {
             logger.debug(`  ${c.tool}: ${c.version} (Required: ${c.required})`);

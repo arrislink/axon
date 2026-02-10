@@ -152,7 +152,79 @@ bun start
 
 ---
 
-## 🆚 Comparison with Other Tools
+## 👥 Team Collaboration
+
+Axon is designed with a "Documentation-as-Code" philosophy, making it naturally compatible with Git-based workflows.
+
+### 1. Git as the Single Source of Truth
+To collaborate, ensure the following directories are committed to your repository:
+*   `.openspec/`: Keeps the team aligned on requirements.
+*   `.beads/`: Acts as the team's live "Task Board".
+*   `.skills/`: Shares high-quality code patterns and prompts across the team.
+
+### 2. Configuration Strategy
+*   **Shared Logic (`.axon/config.yaml`)**: Commit this to Git to define project models and safety rules.
+*   **Personal Credentials**: Use environment variables (`ANTHROPIC_API_KEY`) or OMO for personal API keys. Axon combines shared logic with local credentials automatically.
+
+### 3. Recommended .gitignore
+Add the following to your project's `.gitignore`:
+```gitignore
+# Runtime logs
+.axon/logs/
+dist/
+
+# Keep these in Git
+!.axon/config.yaml
+!.openspec/
+!.beads/
+!.skills/
+```
+
+### 4. Collaboration Workflow
+1.  **Lead**: Runs `ax spec init` and `ax plan`, then pushes to Git.
+2.  **Devs**: Pull the repo, check progress via `ax status`, and pick tasks.
+3.  **Execution**: Devs run `ax work` to complete tasks. Axon generates atomic commits linked to Bead IDs.
+4.  **Review**: Reviewers use Bead IDs to trace code changes back to the original spec requirement.
+
+---
+
+## 👥 团队协作
+
+Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git 的协作流程。
+
+### 1. 以 Git 作为“单一真理来源”
+为了进行协作，请确保将以下目录提交到 Git 仓库：
+*   `.openspec/`: 确保团队对需求的理解保持一致。
+*   `.beads/`: 充当团队的实时“任务看板”。
+*   `.skills/`: 在团队内共享高质量的代码模式和提示词模板。
+
+### 2. 配置策略
+*   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+
+### 3. 推荐的 .gitignore
+在项目 `.gitignore` 中添加以下内容：
+```gitignore
+# 运行日志
+.axon/logs/
+dist/
+
+# 必须保留在 Git 中
+!.axon/config.yaml
+!.openspec/
+!.beads/
+!.skills/
+```
+
+### 4. 协同工作流
+1.  **负责人**: 运行 `ax spec init` 和 `ax plan`，然后推送到 Git。
+2.  **开发者**: 拉取仓库，通过 `ax status` 查看进度并领取任务。
+3.  **执行**: 开发者运行 `ax work` 完成任务。Axon 会生成与 Bead ID 关联的原子提交。
+4.  **评审**: 评审人通过 Bead ID 将代码改动追溯到原始规格需求。
+
+---
+
+## 🆚 与同类工具对比Comparison with Other Tools
 
 | Feature | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
 | :--- | :--- | :--- | :--- |

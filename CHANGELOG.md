@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for 75+ LLM providers via OhMyOpenCode
 - Bilingual documentation (English and Chinese)
 
+## [1.0.1] - 2026-02-10
+
+### Added
+- Comprehensive User Guides: `docs/GUIDE.md` and `docs/GUIDE.zh-CN.md`.
+- Full-flow tutorial (REST API building) in the new guides.
+- Detailed Team Collaboration workflow documentation (Git strategy, shared skills).
+- Automatic Skill matching and injection in `BeadsExecutor`.
+- Intelligent conflict detection and resolution in `ax init`.
+- Performance-oriented dynamic imports for command handlers.
+
+### Changed
+- Explicitly credited **OpenCode** and **OhMyOpenCode (OMO)** as core engines in all docs.
+- Refined `README.md` and `README.zh-CN.md` with better value propositions.
+- Replaced `inquirer` with `prompts` for significant bundle size reduction.
+- Switched to dynamic imports for improved CLI startup speed.
+- Optimized API documentation by consolidating it into the User Guide.
+
+### Fixed
+- Fixed missing skill search integration during `ax work` execution.
+- Resolved type-check and linting errors in `version-check.ts`.
+- Improved Git safety checks (branch protection and dirty tree prevention).
+- Corrected internal PRD links in documentation.
+
 ## [1.0.0] - 2026-02-09
 
 ### Added
@@ -57,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/arrislink/axon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/arrislink/axon/releases/tag/v1.0.0
 [0.1.0]: https://github.com/arrislink/axon/releases/tag/v0.1.0

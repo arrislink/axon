@@ -152,6 +152,42 @@ bun start
 
 ---
 
+## 👥 团队协作
+
+Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git 的协作流程。
+
+### 1. 以 Git 作为“单一真理来源”
+为了进行协作，请确保将以下目录提交到 Git 仓库：
+*   `.openspec/`: 确保团队对需求的理解保持一致。
+*   `.beads/`: 充当团队的实时“任务看板”。
+*   `.skills/`: 在团队内共享高质量的代码模式和提示词模板。
+
+### 2. 配置策略
+*   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+
+### 3. 推荐的 .gitignore
+在项目 `.gitignore` 中添加以下内容：
+```gitignore
+# 运行日志
+.axon/logs/
+dist/
+
+# 必须保留在 Git 中
+!.axon/config.yaml
+!.openspec/
+!.beads/
+!.skills/
+```
+
+### 4. 协同工作流
+1.  **负责人**: 运行 `ax spec init` 和 `ax plan`，然后推送到 Git。
+2.  **开发者**: 拉取仓库，通过 `ax status` 查看进度并领取任务。
+3.  **执行**: 开发者运行 `ax work` 完成任务。Axon 会生成与 Bead ID 关联的原子提交。
+4.  **评审**: 评审人通过 Bead ID 将代码改动追溯到原始规格需求。
+
+---
+
 ## 🆚 与同类工具对比
 
 | 特性 | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
