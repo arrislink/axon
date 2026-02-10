@@ -19,6 +19,7 @@ Axon 是一个统一的 AI 辅助开发环境，解决 AI 编程中的上下文�
 - **🤖 代理执行**: **OpenCode** 智能体逐个执行任务，确保上下文完整和代码质量。
 - **♻️ 技能复用**: 自动应用团队库中经过验证的模式 (如“安全认证”)。
 - **📚 文档集成**: 导入 PDF/Word/MD 文档作为 AI 上下文，使用 `ax docs` 辅助生成规格和代码。
+- **🚀 技能编排**: 自动检测技术栈（React, Go, PHP）并建议相关的专家技能。
 - **🛡️ 企业级安全**: Token 预算控制、Git 安全检查以及通过 **OMO** 实现的多模型故障转移。
 
 ## 🎯 适用场景
@@ -82,15 +83,14 @@ ax init my-awesome-project
 cd my-awesome-project
 
 # 交互式创建规格（或从文档创建）
-ax docs add ./requirements.docx  # 可选：导入现有文档
-ax spec init                     # AI 使用导入的文档生成规格
+ax docs add-dir ./docs          # 扫描并导入所有文档
+ax spec init                    # AI 使用导入的文档生成规格
+ax spec analyze                 # 将规格优化为专业 PRD.md
 
 # 从规格生成任务图
 ax plan
-
-# 开始执行任务
-ax work
-
+...
+...
 # 查看项目状态
 ax status
 ```
@@ -131,15 +131,16 @@ graph LR
 |------|------|
 | `ax init [name]` | 初始化新的 Axon 项目 |
 | `ax spec init` | 交互式创建项目规格 |
-| `ax spec show` | 显示当前规格 |
+| `ax spec analyze` | 将规格文档优化为专业 PRD.md |
 | `ax docs add <file>` | 导入文档 (PDF, Word, MD) 到项目 |
+| `ax docs add-dir [dir]` | 批量导入目录下所有文档 (默认为 ./docs) |
 | `ax docs list` | 列出并过滤项目文档 |
 | `ax docs search <q>` | 在文档中进行语义搜索 |
-| `ax plan` | 从规格生成任务图 |
+| `ax plan` | 从规格生成任务图 (使用专家技能) |
 | `ax work` | 执行下一个任务 |
 | `ax work --interactive` | 交互模式执行任务 |
 | `ax skills search <query>` | 搜索技能模板 |
-| `ax skills add <path>` | 添加新技能模板 |
+| `ax skills install <name>` | 安装/链接技能到本地项目 |
 | `ax status` | 查看项目进度 |
 | `ax doctor` | 诊断环境问题 |
 

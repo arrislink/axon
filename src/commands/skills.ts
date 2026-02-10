@@ -3,7 +3,7 @@
  */
 
 import { existsSync } from 'fs';
-import { basename, join } from 'path';
+import { basename, join, dirname } from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
@@ -184,7 +184,9 @@ skillsCommand
 skillsCommand
   .command('install <name>')
   .description(t('Install a skill from global library', '从全局库安装技能到当前项目'))
-  .action(async (name: string) => {
+  .option('--symlink', t('Create a symbolic link instead of copying', '创建符号链接而不是直接复制'))
+  .option('--path <dir>', t('Custom local skills directory', '自定义本地技能目录'))
+  .action(async (name: string, options) => {
     const projectRoot = process.cwd();
 
     if (!ConfigManager.isAxonProject(projectRoot)) {
@@ -196,7 +198,7 @@ skillsCommand
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.get();
 
-    const localPath = join(projectRoot, config.tools.skills.local_path);
+    const localPath = options.path ? join(projectRoot, options.path) : join(projectRoot, config.tools.skills.local_path);
     const globalPath = config.tools.skills.global_path;
     const library = new SkillsLibrary(localPath, globalPath);
 
@@ -216,8 +218,16 @@ skillsCommand
       return;
     }
 
-    await library.save(skill, targetPath);
-    spinner.succeed(t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`));
+    if (options.symlink) {
+      const { symlinkSync, mkdirSync } = await import('fs');
+      const dir = dirname(targetPath);
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+      symlinkSync(skill.path, targetPath);
+      spinner.succeed(t(`Symlinked skill: ${name} -> ${targetPath}`, `已成功链接技能: ${name} -> ${targetPath}`));
+    } else {
+      await library.save(skill, targetPath);
+      spinner.succeed(t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`));
+    }
   });
 
 // ax skills stats

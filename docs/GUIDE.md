@@ -64,23 +64,27 @@ graph TD
 ### 1. Specification-First Development
 Instead of jumping into code, `ax spec init` helps you clarify your requirements through an interactive interview with AI. This generates a `spec.md` that serves as the single source of truth.
 
-### 2. Intelligent Task Planning
+### 2. PRD Refinement
+Use `ax spec analyze` to transform your raw thoughts into a professional, structured Product Requirements Document (`PRD.md`). This process leverages expert skills (like `brainsstorm`) to ensure architectural and business consistency.
+
+### 3. Intelligent Task Planning
 `ax plan` analyzes your specification and breaks it down into a dependency graph of tasks.
 *   **Atomic**: Each task is small enough to be completed reliably by AI.
 *   **Ordered**: Tasks are sorted by dependencies (e.g., "Create DB Schema" before "Create API").
+*   **Expert Knowledge**: Integrates local skills (e.g., `write-plan`) into the planning prompt.
 *   **Visual**: You can visualize the plan before execution.
 
-### 3. Agentic Execution
+### 4. Agentic Execution
 `ax work` executes the planned tasks.
 *   **Context-Aware**: The agent knows the current task, the overall spec, and the project structure.
 *   **Safe**: Changes are committed to Git after each task.
 *   **Recoverable**: If a task fails, you can retry it without restarting the whole project.
 
-### 4. Skill Injection
-Axon searches your local `.skills` directory and the global library for relevant patterns. If you are building an API, it pulls in your team's standard API response wrapper skill.
+### 5. Skill Orchestration
+Axon detects your technology stack during init and searches your `.skills` directory for relevant patterns. You can use `ax skills install --symlink` to adopt global best practices centrally.
 
-### 5. Document Integration
-Import existing project documents (PDF, Word, Markdown) into Axon's context. AI agents will use these documents to better understand requirements, constraints, and architecture during spec generation and task execution.
+### 6. Document Integration
+Import entire directories via `ax docs add-dir`. AI agents will use these documents to better understand requirements during spec generation and task execution.
 
 ### 5. Config Priority & Safety
 *   **Config Priority**: CLI Args > Project Config > OMO Config > Environment Variables.
@@ -284,11 +288,12 @@ ax docs show <doc-id>
 
 | Command | Description |
 | :--- | :--- |
-| `ax init [name]` | Initialize a new Axon project with standard structure. |
+| `ax init [name]` | Initialize a new Axon project with standard structure & tech-stack detection. |
 | `ax spec init` | Interactively create a project specification (`.openspec/spec.md`). |
-| `ax spec edit` | Edit the existing project specification in your default text editor. |
+| `ax spec analyze` | Transform specification into professional `PRD.md`. |
+| `ax spec edit` | Edit the existing project specification. |
 | `ax spec show` | Display the current specification. |
-| `ax plan` | Generate a task graph (`.beads/graph.json`) from the specification. |
+| `ax plan` | Generate a task graph (`.beads/graph.json`) using expert skills. |
 | `ax work` | Execute pending tasks in the graph. |
 | `ax work --interactive` | Execute tasks with manual confirmation for each step. |
 | `ax status` | detailed project progress and bead status. |
@@ -322,7 +327,7 @@ Options:
 | Command | Description |
 | :--- | :--- |
 | `ax skills search <query>` | Search for available skills. |
-| `ax skills add <path>` | Import a skill into the project. |
+| `ax skills install <name>` | Install/Symlink a skill into the project. |
 
 ### Utility Commands
 

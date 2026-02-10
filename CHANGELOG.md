@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-02-10
+
+### Added
+- **Skill Orchestration**: Automatic tech-stack detection (Frontend/Node/Go/PHP) during `ax init` with interactive skill suggestions.
+- **PRD Generation**: New `ax spec analyze` command to transform raw specifications into professional-grade `PRD.md`.
+- **Symlinked Skills**: Support for `--symlink` in `ax skills install` for centralized management of expertise templates.
+- **Custom Skill Paths**: Support for `--path` override during skill installation.
+
+### Changed
+- **Unified Analyzer**: Strategic tasks like PRD generation now default to the `oracle` agent for better architectural insights.
+
+## [1.3.0] - 2026-02-10
+
+### Added
+- **Intelligent Docs**: Enhanced `ax docs add-dir` with automatic directory scanning, file previewing, and proactive skill suggestions.
+- **Skill Injection**: Automatic detection and injection of local `write-plan` and `brainsstorm` skills into the planning and analysis prompts.
+- **Skill Installation**: New `ax skills install <name>` command for quick adoption of global expertise templates.
+
+### Changed
+- **Optimized Scanning**: Document management now defaults to the `./docs` directory for faster onboarding.
+
 ## [1.2.0] - 2026-02-10
 
 ### Added

@@ -19,6 +19,7 @@ Axon is a unified AI-assisted development environment that solves context loss, 
 - **🤖 Agentic Execution**: **OpenCode** agents execute tasks one-by-one, ensuring context and quality.
 - **♻️ Skill Reuse**: Automatically apply proven patterns (e.g., "Secure Auth") from your team's library.
 - **📚 Document Integration**: Import PDF/Word/MD docs as context for AI to generate specs and code using `ax docs`.
+- **🚀 Skill Orchestration**: Automatically detect tech stacks (React, Go, PHP) and suggest relevant expertise.
 - **🛡️ Enterprise Safe**: Token budgeting, Git safety checks, and multi-provider failover via **OMO**.
 
 ## 🎯 Applicable Scenarios
@@ -82,15 +83,14 @@ ax init my-awesome-project
 cd my-awesome-project
 
 # Create specification interactively (or from docs)
-ax docs add ./requirements.docx  # Optional: Import existing docs
-ax spec init                     # AI uses imported docs to generate spec
+ax docs add-dir ./docs          # Scan and import all documents
+ax spec init                    # AI uses imported docs to generate spec
+ax spec analyze                 # Refine spec into professional PRD.md
 
 # Generate task graph from spec
 ax plan
-
-# Start working on tasks
-ax work
-
+...
+...
 # Check project status
 ax status
 ```
@@ -132,15 +132,16 @@ graph LR
 | `ax init [name]` | Initialize a new Axon project |
 | `ax spec init` | Create project specification interactively |
 | `ax spec edit` | Edit the existing specification |
-| `ax spec show` | Display current specification |
+| `ax spec analyze` | Refine specification into professional PRD.md |
 | `ax docs add <file>` | Import document (PDF, Word, MD) into project |
+| `ax docs add-dir [dir]` | Import all documents in a directory (defaults to ./docs) |
 | `ax docs list` | List and filter project documents |
 | `ax docs search <q>` | Semantic search within documents |
-| `ax plan` | Generate task graph from specification |
+| `ax plan` | Generate task graph from specification (uses expert skills) |
 | `ax work` | Execute the next task |
 | `ax work --interactive` | Execute tasks in interactive mode |
 | `ax skills search <query>` | Search for skill templates |
-| `ax skills add <path>` | Add a new skill template |
+| `ax skills install <name>` | Install/Symlink a skill to local project |
 | `ax status` | View project progress |
 | `ax doctor` | Diagnose environment issues |
 

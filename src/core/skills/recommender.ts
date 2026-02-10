@@ -6,7 +6,7 @@ import { logger } from '../../utils/logger';
 import { t } from '../../utils/i18n';
 import chalk from 'chalk';
 import { join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 
 export class SkillRecommender {
     private projectRoot: string;
@@ -31,6 +31,56 @@ export class SkillRecommender {
         if (hasDocx || hasMarkdown) recommendations.add('docs');
 
         // Add more complex logic here (e.g., scanning content keywords)
+
+        return Array.from(recommendations);
+    }
+
+    /**
+     * Detect technology stack based on project files
+     */
+    public async detectTechStack(): Promise<string[]> {
+        const stack: string[] = [];
+
+        // package.json (Node/Frontend)
+        const pkgPath = join(this.projectRoot, 'package.json');
+        if (existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+                const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+                if (deps['react'] || deps['vue'] || deps['next']) stack.push('frontend');
+                if (deps['typescript']) stack.push('typescript');
+                stack.push('nodejs');
+            } catch { }
+        }
+
+        // go.mod (Go)
+        if (existsSync(join(this.projectRoot, 'go.mod'))) stack.push('go', 'backend');
+
+        // composer.json (PHP)
+        if (existsSync(join(this.projectRoot, 'composer.json'))) stack.push('php', 'backend');
+
+        return stack;
+    }
+
+    /**
+     * Recommend skills based on detected tech stack
+     */
+    public async recommendForStack(stack: string[]): Promise<string[]> {
+        const recommendations: Set<string> = new Set();
+
+        if (stack.includes('frontend')) {
+            recommendations.add('ui/ux-pro-max');
+            recommendations.add('frontend-best-practices');
+        }
+
+        if (stack.includes('backend')) {
+            recommendations.add('backend-architecture');
+            recommendations.add('api-design-standards');
+        }
+
+        if (stack.includes('typescript') || stack.includes('nodejs')) {
+            recommendations.add('node-best-practices');
+        }
 
         return Array.from(recommendations);
     }

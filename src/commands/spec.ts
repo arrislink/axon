@@ -193,3 +193,61 @@ specCommand
       logger.success('规格文档验证通过！');
     }
   });
+
+// ax spec analyze
+specCommand
+  .command('analyze')
+  .description(t('Analyze specification and generate professional PRD', '分析规格文档并生成专业 PRD'))
+  .option('-o, --output <path>', t('Output path for PRD', 'PRD 输出路径'), 'PRD.md')
+  .action(async (options) => {
+    const projectRoot = process.cwd();
+
+    if (!ConfigManager.isAxonProject(projectRoot)) {
+      throw new AxonError('当前目录不是 Axon 项目', 'SPEC_ERROR');
+    }
+
+    const configManager = new ConfigManager(projectRoot);
+    const config = configManager.get();
+    const specPath = join(projectRoot, config.tools.openspec.path, 'spec.md');
+
+    if (!existsSync(specPath)) {
+      throw new AxonError('规格文档不存在', 'SPEC_ERROR', ['使用 `ax spec init` 创建规格文档']);
+    }
+
+    const specContent = readFileSync(specPath, 'utf-8');
+
+    // Skill recommendation
+    const { SkillRecommender } = await import('../core/skills/recommender');
+    const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
+    await recommender.suggest(['brainsstorm', 'write-plan']);
+
+    spinner.start(t('Generating professional PRD...', '正在生成专业 PRD...'));
+
+    try {
+      const { SpecAnalyzer } = await import('../core/spec/analyzer');
+      const { SkillsLibrary } = await import('../core/skills/library');
+
+      // Load local skills for better analysis
+      const library = new SkillsLibrary(
+        join(projectRoot, config.tools.skills.local_path),
+        config.tools.skills.global_path
+      );
+      const relevantSkills = await library.search('brainsstorm', 2);
+      const skillContext = relevantSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
+
+      const analyzer = new SpecAnalyzer(config);
+      const prdContent = await analyzer.analyze(specContent, skillContext);
+
+      const prdPath = join(projectRoot, options.output);
+      await Bun.write(prdPath, prdContent);
+
+      spinner.succeed(t(`PRD generated: ${prdPath}`, `PRD 已生成: ${prdPath}`));
+
+      logger.blank();
+      logger.success(t('Specifications refined into professional PRD style.', '规格文档已优化为专业 PRD 风格。'));
+      logger.info(t('You can find the detailed analysis in PRD.md', '你可以在 PRD.md 中查看详细分析。'));
+    } catch (error) {
+      spinner.fail();
+      logger.error(t(`PRD generation failed: ${(error as Error).message}`, `PRD 生成失败: ${(error as Error).message}`));
+    }
+  });

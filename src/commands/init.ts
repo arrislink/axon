@@ -128,6 +128,55 @@ export const initCommand = new Command('init')
             spinner.succeed();
         }
 
+        // 8. Skill Onboarding
+        try {
+            const { SkillRecommender } = await import('../core/skills/recommender');
+            const recommender = new SkillRecommender(projectPath, '.skills');
+            const stack = await recommender.detectTechStack();
+
+            if (stack.length > 0) {
+                const recommendations = await recommender.recommendForStack(stack);
+                if (recommendations.length > 0) {
+                    logger.blank();
+                    logger.info(chalk.bold(t('🚀 Tech Stack Detected:', '🚀 检测到技术栈:')) + ` ${stack.join(', ')}`);
+
+                    const response = await prompts({
+                        type: 'multiselect',
+                        name: 'skills',
+                        message: t('Would you like to install recommended expert skills?', '是否安装推荐的专家技能？'),
+                        choices: recommendations.map(name => ({
+                            title: name,
+                            value: name,
+                            selected: true
+                        })),
+                        hint: t('- Space to select, Enter to confirm', '- 空格选择，回车确认')
+                    });
+
+                    if (response.skills && response.skills.length > 0) {
+                        const { SkillsLibrary } = await import('../core/skills/library');
+                        const config = new ConfigManager(projectPath).get();
+                        const library = new SkillsLibrary(
+                            join(projectPath, config.tools.skills.local_path),
+                            config.tools.skills.global_path
+                        );
+
+                        for (const name of response.skills) {
+                            spinner.start(t(`Installing skill: ${name}...`, `正在安装技能: ${name}...`));
+                            const results = await library.search(name, 1);
+                            if (results.length > 0 && results[0].skill.metadata.name.toLowerCase() === name.toLowerCase()) {
+                                await library.save(results[0].skill, join(projectPath, config.tools.skills.local_path, `${name}.md`));
+                                spinner.succeed();
+                            } else {
+                                spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            logger.debug(`Skill onboarding failed: ${(error as Error).message}`);
+        }
+
         // Summary
         logger.blank();
         logger.divider();
