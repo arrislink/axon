@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "AI-Powered Development Operating System with unified LLM provider support",
   "type": "module",
   "main": "dist/index.js",
@@ -50,7 +50,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/arrislink/axon.git"
+    "url": "git+https://github.com/arrislink/axon.git"
   },
   "bugs": {
     "url": "https://github.com/arrislink/axon/issues"

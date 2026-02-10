@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.10] - 2026-02-10
+
+### Fixed
+- **`ax spec init` Multi-line Input Loop**: Fixed infinite loop when entering long multi-line additional requirements. Now uses external editor instead of text input for better UX with detailed requirements. Prevents prompt library from repeating question on pasted/multi-line input.
+
 ## [1.0.9] - 2026-02-10
 
 ### Fixed
