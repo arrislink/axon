@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "description": "AI-Powered Development Operating System with unified LLM provider support",
   "type": "module",
   "main": "dist/index.js",
@@ -60,6 +60,7 @@
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.5",
     "commander": "^12.0.0",
+    "mammoth": "^1.11.0",
     "ora": "^8.0.0",
     "prompts": "^2.4.2",
     "yaml": "^2.3.4",

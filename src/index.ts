@@ -19,6 +19,7 @@ import {
     statusCommand,
     doctorCommand,
     configCommand,
+    docsCommand,
 } from './commands';
 import { handleError } from './utils/errors';
 
@@ -49,6 +50,7 @@ program.addCommand(skillsCommand);
 program.addCommand(statusCommand);
 program.addCommand(doctorCommand);
 program.addCommand(configCommand);
+program.addCommand(docsCommand);
 
 // Custom help
 program.addHelpText('after', `

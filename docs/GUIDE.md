@@ -79,6 +79,9 @@ Instead of jumping into code, `ax spec init` helps you clarify your requirements
 ### 4. Skill Injection
 Axon searches your local `.skills` directory and the global library for relevant patterns. If you are building an API, it pulls in your team's standard API response wrapper skill.
 
+### 5. Document Integration
+Import existing project documents (PDF, Word, Markdown) into Axon's context. AI agents will use these documents to better understand requirements, constraints, and architecture during spec generation and task execution.
+
 ### 5. Config Priority & Safety
 *   **Config Priority**: CLI Args > Project Config > OMO Config > Environment Variables.
 *   **Git Safety**: Prevents execution on dirty working trees and warns before committing to protected branches (`main`/`master`).
@@ -237,6 +240,44 @@ dist/
 
 ---
 
+## 📚 Document Management
+
+Axon allows you to import external documents to provide context for AI agents. This is crucial for ensuring the AI understands your specific business rules, legacy architecture, or detailed product requirements.
+
+### Supported Formats
+- **Markdown (.md)**: Best for technical docs.
+- **Word (.docx)**: Requirements documents, PRDs.
+- **PDF (.pdf)**: Legacy specifications, extensive manuals.
+- **Text & Code (.txt, .yaml, etc.)**: Config files, logs.
+
+### Context Workflow
+1.  **Import**: Add documents to the library.
+2.  **Indexing**: Axon extracts text and uses AI to generate metadata (summary, tags).
+3.  **Usage**: 
+    - `ax spec init` automatically detects documents and asks to use them.
+    - `ax work` agents can search and reference these documents during coding.
+
+### Managing Documents
+
+```bash
+# Add a single file
+ax docs add ./docs/PRD_v1.0.docx --title "Product Requirements"
+
+# Add an entire directory
+ax docs add-dir ./legacy-docs/
+
+# List all documents
+ax docs list
+
+# Search content
+ax docs search "authentication"
+
+# View details
+ax docs show <doc-id>
+```
+
+---
+
 ## 📚 API & Command Reference
 
 ### Core Commands
@@ -273,6 +314,17 @@ dist/
 | :--- | :--- |
 | `ax doctor` | Diagnose environment issues (Node version, tool install, keys). |
 | `ax doctor --fix` | Attempt to automatically fix diagnosed issues. |
+
+### Document Commands
+
+| Command | Description |
+| :--- | :--- |
+| `ax docs add <path>` | Import a document. |
+| `ax docs add-dir <path>` | Import all documents from a directory. |
+| `ax docs list` | List indexed documents. |
+| `ax docs search <query>` | Search within documents. |
+| `ax docs show <id>` | View document metadata and content. |
+| `ax docs summarize <id>` | Generate AI summary for a document. |
 
 ---
 

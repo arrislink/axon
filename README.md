@@ -18,6 +18,7 @@ Axon is a unified AI-assisted development environment that solves context loss, 
 - **🗺️ Bead Planning**: Complex features are broken into atomic, dependency-sorted tasks (Beads).
 - **🤖 Agentic Execution**: **OpenCode** agents execute tasks one-by-one, ensuring context and quality.
 - **♻️ Skill Reuse**: Automatically apply proven patterns (e.g., "Secure Auth") from your team's library.
+- **📚 Document Integration**: Import PDF/Word/MD docs as context for AI to generate specs and code using `ax docs`.
 - **🛡️ Enterprise Safe**: Token budgeting, Git safety checks, and multi-provider failover via **OMO**.
 
 ## 🎯 Applicable Scenarios
@@ -80,8 +81,9 @@ ax --help
 ax init my-awesome-project
 cd my-awesome-project
 
-# Create specification interactively
-ax spec init
+# Create specification interactively (or from docs)
+ax docs add ./requirements.docx  # Optional: Import existing docs
+ax spec init                     # AI uses imported docs to generate spec
 
 # Generate task graph from spec
 ax plan
@@ -131,6 +133,9 @@ graph LR
 | `ax spec init` | Create project specification interactively |
 | `ax spec edit` | Edit the existing specification |
 | `ax spec show` | Display current specification |
+| `ax docs add <file>` | Import document (PDF, Word, MD) into project |
+| `ax docs list` | List and filter project documents |
+| `ax docs search <q>` | Semantic search within documents |
 | `ax plan` | Generate task graph from specification |
 | `ax work` | Execute the next task |
 | `ax work --interactive` | Execute tasks in interactive mode |

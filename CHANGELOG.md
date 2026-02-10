@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-02-10
+
+### Added
+- **Document Integration**: Introduced `ax docs` command suite for managing project reference materials.
+  - `ax docs add <file>`: Add documents (Markdown, WORD .docx, PDF, etc.) to the project library.
+  - `ax docs list`: List all indexed documents.
+  - `ax docs search <query>`: Semantic search within project documents.
+  - `ax docs summarize <id>`: AI-powered document summarization.
+  - `DocumentManager`: Core logic for file parsing, metadata enrichment, and context management.
+- **Format Support**: Added `.docx` (Word) support to `ax docs add` using `mammoth`.
+- **Spec Generation**: fast-track `ax spec init` with `--from-docs` support (experimental) to generate specifications directly from added documents.
+
 ## [1.0.10] - 2026-02-10
 
 ### Fixed
@@ -136,6 +148,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [Unreleased]: https://github.com/arrislink/axon/compare/v1.0.7...HEAD
+[1.1.0]: https://github.com/arrislink/axon/compare/v1.0.10...v1.1.0
+[1.0.10]: https://github.com/arrislink/axon/compare/v1.0.9...v1.0.10
+[1.0.9]: https://github.com/arrislink/axon/compare/v1.0.8...v1.0.9
+[1.0.8]: https://github.com/arrislink/axon/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/arrislink/axon/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/arrislink/axon/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/arrislink/axon/compare/v1.0.4...v1.0.5

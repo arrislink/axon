@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "documents": [
+    {
+      "id": "doc_1770700827141",
+      "type": "markdown",
+      "path": "test_doc.md",
+      "title": "Test Doc",
+      "content": "# Test Document\n\nThis is a test document for Axon docs command.\n",
+      "metadata": {},
+      "added_at": "2026-02-10T05:20:29.370Z",
+      "tags": [
+        "test",
+        "docs"
+      ]
+    }
+  ],
+  "indexed_at": "2026-02-10T05:20:29.372Z"
+}

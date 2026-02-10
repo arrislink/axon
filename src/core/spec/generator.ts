@@ -5,14 +5,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
 import { AxonLLMClient } from '../llm';
-
-interface CollectedSpec {
-    projectType: string;
-    features: string[];
-    techStack: string;
-    description: string;
-    additionalRequirements: string;
-}
+import type { CollectedSpec } from '../../types/spec';
 
 export class SpecGenerator {
     private llm: AxonLLMClient | null = null;
@@ -27,6 +20,9 @@ export class SpecGenerator {
      * Generate spec document from collected requirements
      */
     async generate(collected: CollectedSpec): Promise<string> {
+        if (collected.rawContent) {
+            return collected.rawContent;
+        }
         if (this.llm?.isAvailable()) {
             return await this.generateWithAI(collected);
         }

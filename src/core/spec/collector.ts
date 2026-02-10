@@ -1,25 +1,94 @@
 import { t } from '../../utils/i18n';
 import { logger } from '../../utils/logger';
 import { confirm, editor, input, multiSelect, select } from '../../utils/prompt';
-
-interface CollectedSpec {
-  projectType: string;
-  features: string[];
-  techStack: string;
-  description: string;
-  additionalRequirements: string;
-}
+import { DocumentManager } from '../docs/manager';
+import type { Document } from '../../types/docs';
+import type { CollectedSpec } from '../../types/spec';
 
 export class SpecCollector {
-  // Reserved for future AI-assisted spec collection
+  private docManager: DocumentManager;
+
   constructor() {
-    // Config and API key will be used in future versions via AxonLLMClient
+    this.docManager = new DocumentManager();
+  }
+
+  /**
+   * Entry point for collecting project requirements
+   */
+  async collect(): Promise<CollectedSpec> {
+    const docs = this.docManager.list();
+    if (docs.length > 0) {
+      const useDocs = await confirm({
+        message: t(`Found ${docs.length} reference documents. Use them to generate specification?`, `找到 ${docs.length} 个参考文档。是否基于这些文档生成规格？`),
+        default: true
+      });
+
+      if (useDocs) {
+        return await this.collectFromDocs(docs);
+      }
+    }
+
+    return await this.collectInteractive();
+  }
+
+  /**
+   * Collects spec based on provided documents.
+   */
+  private async collectFromDocs(_docs: Document[]): Promise<CollectedSpec> {
+    logger.info(t('🤖 Generating specification from documents...', '🤖 正在基于文档生成规格...'));
+
+    const context = this.docManager.compileContext({
+      maxTokens: 50000 // Reserve space for response
+    });
+
+    const prompt = t(`You are a professional product manager. Based on the following reference documents, generate a complete project specification document (OpenSpec format).
+
+${context}
+
+Requirements:
+1. Extract core requirements and features.
+2. Identify tech stack and constraints.
+3. List non-functional requirements.
+4. If API specs exist, include key interface definitions.
+5. Generate in Markdown format.`, `你是一个专业的产品经理。请基于以下参考资料，生成一份完整的项目规格文档。
+
+${context}
+
+要求：
+1. 提取核心需求和功能
+2. 识别技术栈和约束条件
+3. 列出关键的非功能需求（性能、安全等）
+4. 如果有 API 规范，保留关键接口定义
+5. 请生成符合 OpenSpec 格式的规格文档（Markdown 格式）。`);
+
+    // We need to use the LLM client here
+    // Since SpecCollector constructor doesn't take config yet, we'll instantiate AxonLLMClient directly
+    // In a real generic dependency injection scenario, this should be passed in.
+    const { AxonLLMClient } = await import('../llm');
+    const llm = new AxonLLMClient();
+
+    try {
+      const response = await llm.complete(prompt);
+
+      return {
+        projectType: 'auto',
+        features: [],
+        techStack: 'auto',
+        description: t('Generated from documents', '从文档生成'),
+        additionalRequirements: '',
+        rawContent: response
+      };
+    } catch (error) {
+      logger.error(t(`AI generation failed: ${(error as Error).message}`, `AI 生成失败: ${(error as Error).message}`));
+      logger.info(t('Falling back to interactive mode.', '回退到交互模式。'));
+      return this.collectInteractive();
+    }
   }
 
   /**
    * Run interactive spec collection
    */
-  async collect(): Promise<CollectedSpec> {
+  async collectInteractive(): Promise<CollectedSpec> {
     logger.title(t('Axon Requirements Collection', 'Axon 需求收集'));
     console.log(t("Let's start defining your project!\n", '让我们开始定义你的项目！\n'));
 
