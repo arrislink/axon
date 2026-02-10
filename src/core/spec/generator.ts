@@ -85,6 +85,7 @@ export class SpecGenerator {
         const projectTypeNames: Record<string, string> = {
             api: 'Web API',
             webapp: 'Web 应用',
+            skill: 'Axon Skill',
             cli: 'CLI 工具',
             library: '库/SDK',
             other: '其他',
@@ -172,6 +173,10 @@ ${collected.additionalRequirements ? `### 其他需求\n\n${collected.additional
             help: '帮助文档',
             progress: '进度显示',
             colors: '颜色输出',
+            'skill-spec': 'Skill 功能定义',
+            'skill-examples': 'Skill 使用示例',
+            'skill-logic': 'Skill 核心逻辑 (Beads)',
+            'skill-deps': 'Skill 依赖管理',
         };
         return names[feature] || feature;
     }

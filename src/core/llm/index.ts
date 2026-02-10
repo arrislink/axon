@@ -103,7 +103,7 @@ export class AxonLLMClient {
         } catch (error) {
             // If CLI or direct fails, try auto-fallback
             if (this.mode !== 'fallback') {
-                console.warn(`🧠 Axon: ${this.mode} 模式调用失败，尝试回退...`);
+                console.warn(`🧠 Axon: ${this.mode} 模式调用失败或响应为空，尝试回退...`);
                 if (process.env['DEBUG']) console.error(error);
                 this.mode = 'fallback';
                 this.initClient();

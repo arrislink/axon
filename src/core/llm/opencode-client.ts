@@ -118,9 +118,23 @@ export class OpenCodeLLMClient {
         }
 
         const exitCode = await proc.exited;
+        const stderr = await new Response(proc.stderr).text();
+
         if (exitCode !== 0) {
-            const stderr = await new Response(proc.stderr).text();
             throw new Error(`OpenCode CLI Error: ${stderr || 'Unknown error'}`);
+        }
+
+        // Detect silent crashes (Exit 0 but stderr has error messages and no content)
+        if (fullResponse.trim() === '' && stderr.trim().length > 0) {
+            // Heuristic: if stderr contains 'Error' or 'NotFoundError' or stack trace lines
+            if (stderr.includes('Error') || stderr.includes('NotFound') || stderr.includes('|')) {
+                throw new Error(`OpenCode CLI Silent Crash: ${stderr.split('\n')[0]}`);
+            }
+        }
+
+        if (fullResponse.trim() === '') {
+            // If we got nothing, it's effectively an error for the caller
+            throw new Error('OpenCode CLI returned an empty response');
         }
 
         return {

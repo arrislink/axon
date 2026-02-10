@@ -7,6 +7,9 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import {
     initCommand,
     specCommand,
@@ -19,14 +22,18 @@ import {
 } from './commands';
 import { handleError } from './utils/errors';
 
-const VERSION = '1.0.0';
+// Dynamically get version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkgPath = join(__dirname, '../package.json');
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+const VERSION = pkg.version;
 
 const program = new Command();
 
 program
     .name('ax')
     .description(
-        `${chalk.green('🧠')} ${chalk.bold('Axon')} - AI-Powered Development Operating System
+        `${chalk.green('🧠')} ${chalk.bold('Axon')} - AI-Powered Development Operating System (v${VERSION})
 
   ${chalk.dim('从需求到代码，让 AI 成为你的开发伙伴，而非工具。')}`
     )
@@ -60,7 +67,7 @@ ${chalk.bold('快速开始:')}
   4. ${chalk.cyan('ax plan')}               拆解任务
   5. ${chalk.cyan('ax work')}               开始执行
 
-${chalk.dim('文档: https://axon.dev/docs')}
+${chalk.dim('文档: https://github.com/arrislink/axon')}
 ${chalk.dim('问题反馈: https://github.com/arrislink/axon/issues')}
 `);
 

@@ -13,17 +13,19 @@ import { spinner } from '../utils/spinner';
 import { AxonError } from '../utils/errors';
 import prompts from 'prompts';
 
+import { t } from '../utils/i18n';
+
 export const initCommand = new Command('init')
-    .description('初始化新的 Axon 项目')
-    .argument('[project-name]', '项目名称', '.')
-    .option('-t, --template <name>', '使用模板 (web, api, cli)', 'default')
-    .option('--skip-install', '跳过依赖安装')
-    .option('--skip-git', '跳过 Git 初始化')
+    .description(t('Initialize a new Axon project', '初始化新的 Axon 项目'))
+    .argument('[project-name]', t('Project name', '项目名称'), '.')
+    .option('-t, --template <name>', t('Use template (web, api, cli)', '使用模板 (web, api, cli)'), 'default')
+    .option('--skip-install', t('Skip dependency installation', '跳过依赖安装'))
+    .option('--skip-git', t('Skip Git initialization', '跳过 Git 初始化'))
     .action(async (projectName: string, options) => {
         const projectPath = projectName === '.' ? process.cwd() : join(process.cwd(), projectName);
         const name = projectName === '.' ? basename(process.cwd()) : projectName;
 
-        logger.title('Axon 项目初始化');
+        logger.title(t('Axon Project Initialization', 'Axon 项目初始化'));
 
         // Check if already initialized
         if (ConfigManager.isAxonProject(projectPath)) {
@@ -36,7 +38,7 @@ export const initCommand = new Command('init')
         // 1. Detect existing configs
         const existingConfigs = detectExistingConfig(projectPath);
         if (existingConfigs.hasOpenCode || existingConfigs.hasBeads) {
-            logger.warn('⚠️  检测到现有配置');
+            logger.warn(t('⚠️  Existing configuration detected', '⚠️  检测到现有配置'));
             if (existingConfigs.hasOpenCode) console.log(chalk.dim('  - .opencode/ (OpenCode)'));
             if (existingConfigs.hasBeads) console.log(chalk.dim('  - .beads/ (Beads)'));
             console.log('');
@@ -44,17 +46,17 @@ export const initCommand = new Command('init')
             const response = await prompts({
                 type: 'select',
                 name: 'action',
-                message: '如何处理现有配置？',
+                message: t('How to handle existing configuration?', '如何处理现有配置？'),
                 choices: [
-                    { title: '保留现有配置 (Merge)', value: 'merge', description: '保留现有文件，仅添加 Axon 配置' },
-                    { title: '备份并创建新配置 (Backup)', value: 'backup', description: '备份现有目录为 .backup 后重建' },
-                    { title: '取消初始化 (Cancel)', value: 'cancel' }
+                    { title: t('Keep it (Merge)', '保留现有配置 (Merge)'), value: 'merge', description: t('Keep existing files, only add Axon config', '保留现有文件，仅添加 Axon 配置') },
+                    { title: t('Backup and recreate (Backup)', '备份并创建新配置 (Backup)'), value: 'backup', description: t('Backup existing directories to .backup then recreate', '备份现有目录为 .backup 后重建') },
+                    { title: t('Cancel', '取消初始化 (Cancel)'), value: 'cancel' }
                 ],
                 initial: 0
             });
 
             if (!response.action || response.action === 'cancel') {
-                logger.info('已取消初始化');
+                logger.info(t('Initialization cancelled', '已取消初始化'));
                 return;
             }
 
@@ -66,19 +68,19 @@ export const initCommand = new Command('init')
                 if (existingConfigs.hasBeads) {
                     await Bun.$`mv ${join(projectPath, '.beads')} ${join(projectPath, `.beads.backup.${timestamp}`)}`;
                 }
-                logger.success(`✅ 已备份现有配置`);
+                logger.success(t('✅ Existing configuration backed up', '✅ 已备份现有配置'));
             }
         }
 
         // Create project directory if needed
         if (!existsSync(projectPath)) {
-            spinner.start(`创建项目目录 ${chalk.cyan(name)}`);
+            spinner.start(t(`Creating project directory ${chalk.cyan(name)}`, `创建项目目录 ${chalk.cyan(name)}`));
             mkdirSync(projectPath, { recursive: true });
             spinner.succeed();
         }
 
         // 2. Create directory structure
-        spinner.start('创建 Axon 目录结构');
+        spinner.start(t('Creating Axon directory structure', '创建 Axon 目录结构'));
         for (const dir of DEFAULT_DIRECTORIES) {
             const fullPath = join(projectPath, dir);
             if (!existsSync(fullPath)) {
@@ -88,35 +90,35 @@ export const initCommand = new Command('init')
         spinner.succeed();
 
         // 3. Initialize configuration
-        spinner.start('生成配置文件');
+        spinner.start(t('Generating configuration file', '生成配置文件'));
         ConfigManager.initialize(projectPath, name);
         spinner.succeed();
 
         // 4. Create README
         if (!options.skipReadme && !existsSync(join(projectPath, 'README.md'))) {
-            spinner.start('生成 README.md');
+            spinner.start(t('Generating README.md', '生成 README.md'));
             const readme = generateReadme(name);
             await Bun.write(join(projectPath, 'README.md'), readme);
             spinner.succeed();
         }
 
         // 5. Generate GETTING_STARTED.md (Optimization)
-        spinner.start('生成入门指南');
+        spinner.start(t('Generating Quick Start guide', '生成入门指南'));
         const gettingStarted = generateGettingStarted(name);
         await Bun.write(join(projectPath, 'GETTING_STARTED.md'), gettingStarted);
         spinner.succeed();
 
         // 6. Create initial spec template
         if (!existsSync(join(projectPath, '.openspec', 'spec.md'))) {
-            spinner.start('创建规格模板');
-            const specContent = `# ${name} 规格文档\n\n(待填写)\n`;
+            spinner.start(t('Creating specification template', '创建规格模板'));
+            const specContent = t(`# ${name} Specification\n\n(To be filled)\n`, `# ${name} 规格文档\n\n(待填写)\n`);
             await Bun.write(join(projectPath, '.openspec', 'spec.md'), specContent);
             spinner.succeed();
         }
 
         // 7. Initialize Git
         if (!options.skipGit) {
-            spinner.start('初始化 Git 仓库');
+            spinner.start(t('Initializing Git repository', '初始化 Git 仓库'));
             const git = new GitOperations(projectPath);
             if (!git.isGitRepo()) {
                 await git.init();
@@ -129,35 +131,60 @@ export const initCommand = new Command('init')
         // Summary
         logger.blank();
         logger.divider();
-        logger.success(`项目 ${chalk.bold(name)} 初始化完成！`);
+        logger.success(t(`Project ${chalk.bold(name)} initialization complete!`, `项目 ${chalk.bold(name)} 初始化完成！`));
         logger.blank();
 
-        console.log(chalk.dim('已创建以下结构:'));
-        console.log(`  ${chalk.cyan('.axon/')}        - 配置和元数据`);
-        console.log(`  ${chalk.cyan('.openspec/')}     - 规格文档`);
-        console.log(`  ${chalk.cyan('.beads/')}        - 任务图`);
-        console.log(`  ${chalk.cyan('.skills/')}       - 本地技能库`);
-        console.log(`  ${chalk.cyan('GETTING_STARTED.md')} - 入门指南`);
-        console.log(`  ${chalk.cyan('README.md')}      - 项目说明`);
+        console.log(chalk.dim(t('Created structure:', '已创建以下结构:')));
+        console.log(`  ${chalk.cyan('.axon/')}        - ${t('Config and metadata', '配置和元数据')}`);
+        console.log(`  ${chalk.cyan('.openspec/')}     - ${t('Specification document', '规格文档')}`);
+        console.log(`  ${chalk.cyan('.beads/')}        - ${t('Task graph', '任务图')}`);
+        console.log(`  ${chalk.cyan('.skills/')}       - ${t('Local skill library', '本地技能库')}`);
+        console.log(`  ${chalk.cyan('GETTING_STARTED.md')} - ${t('Quick Start guide', '入门指南')}`);
+        console.log(`  ${chalk.cyan('README.md')}      - ${t('Project description', '项目说明')}`);
 
         logger.blank();
-        console.log(chalk.bold('下一步:'));
+        console.log(chalk.bold(t('Next steps:', '下一步:')));
         console.log(`  1. ${chalk.cyan('cd ' + (projectName === '.' ? '' : projectName))}`);
-        console.log(`  2. ${chalk.cyan('cat GETTING_STARTED.md')}  - 阅读入门指南`);
-        console.log(`  3. ${chalk.cyan('ax spec init')}        - 定义项目规格`);
-        console.log(`  4. ${chalk.cyan('ax plan')}             - 生成任务图`);
+        console.log(`  2. ${chalk.cyan('cat GETTING_STARTED.md')}  - ${t('Read Quick Start guide', '阅读入门指南')}`);
+        console.log(`  3. ${chalk.cyan('ax spec init')}        - ${t('Define project specification', '定义项目规格')}`);
+        console.log(`  4. ${chalk.cyan('ax plan')}             - ${t('Generate task graph', '生成任务图')}`);
         logger.blank();
     });
 
-function detectExistingConfig(projectPath: string) {
-    return {
-        hasOpenCode: existsSync(join(projectPath, '.opencode')),
-        hasBeads: existsSync(join(projectPath, '.beads')),
-    };
-}
-
 function generateGettingStarted(name: string): string {
-    return `# ${name} - Axon 快速入门
+    return t(`# ${name} - Axon Quick Start
+
+## 1. Configure Provider
+Axon uses OhMyOpenCode (OMO) to manage LLM Providers.
+
+\`\`\`bash
+# Install OMO (if not already installed)
+bunx oh-my-opencode install
+
+# Configure Provider (Antigravity recommended)
+bunx oh-my-opencode config set-provider antigravity
+
+# Test connection
+ax config test
+\`\`\`
+
+## 2. Define Requirements
+\`\`\`bash
+ax spec init
+\`\`\`
+
+## 3. Generate Plan
+\`\`\`bash
+ax plan
+\`\`\`
+
+## 4. Start Working
+\`\`\`bash
+ax work
+\`\`\`
+
+For more documentation, see [README.md](./README.md).
+`, `# ${name} - Axon 快速入门
 
 ## 1. 配置 Provider
 Axon 使用 OhMyOpenCode (OMO) 管理 LLM Provider。
@@ -189,13 +216,49 @@ ax work
 \`\`\`
 
 更多文档请查看 [README.md](./README.md)。
-`;
+`);
 }
 
 function generateReadme(name: string): string {
-    return `# ${name}
+    return t(`# ${name}
 
-> 由 [Axon](https://github.com/axon) 创建的 AI 辅助开发项目
+> AI-assisted development project created by [Axon](https://github.com/arrislink/axon)
+
+## Getting Started
+
+\`\`\`bash
+# Define project specification
+ax spec init
+
+# Generate task graph
+ax plan
+
+# Start executing tasks
+ax work
+\`\`\`
+
+## Project Structure
+
+- \`.axon/\` - Axon configuration
+- \`.openspec/\` - Project specification document
+- \`.beads/\` - Task dependency graph
+- \`.skills/\` - Local skill templates
+
+## Common Commands
+
+| Command | Description |
+|------|------|
+| \`ax status\` | View project status |
+| \`ax work\` | Execute next task |
+| \`ax skills search <query>\` | Search skill templates |
+| \`ax doctor\` | Diagnose environment issues |
+
+---
+
+Powered by 🧠 Axon
+`, `# ${name}
+
+> 由 [Axon](https://github.com/arrislink/axon) 创建的 AI 辅助开发项目
 
 ## 开始
 
@@ -229,5 +292,12 @@ ax work
 ---
 
 由 🧠 Axon 提供支持
-`;
+`);
+}
+
+function detectExistingConfig(projectPath: string) {
+    return {
+        hasOpenCode: existsSync(join(projectPath, '.opencode')),
+        hasBeads: existsSync(join(projectPath, '.beads')),
+    };
 }

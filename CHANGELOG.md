@@ -7,10 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-02-10
+
+### Added
+- **Bilingual CLI Support**: Integrated `i18n` utility to provide consistent English and Chinese prompts based on system locale.
+- **Improved CLI Metadata**: Added version number to the main help description and updated documentation links to point to GitHub.
+
+## [1.0.6] - 2026-02-10
+
+### Added
+- **Skill Development Support**: Added "Axon Skill" as a first-class project type in `ax spec init` with specialized prompts and feature options (Spec, Examples, Logic, Deps).
+
+### Fixed
+- **LLM Reliability**: 
+  - Improved `OpenCodeLLMClient` to detect and handle silent CLI crashes (Exit 0 with stderr errors).
+  - Added automatic fallback to `fallback` mode when any provider returns an empty response.
+  - Enhanced JSON parsing for fragmented or non-standard `opencode` JSON streams.
+
 ## [1.0.5] - 2026-02-10
 
-### Changed
-- **Keywords**: Added related open-source projects (`opencode`, `oh-my-opencode`, `omo`, `findskills`, `beads`) as keywords in `package.json` for better discoverability.
+### Fixed
+- **Empty Spec Issue**: Added robust JSON parsing for `opencode` CLI events and a safety fallback to templates if AI generation fails or returns empty content.
+- **Model Tracking**: Improved model ID extraction in `OpenCodeLLMClient` to correctly identify the active model in logs and `ax config test`.
+- **Keywords**: Added related open-source projects (`opencode`, `oh-my-opencode`, `omo`, `findskills`, `beads`) as keywords in `package.json`.
 
 ## [1.0.4] - 2026-02-10
 
@@ -100,7 +119,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/arrislink/axon/compare/v1.0.6...v1.0.7
+[1.0.6]: https://github.com/arrislink/axon/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/arrislink/axon/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/arrislink/axon/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/arrislink/axon/compare/v1.0.2...v1.0.3
