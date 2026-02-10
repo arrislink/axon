@@ -2,39 +2,44 @@
  * Spec Analyzer - Transforms specifications into professional PRDs
  */
 
-import { AxonLLMClient } from '../llm';
-import { logger } from '../../utils/logger';
-import { t } from '../../utils/i18n';
 import type { AxonConfig } from '../../types';
+import { t } from '../../utils/i18n';
+import { logger } from '../../utils/logger';
+import { AxonLLMClient } from '../llm';
 
 export class SpecAnalyzer {
-    private llm: AxonLLMClient;
+  private llm: AxonLLMClient;
 
-    constructor(_config: AxonConfig) {
-        this.llm = new AxonLLMClient();
-    }
+  constructor(_config: AxonConfig) {
+    this.llm = new AxonLLMClient();
+  }
 
-    /**
-     * Analyze specification and generate a structured PRD
-     */
-    async analyze(specContent: string, skillContext?: string): Promise<string> {
-        logger.info(t('🔍 Analyzing specification and distilling requirements...', '🔍 正在分析规格文档并提取需求...'));
+  /**
+   * Analyze specification and generate a structured PRD
+   */
+  async analyze(specContent: string, skillContext?: string): Promise<string> {
+    logger.info(
+      t(
+        '🔍 Analyzing specification and distilling requirements...',
+        '🔍 正在分析规格文档并提取需求...',
+      ),
+    );
 
-        const prompt = this.buildPRDPrompt(specContent, skillContext);
+    const prompt = this.buildPRDPrompt(specContent, skillContext);
 
-        const response = await this.llm.chat([{ role: 'user', content: prompt }], {
-            agent: 'oracle', // Use oracle for strategic/analytic tasks
-            temperature: 0.3,
-        });
+    const response = await this.llm.chat([{ role: 'user', content: prompt }], {
+      agent: 'oracle', // Use oracle for strategic/analytic tasks
+      temperature: 0.3,
+    });
 
-        return response.content;
-    }
+    return response.content;
+  }
 
-    /**
-     * Build the prompt for PRD generation, incorporating skill expertise
-     */
-    private buildPRDPrompt(spec: string, skillContext?: string): string {
-        return `你是一个资深产品专家和系统架构师。请根据以下项目规格，整理出一份专业的 PRD（产品需求文档）。
+  /**
+   * Build the prompt for PRD generation, incorporating skill expertise
+   */
+  private buildPRDPrompt(spec: string, skillContext?: string): string {
+    return `你是一个资深产品专家和系统架构师。请根据以下项目规格，整理出一份专业的 PRD（产品需求文档）。
 
 ${skillContext ? `参考专家知识 (Skills):\n${skillContext}\n\n` : ''}
 
@@ -72,5 +77,5 @@ ${spec}
 - 边界情况
 
 请使用 Markdown 格式，语言简洁、专业、严谨。`;
-    }
+  }
 }

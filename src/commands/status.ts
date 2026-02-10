@@ -2,8 +2,8 @@
  * ax status command - Show project status
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { getGraphStats } from '../core/beads';
@@ -104,10 +104,10 @@ export const statusCommand = new Command('status')
       console.log(`   └─ ${stats.completed}/${stats.total} 珠子已完成`);
 
       if (stats.failed > 0) {
-        console.log(`   └─ ${chalk.red(stats.failed + ' 个失败')}`);
+        console.log(`   └─ ${chalk.red(`${stats.failed} 个失败`)}`);
       }
       if (stats.running > 0) {
-        console.log(`   └─ ${chalk.yellow(stats.running + ' 个进行中')}`);
+        console.log(`   └─ ${chalk.yellow(`${stats.running} 个进行中`)}`);
       }
 
       // Cost

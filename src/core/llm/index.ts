@@ -34,7 +34,7 @@ export class AxonLLMClient {
    */
   private detectMode(): LLMMode {
     // 0. Force mode via environment variable
-    const forcedMode = process.env['AXON_LLM_MODE'];
+    const forcedMode = process.env.AXON_LLM_MODE;
     if (forcedMode === 'cli' || forcedMode === 'direct' || forcedMode === 'fallback') {
       return forcedMode as LLMMode;
     }
@@ -89,7 +89,11 @@ export class AxonLLMClient {
   private initFallbackClient(): void {
     // Try env vars in priority order
     const envKeys = [
-      { key: 'ANTHROPIC_API_KEY', model: 'claude-sonnet-4-20250514', provider: 'anthropic' as const },
+      {
+        key: 'ANTHROPIC_API_KEY',
+        model: 'claude-sonnet-4-20250514',
+        provider: 'anthropic' as const,
+      },
       { key: 'OPENAI_API_KEY', model: 'gpt-4o', provider: 'openai' as const },
       { key: 'GOOGLE_API_KEY', model: 'gemini-2.0-flash', provider: 'google' as const },
     ];
@@ -109,7 +113,11 @@ export class AxonLLMClient {
 
     // Last resort: if OMO config has providers with Antigravity token, use UnifiedLLMClient
     // BUT ONLY IF we didn't just come from a failed direct mode attempt
-    if (this.mode === 'fallback' && this.omoConfig.hasProviders() && this.omoConfig.hasAntigravityAuth()) {
+    if (
+      this.mode === 'fallback' &&
+      this.omoConfig.hasProviders() &&
+      this.omoConfig.hasAntigravityAuth()
+    ) {
       // If we don't have any other fallback, this is our only hope
       this.unifiedClient = new UnifiedLLMClient(this.omoConfig);
     }
@@ -130,7 +138,7 @@ export class AxonLLMClient {
           const isDefaultModel = [
             'claude-sonnet-4-20250514',
             'gemini-2.0-flash-exp',
-            'gpt-4o'
+            'gpt-4o',
           ].includes(chatOptions.model);
           if (isDefaultModel) chatOptions.model = undefined;
         }
@@ -170,7 +178,7 @@ export class AxonLLMClient {
   private async handleChatError(
     error: unknown,
     messages: LLMMessage[],
-    options?: LLMOptions
+    options?: LLMOptions,
   ): Promise<LLMResponse> {
     // CLI mode - DO NOT fallback as requested by user
     if (this.mode === 'cli') {
@@ -181,8 +189,10 @@ export class AxonLLMClient {
     // Direct → Fallback
     if (this.mode === 'direct' || (this.mode === 'fallback' && this.unifiedClient)) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      console.warn(`🧠 Axon: Direct/Proxy 模式调用失败 (${errMsg.split('\n')[0]})，尝试环境变量 Fallback...`);
-      if (process.env['DEBUG']) console.error(error);
+      console.warn(
+        `🧠 Axon: Direct/Proxy 模式调用失败 (${errMsg.split('\n')[0]})，尝试环境变量 Fallback...`,
+      );
+      if (process.env.DEBUG) console.error(error);
 
       // Clear unifiedClient to prevent re-trying it in fallback
       this.unifiedClient = undefined;
@@ -203,9 +213,9 @@ export class AxonLLMClient {
       `配置文件: ${this.omoConfig.getConfigSource() || '未找到'}`,
       `Providers: ${this.omoConfig.getAllProviders().length}`,
       `Antigravity Token: ${this.omoConfig.hasAntigravityAuth() ? '已找到' : '未找到'}`,
-      `ANTHROPIC_API_KEY: ${process.env['ANTHROPIC_API_KEY'] ? '已设置' : '未设置'}`,
-      `OPENAI_API_KEY: ${process.env['OPENAI_API_KEY'] ? '已设置' : '未设置'}`,
-      `GOOGLE_API_KEY: ${process.env['GOOGLE_API_KEY'] ? '已设置' : '未设置'}`,
+      `ANTHROPIC_API_KEY: ${process.env.ANTHROPIC_API_KEY ? '已设置' : '未设置'}`,
+      `OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '已设置' : '未设置'}`,
+      `GOOGLE_API_KEY: ${process.env.GOOGLE_API_KEY ? '已设置' : '未设置'}`,
     ].join(', ');
   }
 

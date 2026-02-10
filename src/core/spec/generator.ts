@@ -2,35 +2,35 @@
  * Spec Generator - Generates OpenSpec documents
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
-import { AxonLLMClient } from '../llm';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { CollectedSpec } from '../../types/spec';
+import { AxonLLMClient } from '../llm';
 
 export class SpecGenerator {
-    private llm: AxonLLMClient | null = null;
+  private llm: AxonLLMClient | null = null;
 
-    constructor(enableAI = true) {
-        if (enableAI) {
-            this.llm = new AxonLLMClient();
-        }
+  constructor(enableAI = true) {
+    if (enableAI) {
+      this.llm = new AxonLLMClient();
     }
+  }
 
-    /**
-     * Generate spec document from collected requirements
-     */
-    async generate(collected: CollectedSpec): Promise<string> {
-        if (collected.rawContent) {
-            return collected.rawContent;
-        }
-        if (this.llm?.isAvailable()) {
-            return await this.generateWithAI(collected);
-        }
-        return this.generateFromTemplate(collected);
+  /**
+   * Generate spec document from collected requirements
+   */
+  async generate(collected: CollectedSpec): Promise<string> {
+    if (collected.rawContent) {
+      return collected.rawContent;
     }
+    if (this.llm?.isAvailable()) {
+      return await this.generateWithAI(collected);
+    }
+    return this.generateFromTemplate(collected);
+  }
 
-    private async generateWithAI(collected: CollectedSpec): Promise<string> {
-        const prompt = `作为一名资深架构师，请根据以下需求生成一份结构化的 OpenSpec 规格文档。
+  private async generateWithAI(collected: CollectedSpec): Promise<string> {
+    const prompt = `作为一名资深架构师，请根据以下需求生成一份结构化的 OpenSpec 规格文档。
 
 需求信息:
 - 项目描述: ${collected.description}
@@ -50,44 +50,44 @@ export class SpecGenerator {
 
 确保文档清晰、可执行，便于后续任务拆解。`;
 
-        try {
-            const response = await this.llm!.chat([{ role: 'user', content: prompt }], {
-                temperature: 0.7,
-                maxTokens: 4000,
-            });
+    try {
+      const response = await this.llm?.chat([{ role: 'user', content: prompt }], {
+        temperature: 0.7,
+        maxTokens: 4000,
+      });
 
-            if (response.content && response.content.trim().length > 100) {
-                return response.content;
-            }
+      if (response.content && response.content.trim().length > 100) {
+        return response.content;
+      }
 
-            console.warn('⚠️ AI 生成内容过短或为空，将使用模板生成作为回退。');
-            return this.generateFromTemplate(collected);
-        } catch (error) {
-            console.warn(`⚠️ AI 生成失败: ${(error as Error).message}。将使用模板生成作为回退。`);
-            return this.generateFromTemplate(collected);
-        }
+      console.warn('⚠️ AI 生成内容过短或为空，将使用模板生成作为回退。');
+      return this.generateFromTemplate(collected);
+    } catch (error) {
+      console.warn(`⚠️ AI 生成失败: ${(error as Error).message}。将使用模板生成作为回退。`);
+      return this.generateFromTemplate(collected);
     }
+  }
 
-    private generateFromTemplate(collected: CollectedSpec): string {
-        const techStackNames: Record<string, string> = {
-            'typescript-bun': 'TypeScript + Bun',
-            'typescript-node': 'TypeScript + Node.js',
-            go: 'Go',
-            'python-fastapi': 'Python + FastAPI',
-            rust: 'Rust',
-            auto: '待定',
-        };
+  private generateFromTemplate(collected: CollectedSpec): string {
+    const techStackNames: Record<string, string> = {
+      'typescript-bun': 'TypeScript + Bun',
+      'typescript-node': 'TypeScript + Node.js',
+      go: 'Go',
+      'python-fastapi': 'Python + FastAPI',
+      rust: 'Rust',
+      auto: '待定',
+    };
 
-        const projectTypeNames: Record<string, string> = {
-            api: 'Web API',
-            webapp: 'Web 应用',
-            skill: 'Axon Skill',
-            cli: 'CLI 工具',
-            library: '库/SDK',
-            other: '其他',
-        };
+    const projectTypeNames: Record<string, string> = {
+      api: 'Web API',
+      webapp: 'Web 应用',
+      skill: 'Axon Skill',
+      cli: 'CLI 工具',
+      library: '库/SDK',
+      other: '其他',
+    };
 
-        return `# ${collected.description}
+    return `# ${collected.description}
 
 ## 1. 项目概述
 
@@ -145,46 +145,46 @@ src/
 
 ${collected.additionalRequirements ? `### 其他需求\n\n${collected.additionalRequirements}` : ''}
 `;
-    }
+  }
 
-    private formatFeatureName(feature: string): string {
-        const names: Record<string, string> = {
-            'auth-jwt': 'JWT 用户认证',
-            oauth: 'OAuth 2.0 集成',
-            crud: 'CRUD 基础接口',
-            validation: '数据验证',
-            openapi: 'OpenAPI 文档',
-            'rate-limit': '速率限制',
-            logging: '日志记录',
-            'error-handling': '错误处理',
-            config: '配置管理',
-            testing: '单元测试',
-            auth: '用户认证',
-            responsive: '响应式 UI',
-            state: '状态管理',
-            routing: '路由',
-            'api-integration': 'API 集成',
-            interactive: '交互式提示',
-            'config-file': '配置文件支持',
-            help: '帮助文档',
-            progress: '进度显示',
-            colors: '颜色输出',
-            'skill-spec': 'Skill 功能定义',
-            'skill-examples': 'Skill 使用示例',
-            'skill-logic': 'Skill 核心逻辑 (Beads)',
-            'skill-deps': 'Skill 依赖管理',
-        };
-        return names[feature] || feature;
-    }
+  private formatFeatureName(feature: string): string {
+    const names: Record<string, string> = {
+      'auth-jwt': 'JWT 用户认证',
+      oauth: 'OAuth 2.0 集成',
+      crud: 'CRUD 基础接口',
+      validation: '数据验证',
+      openapi: 'OpenAPI 文档',
+      'rate-limit': '速率限制',
+      logging: '日志记录',
+      'error-handling': '错误处理',
+      config: '配置管理',
+      testing: '单元测试',
+      auth: '用户认证',
+      responsive: '响应式 UI',
+      state: '状态管理',
+      routing: '路由',
+      'api-integration': 'API 集成',
+      interactive: '交互式提示',
+      'config-file': '配置文件支持',
+      help: '帮助文档',
+      progress: '进度显示',
+      colors: '颜色输出',
+      'skill-spec': 'Skill 功能定义',
+      'skill-examples': 'Skill 使用示例',
+      'skill-logic': 'Skill 核心逻辑 (Beads)',
+      'skill-deps': 'Skill 依赖管理',
+    };
+    return names[feature] || feature;
+  }
 
-    /**
-     * Save spec to file
-     */
-    async save(content: string, targetPath: string): Promise<void> {
-        const dir = dirname(targetPath);
-        if (!existsSync(dir)) {
-            mkdirSync(dir, { recursive: true });
-        }
-        writeFileSync(targetPath, content, 'utf-8');
+  /**
+   * Save spec to file
+   */
+  async save(content: string, targetPath: string): Promise<void> {
+    const dir = dirname(targetPath);
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
     }
+    writeFileSync(targetPath, content, 'utf-8');
+  }
 }

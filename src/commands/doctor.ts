@@ -2,8 +2,8 @@
  * ax doctor command - Diagnose environment issues
  */
 
-import { existsSync } from 'fs';
-import { join } from 'path';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager, DEFAULT_DIRECTORIES } from '../core/config';
@@ -156,7 +156,6 @@ export const doctorCommand = new Command('doctor')
         });
       }
     }
-
 
     // Check 4: Bun version
     try {

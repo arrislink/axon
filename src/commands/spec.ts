@@ -197,7 +197,9 @@ specCommand
 // ax spec analyze
 specCommand
   .command('analyze')
-  .description(t('Analyze specification and generate professional PRD', '分析规格文档并生成专业 PRD'))
+  .description(
+    t('Analyze specification and generate professional PRD', '分析规格文档并生成专业 PRD'),
+  )
   .option('-o, --output <path>', t('Output path for PRD', 'PRD 输出路径'), 'PRD.md')
   .action(async (options) => {
     const projectRoot = process.cwd();
@@ -232,10 +234,12 @@ specCommand
       const library = new SkillsLibrary([
         join(projectRoot, config.tools.skills.local_path),
         officialLocalPath,
-        config.tools.skills.global_path
+        config.tools.skills.global_path,
       ]);
       const relevantSkills = await library.search('brainsstorm', 2);
-      const skillContext = relevantSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
+      const skillContext = relevantSkills
+        .map((s) => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`)
+        .join('\n\n');
 
       const analyzer = new SpecAnalyzer(config);
       const prdContent = await analyzer.analyze(specContent, skillContext);
@@ -246,10 +250,19 @@ specCommand
       spinner.succeed(t(`PRD generated: ${prdPath}`, `PRD 已生成: ${prdPath}`));
 
       logger.blank();
-      logger.success(t('Specifications refined into professional PRD style.', '规格文档已优化为专业 PRD 风格。'));
-      logger.info(t('You can find the detailed analysis in PRD.md', '你可以在 PRD.md 中查看详细分析。'));
+      logger.success(
+        t('Specifications refined into professional PRD style.', '规格文档已优化为专业 PRD 风格。'),
+      );
+      logger.info(
+        t('You can find the detailed analysis in PRD.md', '你可以在 PRD.md 中查看详细分析。'),
+      );
     } catch (error) {
       spinner.fail();
-      logger.error(t(`PRD generation failed: ${(error as Error).message}`, `PRD 生成失败: ${(error as Error).message}`));
+      logger.error(
+        t(
+          `PRD generation failed: ${(error as Error).message}`,
+          `PRD 生成失败: ${(error as Error).message}`,
+        ),
+      );
     }
   });

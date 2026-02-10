@@ -1,9 +1,9 @@
+import type { Document } from '../../types/docs';
+import type { CollectedSpec } from '../../types/spec';
 import { t } from '../../utils/i18n';
 import { logger } from '../../utils/logger';
 import { confirm, editor, input, multiSelect, select } from '../../utils/prompt';
 import { DocumentManager } from '../docs/manager';
-import type { Document } from '../../types/docs';
-import type { CollectedSpec } from '../../types/spec';
 
 export class SpecCollector {
   private docManager: DocumentManager;
@@ -19,8 +19,11 @@ export class SpecCollector {
     const docs = this.docManager.list();
     if (docs.length > 0) {
       const useDocs = await confirm({
-        message: t(`Found ${docs.length} reference documents. Use them to generate specification?`, `找到 ${docs.length} 个参考文档。是否基于这些文档生成规格？`),
-        default: true
+        message: t(
+          `Found ${docs.length} reference documents. Use them to generate specification?`,
+          `找到 ${docs.length} 个参考文档。是否基于这些文档生成规格？`,
+        ),
+        default: true,
       });
 
       if (useDocs) {
@@ -38,10 +41,11 @@ export class SpecCollector {
     logger.info(t('🤖 Generating specification from documents...', '🤖 正在基于文档生成规格...'));
 
     const context = this.docManager.compileContext({
-      maxTokens: 50000 // Reserve space for response
+      maxTokens: 50000, // Reserve space for response
     });
 
-    const prompt = t(`You are a professional product manager. Based on the following reference documents, generate a complete project specification document (OpenSpec format).
+    const prompt = t(
+      `You are a professional product manager. Based on the following reference documents, generate a complete project specification document (OpenSpec format).
 
 ${context}
 
@@ -50,7 +54,8 @@ Requirements:
 2. Identify tech stack and constraints.
 3. List non-functional requirements.
 4. If API specs exist, include key interface definitions.
-5. Generate in Markdown format.`, `你是一个专业的产品经理。请基于以下参考资料，生成一份完整的项目规格文档。
+5. Generate in Markdown format.`,
+      `你是一个专业的产品经理。请基于以下参考资料，生成一份完整的项目规格文档。
 
 ${context}
 
@@ -59,7 +64,8 @@ ${context}
 2. 识别技术栈和约束条件
 3. 列出关键的非功能需求（性能、安全等）
 4. 如果有 API 规范，保留关键接口定义
-5. 请生成符合 OpenSpec 格式的规格文档（Markdown 格式）。`);
+5. 请生成符合 OpenSpec 格式的规格文档（Markdown 格式）。`,
+    );
 
     // We need to use the LLM client here
     // Since SpecCollector constructor doesn't take config yet, we'll instantiate AxonLLMClient directly
@@ -76,10 +82,15 @@ ${context}
         techStack: 'auto',
         description: t('Generated from documents', '从文档生成'),
         additionalRequirements: '',
-        rawContent: response
+        rawContent: response,
       };
     } catch (error) {
-      logger.error(t(`AI generation failed: ${(error as Error).message}`, `AI 生成失败: ${(error as Error).message}`));
+      logger.error(
+        t(
+          `AI generation failed: ${(error as Error).message}`,
+          `AI 生成失败: ${(error as Error).message}`,
+        ),
+      );
       logger.info(t('Falling back to interactive mode.', '回退到交互模式。'));
       return this.collectInteractive();
     }

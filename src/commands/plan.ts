@@ -2,8 +2,8 @@
  * ax plan command - Generate task graph from spec
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
@@ -76,10 +76,12 @@ export const planCommand = new Command('plan')
     const skillsLibrary = new SkillsLibrary([
       join(projectRoot, config.tools.skills.local_path),
       officialLocalPath,
-      config.tools.skills.global_path
+      config.tools.skills.global_path,
     ]);
     const planningSkills = await skillsLibrary.search('write-plan', 3);
-    const skillContext = planningSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
+    const skillContext = planningSkills
+      .map((s) => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`)
+      .join('\n\n');
 
     const graph = await generator.generateFromSpec(specContent, skillContext);
     spinner.succeed(`生成 ${graph.beads.length} 个任务`);
@@ -113,7 +115,7 @@ export const planCommand = new Command('plan')
     console.log(
       `  预计 tokens:  ${chalk.bold(graph.metadata.total_estimated_tokens.toLocaleString())}`,
     );
-    console.log(`  预计成本:     ${chalk.bold('$' + graph.metadata.total_cost_usd.toFixed(2))}`);
+    console.log(`  预计成本:     ${chalk.bold(`$${graph.metadata.total_cost_usd.toFixed(2)}`)}`);
 
     console.log(chalk.dim('任务列表:'));
     for (const bead of graph.beads.slice(0, 10)) {

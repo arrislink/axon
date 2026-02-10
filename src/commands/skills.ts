@@ -2,8 +2,8 @@
  * ax skills command - Manage skill templates
  */
 
-import { existsSync } from 'fs';
-import { basename, join, dirname } from 'path';
+import { existsSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
@@ -29,7 +29,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
+    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
 
     // Use config if in Axon project
     if (ConfigManager.isAxonProject(projectRoot)) {
@@ -69,7 +69,7 @@ skillsCommand
   .command('find [query]')
   .description(t('Find official skills from skills.sh', '从 skills.sh 查找官方技能'))
   .action(async (query: string) => {
-    const { spawnSync } = await import('child_process');
+    const { spawnSync } = await import('node:child_process');
     const args = ['skills', 'find'];
     if (query) args.push(query);
 
@@ -91,7 +91,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
+    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
 
     if (ConfigManager.isAxonProject(projectRoot)) {
       const configManager = new ConfigManager(projectRoot);
@@ -128,7 +128,7 @@ skillsCommand
       if (!byTag.has(tag)) {
         byTag.set(tag, []);
       }
-      byTag.get(tag)!.push(skill);
+      byTag.get(tag)?.push(skill);
     }
 
     for (const [tag, tagSkills] of byTag) {
@@ -167,7 +167,7 @@ skillsCommand
     const config = configManager.get();
     const library = new SkillsLibrary([
       join(projectRoot, config.tools.skills.local_path),
-      config.tools.skills.global_path
+      config.tools.skills.global_path,
     ]);
 
     const content = await Bun.file(filePath).text();
@@ -216,19 +216,23 @@ skillsCommand
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.get();
 
-    const localPath = options.path ? join(projectRoot, options.path) : join(projectRoot, config.tools.skills.local_path);
+    const localPath = options.path
+      ? join(projectRoot, options.path)
+      : join(projectRoot, config.tools.skills.local_path);
     const globalPath = config.tools.skills.global_path;
     const library = new SkillsLibrary([
       localPath,
       join(projectRoot, '.agents', 'skills'),
       join(projectRoot, '.agent', 'skills'),
-      globalPath
+      globalPath,
     ]);
 
     // Check if it's an official package (org/repo or URL)
     if (name.includes('/') || name.startsWith('http')) {
-      spinner.info(t(`Detecting official skill package: ${name}...`, `检测到官方技能包: ${name}...`));
-      const { spawnSync } = await import('child_process');
+      spinner.info(
+        t(`Detecting official skill package: ${name}...`, `检测到官方技能包: ${name}...`),
+      );
+      const { spawnSync } = await import('node:child_process');
       const args = ['skills', 'add', name];
       // Note: Official skills tool does not support --path for add
       if (options.symlink) args.push('--symlink');
@@ -239,7 +243,9 @@ skillsCommand
 
       const result = spawnSync('npx', args, { stdio: 'inherit' });
       if (result.status === 0) {
-        logger.success(t(`Successfully installed official package: ${name}`, `成功安装官方技能包: ${name}`));
+        logger.success(
+          t(`Successfully installed official package: ${name}`, `成功安装官方技能包: ${name}`),
+        );
       }
       return;
     }
@@ -247,7 +253,10 @@ skillsCommand
     spinner.start(t(`Finding skill: ${name}...`, `正在查找技能: ${name}...`));
     const results = await library.search(name, 1);
 
-    if (results.length === 0 || results[0].skill.metadata.name.toLowerCase() !== name.toLowerCase()) {
+    if (
+      results.length === 0 ||
+      results[0].skill.metadata.name.toLowerCase() !== name.toLowerCase()
+    ) {
       spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
       return;
     }
@@ -261,14 +270,18 @@ skillsCommand
     }
 
     if (options.symlink) {
-      const { symlinkSync, mkdirSync } = await import('fs');
+      const { symlinkSync, mkdirSync } = await import('node:fs');
       const dir = dirname(targetPath);
       if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
       symlinkSync(skill.path, targetPath);
-      spinner.succeed(t(`Symlinked skill: ${name} -> ${targetPath}`, `已成功链接技能: ${name} -> ${targetPath}`));
+      spinner.succeed(
+        t(`Symlinked skill: ${name} -> ${targetPath}`, `已成功链接技能: ${name} -> ${targetPath}`),
+      );
     } else {
       await library.save(skill, targetPath);
-      spinner.succeed(t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`));
+      spinner.succeed(
+        t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`),
+      );
     }
   });
 
@@ -282,7 +295,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
+    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
 
     if (ConfigManager.isAxonProject(projectRoot)) {
       const configManager = new ConfigManager(projectRoot);
@@ -322,7 +335,7 @@ skillsCommand
   .command('update')
   .description(t('Update all skills to latest versions', '更新所有技能到最新版本'))
   .action(async () => {
-    const { spawnSync } = await import('child_process');
+    const { spawnSync } = await import('node:child_process');
     logger.info(t('Checking for skill updates...', '正在检查技能更新...'));
     spawnSync('npx', ['skills', 'update'], { stdio: 'inherit' });
   });

@@ -2,163 +2,166 @@
  * OpenCode LLM Client - CLI-based LLM calls through OMO
  */
 
-import type { LLMMessage, LLMResponse, LLMOptions } from './types';
+import type { LLMMessage, LLMOptions, LLMResponse } from './types';
 
 /**
  * LLM Client that calls OpenCode CLI
  * Automatically uses OMO configured providers
  */
 export class OpenCodeLLMClient {
-    private agent: string;
-    private command: string[];
+  private agent: string;
+  private command: string[];
 
-    constructor(agent: 'sisyphus' | 'oracle' | 'background' = 'sisyphus', command: string[] = ['opencode']) {
-        this.agent = agent;
-        this.command = command;
+  constructor(
+    agent: 'sisyphus' | 'oracle' | 'background' = 'sisyphus',
+    command: string[] = ['opencode'],
+  ) {
+    this.agent = agent;
+    this.command = command;
+  }
+
+  /**
+   * Send chat messages and get response via OpenCode CLI
+   */
+  async chat(messages: LLMMessage[], options?: LLMOptions): Promise<LLMResponse> {
+    const iterator = this.streamChat(messages, options);
+    let result = await iterator.next();
+    while (!result.done) {
+      result = await iterator.next();
+    }
+    return result.value;
+  }
+
+  /**
+   * Stream chat response via OpenCode CLI
+   */
+  async *streamChat(
+    messages: LLMMessage[],
+    options?: LLMOptions,
+  ): AsyncGenerator<string, LLMResponse, unknown> {
+    const prompt = this.formatMessages(messages);
+    const agent = options?.agent || this.agent;
+
+    const args = [...this.command, 'run', '--agent', agent, '--format', 'json'];
+
+    if (options?.model) {
+      // If model is "provider/model", pass it directly.
+      // If just "model", let opencode decide or prepend provider if needed?
+      // Opencode expects "provider/model" usually.
+      args.push('--model', options.model);
     }
 
-    /**
-     * Send chat messages and get response via OpenCode CLI
-     */
-    async chat(messages: LLMMessage[], options?: LLMOptions): Promise<LLMResponse> {
-        const iterator = this.streamChat(messages, options);
-        let result = await iterator.next();
-        while (!result.done) {
-            result = await iterator.next();
-        }
-        return result.value;
-    }
+    const proc = Bun.spawn(args, {
+      stdin: new Blob([prompt]),
+      stdout: 'pipe',
+      stderr: 'pipe',
+      env: process.env, // Ensure node and other tools are in PATH
+    });
 
-    /**
-     * Stream chat response via OpenCode CLI
-     */
-    async *streamChat(
-        messages: LLMMessage[],
-        options?: LLMOptions
-    ): AsyncGenerator<string, LLMResponse, unknown> {
-        const prompt = this.formatMessages(messages);
-        const agent = options?.agent || this.agent;
+    let fullResponse = '';
+    const metadata = {
+      model: 'unknown',
+      tokens: { input: 0, output: 0 },
+      cost: 0,
+    };
 
-        const args = [...this.command, 'run', '--agent', agent, '--format', 'json'];
+    const decoder = new TextDecoder();
+    const reader = proc.stdout.getReader();
+    let buffer = '';
 
-        if (options?.model) {
-            // If model is "provider/model", pass it directly. 
-            // If just "model", let opencode decide or prepend provider if needed?
-            // Opencode expects "provider/model" usually.
-            args.push('--model', options.model);
-        }
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        const proc = Bun.spawn(args, {
-            stdin: new Blob([prompt]),
-            stdout: 'pipe',
-            stderr: 'pipe',
-            env: process.env, // Ensure node and other tools are in PATH
-        });
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line
 
-        let fullResponse = '';
-        let metadata = {
-            model: 'unknown',
-            tokens: { input: 0, output: 0 },
-            cost: 0
-        };
+        for (const line of lines) {
+          if (!line.trim()) continue;
 
-        const decoder = new TextDecoder();
-        const reader = proc.stdout.getReader();
-        let buffer = '';
+          try {
+            const event = JSON.parse(line);
 
-        try {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || ''; // Keep incomplete line
-
-                for (const line of lines) {
-                    if (!line.trim()) continue;
-
-                    try {
-                        const event = JSON.parse(line);
-
-                        // Extract model info (usually in the first message or configuration events)
-                        if (event.type === 'config' && event.part?.model) {
-                            metadata.model = event.part.model;
-                        } else if (event.model && metadata.model === 'unknown') {
-                            metadata.model = event.model;
-                        }
-
-                        // Handle various text event structures
-                        if (event.type === 'text' && event.part?.text) {
-                            const text = event.part.text;
-                            fullResponse += text;
-                            yield text;
-                        } else if (event.type === 'content' && event.part?.content) {
-                            const text = event.part.content;
-                            fullResponse += text;
-                            yield text;
-                        } else if (event.type === 'step_finish') {
-                            if (event.part?.snapshot) {
-                                // Ignore snapshot
-                            }
-                            if (event.part?.tokens) {
-                                metadata.tokens.input = event.part.tokens.input || 0;
-                                metadata.tokens.output = event.part.tokens.output || 0;
-                            }
-                            if (event.part?.cost) {
-                                metadata.cost = event.part.cost;
-                            }
-                        }
-                    } catch (e) {
-                        // Ignore parse errors for non-JSON lines (if any)
-                    }
-                }
+            // Extract model info (usually in the first message or configuration events)
+            if (event.type === 'config' && event.part?.model) {
+              metadata.model = event.part.model;
+            } else if (event.model && metadata.model === 'unknown') {
+              metadata.model = event.model;
             }
-        } finally {
-            reader.releaseLock();
-            proc.kill(); // Ensure process is killed
-        }
 
-        const exitCode = await proc.exited;
-        const stderr = await new Response(proc.stderr).text();
-
-        if (exitCode !== 0) {
-            throw new Error(`OpenCode CLI Error: ${stderr || 'Unknown error'}`);
-        }
-
-        // Detect silent crashes (Exit 0 but stderr has error messages and no content)
-        if (fullResponse.trim() === '' && stderr.trim().length > 0) {
-            // Heuristic: if stderr contains 'Error' or 'NotFoundError' or stack trace lines
-            if (stderr.includes('Error') || stderr.includes('NotFound') || stderr.includes('|')) {
-                throw new Error(`OpenCode CLI Silent Crash: ${stderr.split('\n')[0]}`);
+            // Handle various text event structures
+            if (event.type === 'text' && event.part?.text) {
+              const text = event.part.text;
+              fullResponse += text;
+              yield text;
+            } else if (event.type === 'content' && event.part?.content) {
+              const text = event.part.content;
+              fullResponse += text;
+              yield text;
+            } else if (event.type === 'step_finish') {
+              if (event.part?.snapshot) {
+                // Ignore snapshot
+              }
+              if (event.part?.tokens) {
+                metadata.tokens.input = event.part.tokens.input || 0;
+                metadata.tokens.output = event.part.tokens.output || 0;
+              }
+              if (event.part?.cost) {
+                metadata.cost = event.part.cost;
+              }
             }
+          } catch (e) {
+            // Ignore parse errors for non-JSON lines (if any)
+          }
         }
-
-        if (fullResponse.trim() === '') {
-            // If we got nothing, it's effectively an error for the caller
-            throw new Error('OpenCode CLI returned an empty response');
-        }
-
-        return {
-            content: fullResponse,
-            model: metadata.model, // TODO: Extract actual model if possible
-            tokens: metadata.tokens,
-            cost: metadata.cost,
-        };
+      }
+    } finally {
+      reader.releaseLock();
+      proc.kill(); // Ensure process is killed
     }
 
-    /**
-     * Simple completion (single message)
-     */
-    async complete(prompt: string, options?: LLMOptions): Promise<string> {
-        const result = await this.chat([{ role: 'user', content: prompt }], options);
-        return result.content;
+    const exitCode = await proc.exited;
+    const stderr = await new Response(proc.stderr).text();
+
+    if (exitCode !== 0) {
+      throw new Error(`OpenCode CLI Error: ${stderr || 'Unknown error'}`);
     }
 
-    /**
-     * Format messages for OpenCode CLI input
-     */
-    private formatMessages(messages: LLMMessage[]): string {
-        return messages.map((m) => `<${m.role}>\n${m.content}\n</${m.role}>`).join('\n\n');
+    // Detect silent crashes (Exit 0 but stderr has error messages and no content)
+    if (fullResponse.trim() === '' && stderr.trim().length > 0) {
+      // Heuristic: if stderr contains 'Error' or 'NotFoundError' or stack trace lines
+      if (stderr.includes('Error') || stderr.includes('NotFound') || stderr.includes('|')) {
+        throw new Error(`OpenCode CLI Silent Crash: ${stderr.split('\n')[0]}`);
+      }
     }
+
+    if (fullResponse.trim() === '') {
+      // If we got nothing, it's effectively an error for the caller
+      throw new Error('OpenCode CLI returned an empty response');
+    }
+
+    return {
+      content: fullResponse,
+      model: metadata.model, // TODO: Extract actual model if possible
+      tokens: metadata.tokens,
+      cost: metadata.cost,
+    };
+  }
+
+  /**
+   * Simple completion (single message)
+   */
+  async complete(prompt: string, options?: LLMOptions): Promise<string> {
+    const result = await this.chat([{ role: 'user', content: prompt }], options);
+    return result.content;
+  }
+
+  /**
+   * Format messages for OpenCode CLI input
+   */
+  private formatMessages(messages: LLMMessage[]): string {
+    return messages.map((m) => `<${m.role}>\n${m.content}\n</${m.role}>`).join('\n\n');
+  }
 }

@@ -2,8 +2,8 @@
  * OMO Config Reader - Reads OhMyOpenCode provider configuration
  */
 
-import { existsSync, readFileSync } from 'fs';
-import { homedir } from 'os';
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { parse } from 'yaml';
 import type { OMOProvider } from './types';
 
@@ -113,8 +113,7 @@ export class OMOConfigReader {
           // Find the first enabled account, or use activeIndex
           const activeIdx = accounts.activeIndex ?? 0;
           const account =
-            accounts.accounts.find((a: any) => a.enabled !== false) ||
-            accounts.accounts[activeIdx];
+            accounts.accounts.find((a: any) => a.enabled !== false) || accounts.accounts[activeIdx];
           if (account) {
             this.antigravityToken = account.token || account.refreshToken;
           }
@@ -180,7 +179,7 @@ export class OMOConfigReader {
       });
 
       // Infer default from common agent names
-      if (config.agents['sisyphus']) this.defaultProvider = 'sisyphus';
+      if (config.agents.sisyphus) this.defaultProvider = 'sisyphus';
     }
 
     // Strategy 2: Map 'provider' objects (opencode.json style)
