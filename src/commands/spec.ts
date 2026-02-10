@@ -7,10 +7,9 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
 import { ConfigManager } from '../core/config';
-import { SpecCollector, SpecGenerator } from '../core/spec';
+import { AxonError } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
-import { AxonError } from '../utils/errors';
 
 export const specCommand = new Command('spec')
     .description('管理项目规格文档');
@@ -22,6 +21,9 @@ specCommand
     .option('--from-file <path>', '从现有文档导入')
     .option('--no-ai', '不使用 AI 生成')
     .action(async (options) => {
+        // Dynamic import
+        const { SpecCollector, SpecGenerator } = await import('../core/spec');
+
         const projectRoot = process.cwd();
 
         if (!ConfigManager.isAxonProject(projectRoot)) {

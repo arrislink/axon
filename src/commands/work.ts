@@ -5,7 +5,6 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { ConfigManager } from '../core/config';
-import { BeadsExecutor } from '../core/beads';
 import { logger } from '../utils/logger';
 import { spinner, progressBar } from '../utils/spinner';
 import { confirm } from '../utils/prompt';
@@ -18,6 +17,13 @@ export const workCommand = new Command('work')
     .option('--all', '执行所有待处理任务')
     .option('--bead <id>', '执行指定任务')
     .action(async (options) => {
+        // Dynamic stats import
+        const { BeadsExecutor } = await import('../core/beads');
+        const { ensureGitSafety } = await import('../core/git/safe-commit');
+        // Initial version check
+        const { checkCompatibility } = await import('../core/compat/version-check');
+        await checkCompatibility();
+
         const projectRoot = process.cwd();
 
         if (!ConfigManager.isAxonProject(projectRoot)) {
@@ -26,21 +32,39 @@ export const workCommand = new Command('work')
             ]);
         }
 
-        // Check API key
-        const apiKey = process.env['ANTHROPIC_API_KEY'];
-        if (!apiKey) {
-            throw new AxonError('未设置 ANTHROPIC_API_KEY', 'WORK_ERROR', [
-                '设置环境变量: export ANTHROPIC_API_KEY=sk-ant-...',
-            ]);
+        // Check Git Safety before starting work
+        if (!options.dryRun) {
+            await ensureGitSafety({ cwd: projectRoot });
         }
+
+        // Dynamic import ConfigPriorityResolver
+        const { ConfigPriorityResolver } = await import('../core/config/priority');
+        const { OMOConfigReader } = await import('../core/llm/omo-config-reader');
 
         const configManager = new ConfigManager(projectRoot);
         const config = configManager.get();
+        const omoConfig = new OMOConfigReader();
+        const resolver = new ConfigPriorityResolver();
+
+        const resolved = resolver.resolve({
+            cliOptions: options,
+            projectConfig: config,
+            omoConfig,
+            env: process.env
+        });
+
+        if (!resolved.apiKey) {
+            throw new AxonError('未找到 API Key', 'WORK_ERROR', [
+                '请配置 OMO Provider 或设置环境变量',
+                '运行 `ax config keys` 或 `bunx oh-my-opencode config`',
+            ]);
+        }
 
         logger.title('Axon 任务执行');
 
         // Initialize executor
-        const executor = new BeadsExecutor(config, projectRoot, apiKey);
+        // We use resolved.apiKey
+        const executor = new BeadsExecutor(config, projectRoot, resolved.apiKey);
         const stats = executor.getStats();
 
         // Show current progress

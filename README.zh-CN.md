@@ -8,7 +8,7 @@
 [![Bun](https://img.shields.io/badge/bun-%3E=1.1.0-blue.svg)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org)
 
-Axon 是一个统一的 AI 辅助开发环境，通过深度集成规格驱动开发、任务管理和技能复用，解决 AI 编程中的上下文丢失、重复造轮子和规划失控问题。
+Axon 是一个统一的 AI 辅助开发环境，解决 AI 编程中的上下文丢失、重复造轮子和规划失控问题。**由 [OpenCode](https://github.com/anomalyco/opencode) 和 [OhMyOpenCode](https://github.com/code-yeongyu/oh-my-opencode) 驱动**，Axon 通过规格驱动开发和任务管理来编排这些强大的工具。
 
 ## ✨ 核心特性
 
@@ -18,6 +18,30 @@ Axon 是一个统一的 AI 辅助开发环境，通过深度集成规格驱动�
 - **💰 成本控制** - 智能追踪 token 消耗，避免超支
 - **🤖 多提供商支持** - 集成 OMO，支持 75+ LLM 提供商（Anthropic、OpenAI、Antigravity 等）
 - **🎭 Agent 编排** - 多个 AI 代理智能协作
+
+## 🎯 适用场景
+
+Axon 最适合以下场景：
+
+- **复杂功能实现**: 当功能需要修改多个文件并保持架构一致性时（例如“添加 JWT 认证”）。
+- **绿地项目**: 启动一个需求清晰且严格遵循规格的新项目。
+- **大规模重构**: 在代码库中系统地更新代码模式。
+- **团队标准化**: 使用共享的技能模板在团队中强制执行一致的编码标准和能力。
+
+它是与 **不适用** 于：
+- 简单的单行代码补全（请使用 Copilot/Cursor）。
+- 实时语法错误修复（请使用 IDE linter）。
+
+## 🆚 工具对比
+
+| 特性 | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
+| :--- | :--- | :--- | :--- |
+| **核心理念** | **规划-执行-验证** (代理式) | **自动补全** (辅助式) | **聊天即代码** (自主式) |
+| **上下文感知** | **高** (全项目规格 + 任务图) | **中** (打开文件 + RAG) | **高** (仓库地图) |
+| **规划能力** | ✅ **执行前任务图** | ❌ 无 (流式生成) | ⚠️ 隐式 (逐步进行) |
+| **人类控制** | ✅ **高** (审查规划与规格) | ✅ 高 (接受/拒绝) | ⚠️ 依赖于具体应用 |
+| **成本控制** | ✅ **Token 预算与追踪** | ❌ 基于订阅 | ⚠️ 通常无限制 |
+| **知识复用** | ✅ **技能模板** (.skills) | ❌ 无 | ❌ 无 |
 
 ## 🚀 快速开始
 
@@ -220,9 +244,8 @@ bun run build:js
 ```
 
 ## 📖 文档
-
-- [产品需求文档 (PRD)](./PRD.md)
-- [API 文档](./docs/api.md)
+ 
+- [**用户指南**](./docs/GUIDE.zh-CN.md) - **从这里开始** (设计理念, 架构, 功能, API)
 - [贡献指南](./CONTRIBUTING.md)
 - [更新日志](./CHANGELOG.md)
 

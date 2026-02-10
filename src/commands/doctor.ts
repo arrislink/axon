@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import { ConfigManager, DEFAULT_DIRECTORIES } from '../core/config';
 import { AnthropicClient } from '../core/integrations/anthropic';
 import { GitOperations } from '../core/integrations/git';
+import { OMOConfigReader } from '../core/llm/omo-config-reader';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
 
@@ -77,86 +78,72 @@ export const doctorCommand = new Command('doctor')
         }
 
         // Check 3: API Keys
-        const anthropicKey = process.env['ANTHROPIC_API_KEY'];
-        if (anthropicKey) {
-            if (options.checkKeys) {
-                spinner.start('验证 Anthropic API 密钥...');
-                try {
-                    const client = new AnthropicClient(anthropicKey, {
-                        model: 'claude-sonnet-4-20250514',
-                        provider: 'anthropic',
-                    });
-                    const valid = await client.validateKey();
-                    spinner.stop();
+        const omoReader = new OMOConfigReader();
+        const providers = ['anthropic', 'openai', 'google'];
 
-                    if (valid) {
-                        results.push({
-                            name: 'Anthropic API',
-                            status: 'ok',
-                            message: '密钥有效',
+        for (const name of providers) {
+            const envVar = `${name.toUpperCase()}_API_KEY`;
+            let apiKey = process.env[envVar];
+            let source = 'environment';
+
+            // Check OMO if env not set
+            if (!apiKey) {
+                const provider = omoReader.getProvider(name);
+                if (provider) {
+                    apiKey = omoReader.getProviderApiKey(provider);
+                    source = 'OMO config (~/.omo/providers.yaml)';
+                }
+            }
+
+            if (apiKey) {
+                if (options.checkKeys) {
+                    spinner.start(`验证 ${name} API 密钥 (${source})...`);
+                    try {
+                        const client = new AnthropicClient(apiKey, {
+                            model: name === 'anthropic' ? 'claude-sonnet-4-20250514' : 'unknown',
+                            provider: name as any,
                         });
-                    } else {
+                        const valid = await client.validateKey();
+                        spinner.stop();
+
+                        if (valid) {
+                            results.push({
+                                name: `${name} API`,
+                                status: 'ok',
+                                message: `密钥有效 (来自 ${source})`,
+                            });
+                        } else {
+                            results.push({
+                                name: `${name} API`,
+                                status: 'error',
+                                message: `密钥无效或已过期 (来自 ${source})`,
+                                fix: `ax config keys ${name} YOUR_KEY`,
+                            });
+                        }
+                    } catch (error) {
+                        spinner.stop();
                         results.push({
-                            name: 'Anthropic API',
+                            name: `${name} API`,
                             status: 'error',
-                            message: '密钥无效或已过期',
-                            fix: 'export ANTHROPIC_API_KEY=sk-ant-...',
+                            message: `验证失败 (${source}): ${(error as Error).message}`,
                         });
                     }
-                } catch (error) {
-                    spinner.stop();
+                } else {
+                    const masked = apiKey.length > 10 ? `${apiKey.slice(0, 10)}...` : '***';
                     results.push({
-                        name: 'Anthropic API',
-                        status: 'error',
-                        message: `验证失败: ${(error as Error).message}`,
+                        name: `${name} API`,
+                        status: 'ok',
+                        message: `已设置 (${masked}) [来自 ${source}]`,
                     });
                 }
             } else {
                 results.push({
-                    name: 'Anthropic API',
-                    status: 'ok',
-                    message: `已设置 (${anthropicKey.slice(0, 10)}...)`,
+                    name: `${name} API`,
+                    status: name === 'anthropic' ? 'error' : 'warn',
+                    message: `${envVar} 未设置`,
+                    fix: `ax config keys ${name} YOUR_KEY`,
                 });
             }
-        } else {
-            results.push({
-                name: 'Anthropic API',
-                status: 'error',
-                message: 'ANTHROPIC_API_KEY 未设置',
-                fix: 'export ANTHROPIC_API_KEY=sk-ant-...',
-            });
-        }
-
-        // Optional: OpenAI
-        const openaiKey = process.env['OPENAI_API_KEY'];
-        if (openaiKey) {
-            results.push({
-                name: 'OpenAI API',
-                status: 'ok',
-                message: `已设置 (${openaiKey.slice(0, 10)}...)`,
-            });
-        } else {
-            results.push({
-                name: 'OpenAI API',
-                status: 'warn',
-                message: '未设置 (可选)',
-            });
-        }
-
-        // Optional: Google
-        const googleKey = process.env['GOOGLE_API_KEY'];
-        if (googleKey) {
-            results.push({
-                name: 'Google API',
-                status: 'ok',
-                message: `已设置 (${googleKey.slice(0, 10)}...)`,
-            });
-        } else {
-            results.push({
-                name: 'Google API',
-                status: 'warn',
-                message: '未设置 (可选)',
-            });
         }
 
         // Check 4: Bun version

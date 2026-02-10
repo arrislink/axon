@@ -22,6 +22,8 @@ export class AxonLLMClient {
         this.initClient();
     }
 
+    private detectedCommand: string[] = ['opencode'];
+
     /**
      * Detect the best available LLM mode
      */
@@ -29,10 +31,19 @@ export class AxonLLMClient {
         // 1. Check if opencode CLI is available
         try {
             const proc = Bun.spawnSync(['opencode', '--version']);
-            if (proc.success) return 'cli';
-        } catch {
-            // CLI not found
-        }
+            if (proc.success) {
+                this.detectedCommand = ['opencode'];
+                return 'cli';
+            }
+        } catch { }
+
+        try {
+            const proc = Bun.spawnSync(['bunx', 'opencode', '--version']);
+            if (proc.success) {
+                this.detectedCommand = ['bunx', 'opencode'];
+                return 'cli';
+            }
+        } catch { }
 
         // 2. Check if OMO config exists for direct API
         if (hasOMOConfig() && this.omoConfig.hasProviders()) {
@@ -49,7 +60,7 @@ export class AxonLLMClient {
     private initClient(): void {
         switch (this.mode) {
             case 'cli':
-                this.openCodeClient = new OpenCodeLLMClient();
+                this.openCodeClient = new OpenCodeLLMClient('sisyphus', this.detectedCommand);
                 break;
             case 'direct':
                 this.unifiedClient = new UnifiedLLMClient(this.omoConfig);
@@ -93,6 +104,7 @@ export class AxonLLMClient {
             // If CLI or direct fails, try auto-fallback
             if (this.mode !== 'fallback') {
                 console.warn(`🧠 Axon: ${this.mode} 模式调用失败，尝试回退...`);
+                if (process.env['DEBUG']) console.error(error);
                 this.mode = 'fallback';
                 this.initClient();
                 return await this.chat(messages, options);

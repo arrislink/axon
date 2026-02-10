@@ -7,10 +7,9 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import chalk from 'chalk';
 import { ConfigManager } from '../core/config';
-import { BeadsGenerator, validateGraph } from '../core/beads';
+import { AxonError } from '../utils/errors';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
-import { AxonError } from '../utils/errors';
 
 export const planCommand = new Command('plan')
     .description('从规格文档生成任务图')
@@ -19,6 +18,12 @@ export const planCommand = new Command('plan')
     .option('--model <name>', '指定使用的模型')
     .option('--dry-run', '只验证，不生成')
     .action(async (options) => {
+        // Dynamic import for performance
+        const { BeadsGenerator, validateGraph } = await import('../core/beads');
+        // Initial version check
+        const { checkCompatibility } = await import('../core/compat/version-check');
+        await checkCompatibility();
+
         const projectRoot = process.cwd();
 
         if (!ConfigManager.isAxonProject(projectRoot)) {
@@ -94,7 +99,6 @@ export const planCommand = new Command('plan')
         );
         console.log(`  预计成本:     ${chalk.bold('$' + graph.metadata.total_cost_usd.toFixed(2))}`);
 
-        logger.blank();
         console.log(chalk.dim('任务列表:'));
         for (const bead of graph.beads.slice(0, 10)) {
             const deps = bead.dependencies.length > 0 ? chalk.dim(` (依赖: ${bead.dependencies.join(', ')})`) : '';

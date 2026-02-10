@@ -42,6 +42,8 @@ export interface OMOProvider {
     endpoint?: string;
     models: string[];
     auth?: string;
+    type?: string;     // e.g., 'anthropic', 'openai', 'google'
+    is_active?: boolean; // Whether this provider is currently active/selected
 }
 
 /**

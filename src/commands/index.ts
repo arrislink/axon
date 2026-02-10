@@ -1,11 +1,12 @@
 /**
- * Commands module exports
+ * Command exports
  */
 
-export { initCommand } from './init';
-export { specCommand } from './spec';
-export { planCommand } from './plan';
-export { workCommand } from './work';
-export { skillsCommand } from './skills';
-export { statusCommand } from './status';
-export { doctorCommand } from './doctor';
+export * from './init';
+export * from './spec';
+export * from './plan';
+export * from './work';
+export * from './skills';
+export * from './status';
+export * from './doctor';
+export * from './config';

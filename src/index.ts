@@ -15,6 +15,7 @@ import {
     skillsCommand,
     statusCommand,
     doctorCommand,
+    configCommand,
 } from './commands';
 import { handleError } from './utils/errors';
 
@@ -40,12 +41,14 @@ program.addCommand(workCommand);
 program.addCommand(skillsCommand);
 program.addCommand(statusCommand);
 program.addCommand(doctorCommand);
+program.addCommand(configCommand);
 
 // Custom help
 program.addHelpText('after', `
 ${chalk.bold('示例:')}
   ${chalk.cyan('ax init my-project')}     初始化新项目
   ${chalk.cyan('ax spec init')}           交互式创建规格
+  ${chalk.cyan('ax config keys anthropic')} 配置 API 密钥
   ${chalk.cyan('ax plan')}                生成任务图
   ${chalk.cyan('ax work')}                执行下一个任务
   ${chalk.cyan('ax status')}              查看项目状态

@@ -8,7 +8,7 @@
 [![Bun](https://img.shields.io/badge/bun-%3E=1.1.0-blue.svg)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org)
 
-Axon is a unified AI-assisted development environment that solves context loss, wheel reinvention, and planning chaos in AI-powered programming through deep integration of specification-driven development, task management, and skill reuse.
+Axon is a unified AI-assisted development environment that solves context loss, wheel reinvention, and planning chaos in AI-powered programming. **Powered by [OpenCode](https://github.com/anomalyco/opencode) and [OhMyOpenCode](https://github.com/code-yeongyu/oh-my-opencode)**, Axon orchestrates these powerful tools through specification-driven development and task management.
 
 ## ✨ Features
 
@@ -18,6 +18,30 @@ Axon is a unified AI-assisted development environment that solves context loss, 
 - **💰 Cost Control** - Smart token usage tracking to prevent overspending
 - **🤖 Multi-Provider Support** - Integrate with OMO for 75+ LLM providers (Anthropic, OpenAI, Antigravity, etc.)
 - **🎭 Agent Orchestration** - Multiple AI agents collaborate intelligently
+
+## 🎯 Applicable Scenarios
+
+Axon is best suited for:
+
+- **Complex Feature Implementation**: When a feature requires multiple file changes and architectural consistency (e.g., "Add JWT Auth").
+- **Greenfield Projects**: Starting a new project with clear requirements and strictly following a spec.
+- **Large-Scale Refactoring**: Systematically updating code patterns across a codebase.
+- **Team Standardization**: Enforcing consistent coding standards and capabilities across a team using shared Skill templates.
+
+It is **NOT** designed for:
+- Simple, one-line code completions (Use Copilot/Cursor).
+- Real-time syntax error fixing (Use IDE linters).
+
+## 🆚 Tool Comparison
+
+| Feature | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
+| :--- | :--- | :--- | :--- |
+| **Core Philosophy** | **Plan-Execute-Verify** (Agentic) | **Autocomplete** (Assistive) | **Chat-to-Code** (Autonomous) |
+| **Context Awareness** | **High** (Project-wide Spec + Graph) | **Medium** (Open Files + RAG) | **High** (Repo Map) |
+| **Planning** | ✅ **Pre-execution Task Graph** | ❌ None (Streaming) | ⚠️ Implicit (Step-by-step) |
+| **Human Control** | ✅ **High** (Review Plan & Spec) | ✅ High (Accept/Reject) | ⚠️ Application Dependent |
+| **Cost Control** | ✅ **Token Budgeting & Tracking** | ❌ Subscription Based | ⚠️ Often Unbounded |
+| **Knowledge Reuse** | ✅ **Skill Templates** (.skills) | ❌ None | ❌ None |
 
 ## 🚀 Quick Start
 
@@ -220,9 +244,8 @@ bun run build:js
 ```
 
 ## 📖 Documentation
-
-- [Product Requirements (PRD)](./PRD.md)
-- [API Documentation](./docs/api.md)
+ 
+- [**User Guide**](./docs/GUIDE.md) - **Start Here** (Philosophy, Arch, Features, API)
 - [Contributing Guide](./CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)
 
