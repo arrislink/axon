@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-02-10
+
+### Fixed
+- **Missing `ax spec edit` Command**: Implemented the `edit` subcommand that was referenced in `ax spec init` output but not available. Users can now edit existing specification documents interactively with `ax spec edit`.
+
 ## [1.0.7] - 2026-02-10
 
 ### Added

@@ -129,6 +129,7 @@ graph LR
 |---------|-------------|
 | `ax init [name]` | Initialize a new Axon project |
 | `ax spec init` | Create project specification interactively |
+| `ax spec edit` | Edit the existing specification |
 | `ax spec show` | Display current specification |
 | `ax plan` | Generate task graph from specification |
 | `ax work` | Execute the next task |

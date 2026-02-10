@@ -245,6 +245,7 @@ dist/
 | :--- | :--- |
 | `ax init [name]` | Initialize a new Axon project with standard structure. |
 | `ax spec init` | Interactively create a project specification (`.openspec/spec.md`). |
+| `ax spec edit` | Edit the existing project specification in your default text editor. |
 | `ax spec show` | Display the current specification. |
 | `ax plan` | Generate a task graph (`.beads/graph.json`) from the specification. |
 | `ax work` | Execute pending tasks in the graph. |
