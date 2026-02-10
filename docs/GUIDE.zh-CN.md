@@ -79,7 +79,10 @@ graph TD
 ### 4. 技能注入
 Axon 会在你的本地 `.skills` 目录和全局库中搜索相关模式。如果你正在构建 API，它会自动拉取团队标准的 API 响应包装器技能。
 
-### 5. 配置优先级与安全
+### 5. 文档集成
+将现有的项目文档（PDF、Word、Markdown）导入 Axon 的上下文中。AI 智能体将使用这些文档在规格生成和任务执行期间更好地理解需求、约束和架构。
+
+### 6. 配置优先级与安全
 *   **配置优先级**: CLI 参数 > 项目配置 > OMO 配置 > 环境变量。
 *   **Git 安全**: 防止在不干净的工作区执行任务，并在向保护分支 (`main`/`master`) 提交前发出警告。
 
@@ -164,7 +167,7 @@ Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git �
 
 ### 2. 配置策略
 *   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
-*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 **OhMyOpenCode (OMO)** 管理个人 API 密钥。Axon 会自动从本地 OMO 配置和 Antigravity 认证（`~/.config/opencode/antigravity-accounts.json`）中解析凭据，在不泄露私钥的情况下驱动企业级代理。Axon 将这些本地凭据与共享的项目逻辑在运行时自动结合。
 
 ### 3. 推荐的 .gitignore
 在项目 `.gitignore` 中添加以下内容：
@@ -201,6 +204,44 @@ dist/
 
 ---
 
+## 📚 文档管理
+
+Axon 允许你导入外部文档，为 AI 智能体提供上下文。这对于确保 AI 理解你的具体业务规则、遗留架构或详细的产品需求至关重要。
+
+### 支持的格式
+- **Markdown (.md)**: 技术文档的最佳选择。
+- **Word (.docx)**: 需求文档、PRD。
+- **PDF (.pdf)**: 遗留规格说明书、大量手册。
+- **文本与代码 (.txt, .yaml 等)**: 配置文件、日志。
+
+### 上下文工作流
+1.  **导入**: 将文档添加到库中。
+2.  **索引**: Axon 提取文本并使用 AI 生成元数据（摘要、标签）。
+3.  **使用**: 
+    - `ax spec init` 自动检测文档并询问是否使用。
+    - `ax work` 智能体可以在编码过程中搜索并引用这些文档。
+
+### 管理文档
+
+```bash
+# 添加单个文件
+ax docs add ./docs/PRD_v1.0.docx --title "产品需求文档"
+
+# 添加整个目录
+ax docs add-dir ./legacy-docs/
+
+# 列出所有文档
+ax docs list
+
+# 搜索内容
+ax docs search "认证"
+
+# 查看详情
+ax docs show <doc-id>
+```
+
+---
+
 ## 📚 API 与命令参考
 
 ### 核心命令
@@ -222,6 +263,23 @@ dist/
 | `ax config list` | 列出可用的 LLM 提供商和模型。 |
 | `ax config show` | 显示当前解析后的配置。 |
 | `ax config setup` | 设置 LLM 提供商的交互式向导。 |
+| `ax config test` | 测试 LLM 连接是否正常。 |
+
+### `ax config test`
+
+测试 LLM 连接是否正常。
+
+```bash
+ax config test
+ax config test --provider antigravity
+ax config test --model gpt-4o
+ax config test --mode direct  # 强制使用直接 API 模式
+```
+
+参数：
+- `-p, --provider <name>`: 指定要测试的 Provider。
+- `-m, --model <model>`: 指定测试使用的模型。
+- `--mode <mode>`: 强制使用的模式 (`cli`, `direct`, `fallback`)。
 
 ### 技能命令
 
@@ -236,6 +294,17 @@ dist/
 | :--- | :--- |
 | `ax doctor` | 诊断环境问题（Node 版本、工具安装、密钥）。 |
 | `ax doctor --fix` | 尝试自动修复诊断出的问题。 |
+
+### 文档命令
+
+| 命令 | 描述 |
+| :--- | :--- |
+| `ax docs add <path>` | 导入文档。 |
+| `ax docs add-dir <path>` | 导入目录下的所有文档。 |
+| `ax docs list` | 列出已索引的文档。 |
+| `ax docs search <query>` | 在文档内搜索。 |
+| `ax docs show <id>` | 查看文档元数据和内容。 |
+| `ax docs summarize <id>` | 生成文档的 AI 摘要。 |
 
 ---
 

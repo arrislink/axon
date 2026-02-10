@@ -5,7 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.2] - 2026-02-10
+
+### Added
+- **Google Gemini Support**: Added native support for Google Gemini models in `UnifiedLLMClient`, including direct REST API calls and proxy routing via Antigravity.
+- **Antigravity Authentication**: Implemented automatic resolution of Antigravity tokens from `~/.config/opencode/antigravity-accounts.json`. Axon now uses these tokens as a universal authentication source for proxy-based provider access.
+
+### Improved
+- **LLM Configuration Resolution**: 
+  - Rewrote `OMOConfigReader` to properly map model prefixes (e.g., `opencode/*` → `antigravity`, `google/*` → `google`) to their respective provider types.
+  - Enhanced config merging to combine agent definitions from `oh-my-opencode.json` with provider definitions from `opencode.json`.
+  - Added multi-environment variable lookup for API keys in `getProviderApiKey()`.
+- **Diagnostics & Troubleshooting**:
+  - Enhanced `ax doctor` to correctly detect and verify API keys sourced from Antigravity tokens and OMO configurations.
+  - Improved error messages in `AxonLLMClient` with detailed diagnostic information (config source, provider count, token status) when no valid LLM configuration is found.
+  - Updated `ax config show` and `ax config list` to display accurate provider types and diagnostic states.
+
+## [1.1.1] - 2026-02-10
+
+### Fixed
+- **CLI Language Consistency**: Fixed mixed Chinese/English descriptions across all commands by implementing consistent bilingual support using i18n wrapper. All command descriptions now display in the user's system locale (English or Chinese).
+  - Updated `ax spec`, `ax plan`, `ax work`, `ax skills`, `ax status`, `ax doctor`, `ax config` commands with bilingual descriptions.
+  - Separated help text examples into distinct English and Chinese sections for clarity.
+  - All subcommands (e.g., `ax spec init`, `ax config test`, etc.) now support locale-aware descriptions.
+
+## [1.1.0] - 2026-02-10
+
+### Added
+- **Document Integration**: Introduced `ax docs` command suite for managing project reference materials.
+  - `ax docs add <file>`: Add documents (Markdown, WORD .docx, PDF, etc.) to the project library.
+  - `ax docs list`: List all indexed documents.
+  - `ax docs search <query>`: Semantic search within project documents.
+  - `ax docs summarize <id>`: AI-powered document summarization.
+  - `DocumentManager`: Core logic for file parsing, metadata enrichment, and context management.
+- **Format Support**: Added `.docx` (Word) support to `ax docs add` using `mammoth`.
+- **Spec Generation**: fast-track `ax spec init` with `--from-docs` support (experimental) to generate specifications directly from added documents.
+
+## [1.0.10] - 2026-02-10
+
+### Fixed
+- **`ax spec init` Multi-line Input Loop**: Fixed infinite loop when entering long multi-line additional requirements. Now uses external editor instead of text input for better UX with detailed requirements. Prevents prompt library from repeating question on pasted/multi-line input.
+
+## [1.0.9] - 2026-02-10
+
+### Fixed
+- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured. Addresses issue where command hung waiting for editor input.
+
+## [1.0.8] - 2026-02-10
+
+### Fixed
+- **Missing `ax spec edit` Command**: Implemented the `edit` subcommand that was referenced in `ax spec init` output but not available. Users can now edit existing specification documents interactively with `ax spec edit`.
+- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured.
 
 ## [1.0.7] - 2026-02-10
 
@@ -120,6 +170,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 [Unreleased]: https://github.com/arrislink/axon/compare/v1.0.7...HEAD
+[1.1.0]: https://github.com/arrislink/axon/compare/v1.0.10...v1.1.0
+[1.0.10]: https://github.com/arrislink/axon/compare/v1.0.9...v1.0.10
+[1.0.9]: https://github.com/arrislink/axon/compare/v1.0.8...v1.0.9
+[1.0.8]: https://github.com/arrislink/axon/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/arrislink/axon/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/arrislink/axon/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/arrislink/axon/compare/v1.0.4...v1.0.5

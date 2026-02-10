@@ -79,6 +79,9 @@ Instead of jumping into code, `ax spec init` helps you clarify your requirements
 ### 4. Skill Injection
 Axon searches your local `.skills` directory and the global library for relevant patterns. If you are building an API, it pulls in your team's standard API response wrapper skill.
 
+### 5. Document Integration
+Import existing project documents (PDF, Word, Markdown) into Axon's context. AI agents will use these documents to better understand requirements, constraints, and architecture during spec generation and task execution.
+
 ### 5. Config Priority & Safety
 *   **Config Priority**: CLI Args > Project Config > OMO Config > Environment Variables.
 *   **Git Safety**: Prevents execution on dirty working trees and warns before committing to protected branches (`main`/`master`).
@@ -163,8 +166,8 @@ To collaborate, ensure the following directories are committed to your repositor
 *   `.skills/`: Shares high-quality code patterns and prompts across the team.
 
 ### 2. Configuration Strategy
-*   **Shared Logic (`.axon/config.yaml`)**: Commit this to Git to define project models and safety rules.
-*   **Personal Credentials**: Use environment variables (`ANTHROPIC_API_KEY`) or OMO for personal API keys. Axon combines shared logic with local credentials automatically.
+*   **Shared Logic (`.axon/config.yaml`)**: Commit this file to Git to define project models and safety rules.
+*   **Personal Credentials**: Use environment variables (`ANTHROPIC_API_KEY`) or **OhMyOpenCode (OMO)** for personal API keys. Axon automatically resolves credentials from your local OMO configuration and Antigravity authentication (`~/.config/opencode/antigravity-accounts.json`) to power enterprise-grade agents without leaking secrets. Axon merges these local credentials with your shared project logic at runtime.
 
 ### 3. Recommended .gitignore
 Add the following to your project's `.gitignore`:
@@ -200,7 +203,7 @@ Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git �
 
 ### 2. 配置策略
 *   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
-*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 **OhMyOpenCode (OMO)** 管理个人 API 密钥。Axon 会自动从本地 OMO 配置和 Antigravity 认证（`~/.config/opencode/antigravity-accounts.json`）中解析凭据，在不泄露私钥的情况下驱动企业级代理。Axon 将这些本地凭据与共享的项目逻辑在运行时自动结合。
 
 ### 3. 推荐的 .gitignore
 在项目 `.gitignore` 中添加以下内容：
@@ -237,6 +240,44 @@ dist/
 
 ---
 
+## 📚 Document Management
+
+Axon allows you to import external documents to provide context for AI agents. This is crucial for ensuring the AI understands your specific business rules, legacy architecture, or detailed product requirements.
+
+### Supported Formats
+- **Markdown (.md)**: Best for technical docs.
+- **Word (.docx)**: Requirements documents, PRDs.
+- **PDF (.pdf)**: Legacy specifications, extensive manuals.
+- **Text & Code (.txt, .yaml, etc.)**: Config files, logs.
+
+### Context Workflow
+1.  **Import**: Add documents to the library.
+2.  **Indexing**: Axon extracts text and uses AI to generate metadata (summary, tags).
+3.  **Usage**: 
+    - `ax spec init` automatically detects documents and asks to use them.
+    - `ax work` agents can search and reference these documents during coding.
+
+### Managing Documents
+
+```bash
+# Add a single file
+ax docs add ./docs/PRD_v1.0.docx --title "Product Requirements"
+
+# Add an entire directory
+ax docs add-dir ./legacy-docs/
+
+# List all documents
+ax docs list
+
+# Search content
+ax docs search "authentication"
+
+# View details
+ax docs show <doc-id>
+```
+
+---
+
 ## 📚 API & Command Reference
 
 ### Core Commands
@@ -245,6 +286,7 @@ dist/
 | :--- | :--- |
 | `ax init [name]` | Initialize a new Axon project with standard structure. |
 | `ax spec init` | Interactively create a project specification (`.openspec/spec.md`). |
+| `ax spec edit` | Edit the existing project specification in your default text editor. |
 | `ax spec show` | Display the current specification. |
 | `ax plan` | Generate a task graph (`.beads/graph.json`) from the specification. |
 | `ax work` | Execute pending tasks in the graph. |
@@ -259,6 +301,22 @@ dist/
 | `ax config show` | Show the current resolved configuration. |
 | `ax config setup` | Interactive wizard to setup LLM provider. |
 
+### `ax config test`
+
+Test if LLM connection is working properly.
+
+```bash
+ax config test
+ax config test --provider antigravity
+ax config test --model gpt-4o
+ax config test --mode direct  # Force direct API mode
+```
+
+Options:
+- `-p, --provider <name>`: Specify Provider to test.
+- `-m, --model <model>`: Specify model for testing.
+- `--mode <mode>`: Force specific mode (`cli`, `direct`, `fallback`).
+
 ### Skill Commands
 
 | Command | Description |
@@ -272,6 +330,17 @@ dist/
 | :--- | :--- |
 | `ax doctor` | Diagnose environment issues (Node version, tool install, keys). |
 | `ax doctor --fix` | Attempt to automatically fix diagnosed issues. |
+
+### Document Commands
+
+| Command | Description |
+| :--- | :--- |
+| `ax docs add <path>` | Import a document. |
+| `ax docs add-dir <path>` | Import all documents from a directory. |
+| `ax docs list` | List indexed documents. |
+| `ax docs search <query>` | Search within documents. |
+| `ax docs show <id>` | View document metadata and content. |
+| `ax docs summarize <id>` | Generate AI summary for a document. |
 
 ---
 

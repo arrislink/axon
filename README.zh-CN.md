@@ -18,6 +18,7 @@ Axon 是一个统一的 AI 辅助开发环境，解决 AI 编程中的上下文�
 - **🗺️ 珠子规划**: 将复杂功能拆解为原子的、按依赖排序的任务 (Beads)。
 - **🤖 代理执行**: **OpenCode** 智能体逐个执行任务，确保上下文完整和代码质量。
 - **♻️ 技能复用**: 自动应用团队库中经过验证的模式 (如“安全认证”)。
+- **📚 文档集成**: 导入 PDF/Word/MD 文档作为 AI 上下文，使用 `ax docs` 辅助生成规格和代码。
 - **🛡️ 企业级安全**: Token 预算控制、Git 安全检查以及通过 **OMO** 实现的多模型故障转移。
 
 ## 🎯 适用场景
@@ -80,8 +81,9 @@ ax --help
 ax init my-awesome-project
 cd my-awesome-project
 
-# 交互式创建规格
-ax spec init
+# 交互式创建规格（或从文档创建）
+ax docs add ./requirements.docx  # 可选：导入现有文档
+ax spec init                     # AI 使用导入的文档生成规格
 
 # 从规格生成任务图
 ax plan
@@ -130,6 +132,9 @@ graph LR
 | `ax init [name]` | 初始化新的 Axon 项目 |
 | `ax spec init` | 交互式创建项目规格 |
 | `ax spec show` | 显示当前规格 |
+| `ax docs add <file>` | 导入文档 (PDF, Word, MD) 到项目 |
+| `ax docs list` | 列出并过滤项目文档 |
+| `ax docs search <q>` | 在文档中进行语义搜索 |
 | `ax plan` | 从规格生成任务图 |
 | `ax work` | 执行下一个任务 |
 | `ax work --interactive` | 交互模式执行任务 |
@@ -151,12 +156,12 @@ omo config set-provider antigravity
 
 # Axon 自动检测并使用 OMO 配置
 ax plan  # 使用配置的提供商
-```
 
-**提供商优先级:**
-1. **CLI 模式** - 使用 OpenCode CLI（继承 OMO 全部能力）
-2. **直接模式** - 读取 OMO 配置，直接调用 API
-3. **回退模式** - 使用 `ANTHROPIC_API_KEY` 环境变量
+**Provider 优先级：**
+1. **CLI 模式** - 使用 OpenCode CLI (继承完整的 OMO 能力)
+2. **Direct 模式** - 读取 OMO 配置并自动解析 **Antigravity** 刷新令牌
+3. **Fallback 模式** - 使用 `ANTHROPIC_API_KEY` 等环境变量
+```
 
 ### 环境变量
 
@@ -210,8 +215,8 @@ graph TD
     
     subgraph "LLM 层"
         Orch --> LLMInt[统一 LLM 接口]
-        LLMInt --> OMO[OhMyOpenCode 注册表]
-        OMO --> Providers[平台: Anthropic, OpenAI, Antigrav 等]
+        LLMInt --> OMO[OMO 配置 & Antigravity 认证]
+        OMO --> Providers[提供商: Anthropic, Google Gemini, OpenAI, etc.]
     end
 ```
 

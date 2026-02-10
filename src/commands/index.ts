@@ -10,3 +10,4 @@ export * from './skills';
 export * from './status';
 export * from './doctor';
 export * from './config';
+export * from './docs';
