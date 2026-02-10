@@ -83,7 +83,7 @@ export async function password(message: string): Promise<string> {
 }
 
 export async function editor(message: string, defaultValue?: string): Promise<string> {
-  const editorCmd = process.env.EDITOR || process.env.VISUAL || 'nano';
+  const editorCmd = process.env['EDITOR'] || process.env['VISUAL'] || 'nano';
   const tmpFile = `${process.cwd()}/.axon-editor-${Date.now()}.md`;
 
   try {

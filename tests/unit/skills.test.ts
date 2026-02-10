@@ -101,16 +101,19 @@ Database content here.
   });
 
   test('gets stats correctly', async () => {
-    const library = new SkillsLibrary([join(TEST_DIR, 'local'), join(TEST_DIR, 'global')]);
+        const library = new SkillsLibrary([
+            join(TEST_DIR, 'local'),
+            join(TEST_DIR, 'global')
+        ]);
 
-    const stats = await library.getStats();
+        const stats = await library.getStats();
 
-    expect(stats.total).toBe(2);
-    expect(stats.byTag.auth).toBe(1);
-    expect(stats.byTag.database).toBe(1);
-    expect(stats.byDifficulty.easy).toBe(1);
-    expect(stats.byDifficulty.medium).toBe(1);
-  });
+        expect(stats.total).toBe(2);
+        expect(stats.byTag['auth']).toBe(1);
+        expect(stats.byTag['database']).toBe(1);
+        expect(stats.byDifficulty['easy']).toBe(1);
+        expect(stats.byDifficulty['medium']).toBe(1);
+    });
 
   test('saves new skill', async () => {
     const library = new SkillsLibrary([join(TEST_DIR, 'local'), join(TEST_DIR, 'global')]);

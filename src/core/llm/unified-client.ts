@@ -97,7 +97,7 @@ export class UnifiedLLMClient {
     messages: LLMMessage[],
     options?: LLMOptions,
   ): Promise<LLMResponse> {
-    const apiKey = this.omoConfig.getProviderApiKey(provider) || process.env.ANTHROPIC_API_KEY;
+    const apiKey = this.omoConfig.getProviderApiKey(provider) || process.env['ANTHROPIC_API_KEY'];
 
     if (!apiKey) {
       throw new Error(`未找到 ${provider.name} 的 API 密钥`);

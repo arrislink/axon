@@ -29,7 +29,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
+    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
 
     // Use config if in Axon project
     if (ConfigManager.isAxonProject(projectRoot)) {
@@ -91,7 +91,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
+    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
 
     if (ConfigManager.isAxonProject(projectRoot)) {
       const configManager = new ConfigManager(projectRoot);
@@ -295,7 +295,7 @@ skillsCommand
     let localPath = join(projectRoot, '.skills');
     const officialLocalPath = join(projectRoot, '.agents', 'skills');
     const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
+    let globalPath = join(process.env['HOME'] || '~', '.axon', 'skills');
 
     if (ConfigManager.isAxonProject(projectRoot)) {
       const configManager = new ConfigManager(projectRoot);

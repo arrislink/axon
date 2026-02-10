@@ -60,7 +60,7 @@ class SpinnerManager {
   }
 
   isRunning(): boolean {
-    return this.spinner?.isSpinning;
+    return !!this.spinner?.isSpinning;
   }
 }
 

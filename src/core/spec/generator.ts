@@ -56,7 +56,7 @@ export class SpecGenerator {
         maxTokens: 4000,
       });
 
-      if (response.content && response.content.trim().length > 100) {
+      if (response?.content && response.content.trim().length > 100) {
         return response.content;
       }
 

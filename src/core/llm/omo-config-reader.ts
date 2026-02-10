@@ -179,7 +179,7 @@ export class OMOConfigReader {
       });
 
       // Infer default from common agent names
-      if (config.agents.sisyphus) this.defaultProvider = 'sisyphus';
+      if (config.agents['sisyphus']) this.defaultProvider = 'sisyphus';
     }
 
     // Strategy 2: Map 'provider' objects (opencode.json style)
