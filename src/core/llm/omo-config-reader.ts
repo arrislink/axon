@@ -95,6 +95,7 @@ export class OMOConfigReader {
       if (existsSync(path)) {
         try {
           const content = readFileSync(path, 'utf-8');
+          const currentProvidersCount = this.providers.length;
 
           if (path.endsWith('.yaml') || path.endsWith('.yml')) {
             this.loadYamlConfig(content);
@@ -102,9 +103,11 @@ export class OMOConfigReader {
             this.loadJsonConfig(content, path);
           }
 
-          if (this.providers.length > 0) {
-            this.configSource = path;
-            break; // Stop after finding valid config
+          if (this.providers.length > currentProvidersCount) {
+            // Use the first found file as primary source info, but keep going to merge others
+            if (!this.configSource) {
+              this.configSource = path;
+            }
           }
         } catch (e) {
           console.warn(`Failed to parse config at ${path}:`, e);
@@ -112,9 +115,38 @@ export class OMOConfigReader {
       }
     }
 
-    // If agents were loaded but no real provider info, try to merge opencode.json providers
-    if (this.providers.length > 0 && !this.configSource.endsWith('opencode.json')) {
-      this.mergeOpenCodeProviders();
+    // Always try to merge opencode.json providers to enrich model lists
+    this.mergeOpenCodeProviders();
+
+    // If we have antigravity token but no provider, add a virtual one
+    this.ensureAntigravityProvider();
+  }
+
+  /**
+   * Ensure antigravity provider exists if token is available
+   */
+  private ensureAntigravityProvider(): void {
+    if (this.antigravityToken && !this.providers.some((p) => p.name === 'antigravity')) {
+      this.providers.push({
+        name: 'antigravity',
+        type: 'antigravity',
+        models: [
+          'opencode/claude-sonnet-4-20250514',
+          'opencode/claude-opus-4-6',
+          'opencode/gemini-3-pro',
+          'opencode/gemini-3-flash',
+          'opencode/deepseek-chat',
+          'opencode/deepseek-v3',
+          'opencode/deepseek-r1',
+          'opencode/kimi-k2.5-free',
+          'opencode/minimax-m2.1-free',
+          'opencode/big-pickle-free',
+          'opencode/trinity-large-preview-free',
+          'opencode/zen-pro',
+          'opencode/zen-free',
+        ],
+        endpoint: 'https://api.antigravity.ai/v1',
+      });
     }
   }
 
@@ -153,13 +185,32 @@ export class OMOConfigReader {
       const config = JSON.parse(content) as OpenCodeConfig;
 
       if (config.provider) {
-        // Add provider entries that don't already exist
         for (const [name, details] of Object.entries(config.provider)) {
-          if (!this.providers.some((p) => p.name === name)) {
+          const existing = this.providers.find((p) => p.name === name);
+          const newModels = Object.keys(details.models || {});
+
+          if (existing) {
+            // Merge models
+            const combined = new Set([...existing.models, ...newModels]);
+            
+            // Inject free models for OpenCode providers
+            if (existing.type === 'antigravity' || existing.name === 'antigravity') {
+              combined.add('opencode/kimi-k2.5-free');
+              combined.add('opencode/minimax-m2.1-free');
+              combined.add('opencode/big-pickle-free');
+              combined.add('opencode/trinity-large-preview-free');
+              combined.add('opencode/zen-free');
+            }
+            
+            existing.models = Array.from(combined);
+            if (!existing.endpoint && details.endpoint) {
+              existing.endpoint = details.endpoint;
+            }
+          } else {
             this.providers.push({
               name,
               type: name,
-              models: Object.keys(details.models || {}),
+              models: newModels,
               endpoint: details.endpoint,
             });
           }
@@ -186,9 +237,22 @@ export class OMOConfigReader {
     if (config.agents) {
       this.providers = Object.entries(config.agents).map(([name, agent]) => {
         const resolvedType = resolveProviderType(agent.model || '');
+        const models = [agent.model || 'unknown'];
+        
+        // Inject free models for opencode agents
+        if (resolvedType === 'antigravity') {
+          models.push(
+            'opencode/kimi-k2.5-free',
+            'opencode/minimax-m2.1-free',
+            'opencode/big-pickle-free',
+            'opencode/trinity-large-preview-free',
+            'opencode/zen-free'
+          );
+        }
+        
         return {
           name,
-          models: [agent.model || 'unknown'],
+          models,
           type: resolvedType,
           endpoint: undefined,
           api_key: undefined,

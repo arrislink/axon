@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.3] - 2026-02-10
+
+### Added
+- **Intelligent Fallback**: Automatic fallback to `opencode/zen-free` when no LLM providers or models are configured, ensuring out-of-the-box functionality.
+- **Enhanced Model Discovery**: Axon now merges models from all discovered OMO config files (`oh-my-opencode.json`, `opencode.json`, etc.) and automatically discovers standard OpenCode models when an Antigravity token is present.
+- **Model Switching**: New `ax config set-model <model>` command to easily switch default models for the current project.
+
+### Optimized
+- **Type Safety**: Removed 16 `any` warnings and implemented proper TypeScript interfaces for API responses and configurations across the core LLM and configuration priority resolver.
+- **CLI Guidance**: Added interactive hints for manual model switching in `ax config list` and `ax config show`.
+
 ## [1.5.1] - 2026-02-10
 
 ### Fixed

@@ -74,7 +74,19 @@ export class UnifiedLLMClient {
     }
 
     if (!provider) {
-      throw new Error('未找到可用的 LLM Provider');
+      // 3. Last resort fallback: Use Zen Free via Antigravity if token exists
+      if (this.omoConfig.hasAntigravityAuth()) {
+        console.warn('⚠️  未找到可用 Provider，自动回退到 OpenCode Zen Free 模型');
+        provider = {
+          name: 'fallback-zen',
+          type: 'antigravity',
+          models: ['opencode/zen-free'],
+          endpoint: 'https://api.antigravity.ai/v1',
+        };
+        if (!modelOverride) modelOverride = 'opencode/zen-free';
+      } else {
+        throw new Error('未找到可用的 LLM Provider，请检查配置或设置 API 密钥');
+      }
     }
 
     const providerType = provider.type || provider.name;

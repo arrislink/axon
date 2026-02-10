@@ -6,8 +6,10 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import { Command } from 'commander';
 import ora from 'ora';
+import { ConfigManager } from '../core/config/manager';
 import { AxonLLMClient } from '../core/llm';
 import { OMOConfigReader } from '../core/llm/omo-config-reader';
+import type { Provider } from '../types';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
 
@@ -59,7 +61,7 @@ configCommand
         mark,
         chalk.bold(provider.name),
         provider.type || '-',
-        (provider.models || []).slice(0, 2).join(', ') + (provider.models.length > 2 ? '...' : ''),
+        (provider.models || []).slice(0, 5).join(', ') + (provider.models.length > 5 ? '...' : ''),
       ]);
     }
 
@@ -69,6 +71,10 @@ configCommand
     if (primary) {
       console.log(chalk.green(`\n当前默认: ${chalk.bold(primary.name)}`));
     }
+
+    // Manual switch hint
+    console.log(chalk.dim('\n💡 提示: 使用 `ax config set-model <model>` 手动切换项目默认模型'));
+    console.log(chalk.dim('   例如: ax config set-model opencode/zen-free'));
   });
 
 // ax config show
@@ -102,6 +108,10 @@ configCommand
     );
 
     console.log(table.toString());
+
+    // Manual switch hint
+    console.log(chalk.dim('\n💡 提示: 您可以为当前项目设置特定的模型：'));
+    console.log(chalk.cyan('   ax config set-model <model_name>'));
 
     if (mode === 'fallback') {
       console.log(chalk.yellow('\n⚠️  正在使用 Fallback 模式 (仅限环境变量)'));
@@ -258,5 +268,40 @@ configCommand
       await proc.exited;
     } catch (e) {
       logger.error(`设置失败: ${(e as Error).message}`);
+    }
+  });
+
+// ax config set-model
+configCommand
+  .command('set-model')
+  .description(t('Set default model for the current project', '设置当前项目的默认模型'))
+  .argument('<model>', t('Model name (e.g., claude-3-5-sonnet)', '模型名称'))
+  .option('-p, --provider <provider>', t('Specify provider', '指定提供商'))
+  .action(async (model, options) => {
+    try {
+      const configManager = new ConfigManager(process.cwd());
+      if (!ConfigManager.isAxonProject(process.cwd())) {
+        logger.error(
+          t('Not an Axon project. Run "ax init" first.', '当前不是 Axon 项目，请先运行 "ax init"'),
+        );
+        return;
+      }
+
+      const updates: { agents: { sisyphus: { model: string; provider?: Provider } } } = {
+        agents: {
+          sisyphus: {
+            model: model,
+          },
+        },
+      };
+
+      if (options.provider) {
+        updates.agents.sisyphus.provider = options.provider as Provider;
+      }
+
+      configManager.update(updates);
+      logger.success(t(`Default model set to: ${model}`, `默认模型已设置为: ${model}`));
+    } catch (error) {
+      logger.error(`设置失败: ${(error as Error).message}`);
     }
   });

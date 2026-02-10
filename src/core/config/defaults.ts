@@ -81,4 +81,11 @@ export const MODEL_PRICING: Record<string, { input: number; output: number }> = 
   'gpt-5.3-codex': { input: 10.0, output: 30.0 },
   'gpt-5-nano': { input: 0.5, output: 1.5 },
   'glm-4.7-free': { input: 0.0, output: 0.0 },
+  'deepseek-v3': { input: 0.2, output: 0.6 },
+  'deepseek-r1': { input: 0.5, output: 2.5 },
+  'kimi-k2.5-free': { input: 0.0, output: 0.0 },
+  'minimax-m2.1-free': { input: 0.0, output: 0.0 },
+  'big-pickle-free': { input: 0.0, output: 0.0 },
+  'trinity-large-preview-free': { input: 0.0, output: 0.0 },
+  'zen-free': { input: 0.0, output: 0.0 },
 };
