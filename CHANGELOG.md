@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Unified LLM provider system with OMO integration
-- Auto-detection of LLM mode (CLI, direct, fallback)
-- Support for 75+ LLM providers via OhMyOpenCode
-- Bilingual documentation (English and Chinese)
+## [1.0.5] - 2026-02-10
+
+### Changed
+- **Keywords**: Added related open-source projects (`opencode`, `oh-my-opencode`, `omo`, `findskills`, `beads`) as keywords in `package.json` for better discoverability.
+
+## [1.0.4] - 2026-02-10
+
+### Fixed
+- **Empty Spec Issue**: Added robust JSON parsing for `opencode` CLI events and a safety fallback to templates if AI generation fails or returns empty content.
+- **Model Tracking**: Improved model ID extraction in `OpenCodeLLMClient` to correctly identify the active model in logs and `ax config test`.
 
 ## [1.0.3] - 2026-02-10
 
@@ -95,7 +100,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/arrislink/axon/compare/v1.0.4...v1.0.5
+[1.0.4]: https://github.com/arrislink/axon/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/arrislink/axon/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/arrislink/axon/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/arrislink/axon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/arrislink/axon/releases/tag/v1.0.0

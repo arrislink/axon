@@ -79,8 +79,20 @@ export class OpenCodeLLMClient {
                     try {
                         const event = JSON.parse(line);
 
+                        // Extract model info (usually in the first message or configuration events)
+                        if (event.type === 'config' && event.part?.model) {
+                            metadata.model = event.part.model;
+                        } else if (event.model && metadata.model === 'unknown') {
+                            metadata.model = event.model;
+                        }
+
+                        // Handle various text event structures
                         if (event.type === 'text' && event.part?.text) {
                             const text = event.part.text;
+                            fullResponse += text;
+                            yield text;
+                        } else if (event.type === 'content' && event.part?.content) {
+                            const text = event.part.content;
                             fullResponse += text;
                             yield text;
                         } else if (event.type === 'step_finish') {
@@ -94,9 +106,6 @@ export class OpenCodeLLMClient {
                             if (event.part?.cost) {
                                 metadata.cost = event.part.cost;
                             }
-                            // model ID often not explicitly in step_finish? 
-                            // It's in the first event sometimes?
-                            // For now assume unknown if not found.
                         }
                     } catch (e) {
                         // Ignore parse errors for non-JSON lines (if any)

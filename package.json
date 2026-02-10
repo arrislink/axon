@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "AI-Powered Development Operating System with unified LLM provider support",
   "type": "module",
   "main": "dist/index.js",
@@ -36,8 +36,12 @@
     "development",
     "automation",
     "openspec",
+    "opencode",
+    "oh-my-opencode",
+    "omo",
     "beads",
     "skills",
+    "findskills",
     "llm",
     "anthropic",
     "bun"

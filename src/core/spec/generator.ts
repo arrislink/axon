@@ -54,12 +54,22 @@ export class SpecGenerator {
 
 确保文档清晰、可执行，便于后续任务拆解。`;
 
-        const response = await this.llm!.chat([{ role: 'user', content: prompt }], {
-            temperature: 0.7,
-            maxTokens: 4000,
-        });
+        try {
+            const response = await this.llm!.chat([{ role: 'user', content: prompt }], {
+                temperature: 0.7,
+                maxTokens: 4000,
+            });
 
-        return response.content;
+            if (response.content && response.content.trim().length > 100) {
+                return response.content;
+            }
+
+            console.warn('⚠️ AI 生成内容过短或为空，将使用模板生成作为回退。');
+            return this.generateFromTemplate(collected);
+        } catch (error) {
+            console.warn(`⚠️ AI 生成失败: ${(error as Error).message}。将使用模板生成作为回退。`);
+            return this.generateFromTemplate(collected);
+        }
     }
 
     private generateFromTemplate(collected: CollectedSpec): string {
