@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for 75+ LLM providers via OhMyOpenCode
 - Bilingual documentation (English and Chinese)
 
+## [1.0.2] - 2026-02-10
+
+### Added
+- Integrated Skills system: Automatic skill matching and injection in `BeadsExecutor`.
+
+### Changed
+- Improved documentation clarity regarding OpenCode/OMO core roles.
+- Enhanced Git safety checks and branch protection.
+
 ## [1.0.1] - 2026-02-10
 
 ### Added
@@ -80,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/arrislink/axon/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/arrislink/axon/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/arrislink/axon/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/arrislink/axon/releases/tag/v1.0.0
 [0.1.0]: https://github.com/arrislink/axon/releases/tag/v0.1.0
