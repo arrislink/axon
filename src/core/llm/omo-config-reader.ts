@@ -192,7 +192,7 @@ export class OMOConfigReader {
           if (existing) {
             // Merge models
             const combined = new Set([...existing.models, ...newModels]);
-            
+
             // Inject free models for OpenCode providers
             if (existing.type === 'antigravity' || existing.name === 'antigravity') {
               combined.add('opencode/kimi-k2.5-free');
@@ -201,7 +201,7 @@ export class OMOConfigReader {
               combined.add('opencode/trinity-large-preview-free');
               combined.add('opencode/zen-free');
             }
-            
+
             existing.models = Array.from(combined);
             if (!existing.endpoint && details.endpoint) {
               existing.endpoint = details.endpoint;
@@ -238,7 +238,7 @@ export class OMOConfigReader {
       this.providers = Object.entries(config.agents).map(([name, agent]) => {
         const resolvedType = resolveProviderType(agent.model || '');
         const models = [agent.model || 'unknown'];
-        
+
         // Inject free models for opencode agents
         if (resolvedType === 'antigravity') {
           models.push(
@@ -246,10 +246,10 @@ export class OMOConfigReader {
             'opencode/minimax-m2.1-free',
             'opencode/big-pickle-free',
             'opencode/trinity-large-preview-free',
-            'opencode/zen-free'
+            'opencode/zen-free',
           );
         }
-        
+
         return {
           name,
           models,
