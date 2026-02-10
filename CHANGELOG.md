@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Missing `ax spec edit` Command**: Implemented the `edit` subcommand that was referenced in `ax spec init` output but not available. Users can now edit existing specification documents interactively with `ax spec edit`.
+- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured.
 
 ## [1.0.7] - 2026-02-10
 
