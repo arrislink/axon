@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-02-10
+
+### Fixed
+- **External Editor Support**: Fixed `ax spec edit` to properly open the system's default editor (via EDITOR/VISUAL env vars) instead of falling back to text input. Includes graceful fallback to text input if no editor is configured. Addresses issue where command hung waiting for editor input.
+
 ## [1.0.8] - 2026-02-10
 
 ### Fixed
