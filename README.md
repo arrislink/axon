@@ -195,29 +195,37 @@ safety:
 
 ## 🏗️ Architecture
 
+Axon is built on a modular architecture that separates requirement definition, task planning, and agentic execution.
+
+```mermaid
+graph TD
+    User([User CLI]) --> Commands[Axon Commands: init, spec, plan, work]
+    
+    subgraph "Axon Engine"
+        Commands --> Spec[OpenSpec Manager]
+        Spec --> Beads[Beads Engine: Graph Gen & Execution]
+        Beads --> Skills[Skills Library: Matching & Injection]
+        Skills --> Orch[Agent Orchestrator]
+    end
+    
+    subgraph "LLM Layer"
+        Orch --> LLMInt[Unified LLM Interface]
+        LLMInt --> OMO[OhMyOpenCode Registry]
+        OMO --> Providers[Providers: Anthropic, OpenAI, Antigrav, etc.]
+    end
 ```
-┌─────────────────────────────────────────────────────┐
-│              Axon (Orchestration Layer)              │
-│  ┌──────────┬──────────┬──────────┬──────────┐     │
-│  │  init    │  spec    │  plan    │  work    │     │
-│  └──────────┴──────────┴──────────┴──────────┘     │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│         Unified LLM Interface (LLMClient)            │
-│  Auto-detects and uses OMO Provider System           │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│      OhMyOpenCode Provider System (Optional)         │
-│  ┌──────────┬──────────┬──────────┬──────────┐     │
-│  │Anthropic │Antigrav  │  OpenAI  │  Google  │     │
-│  └──────────┴──────────┴──────────┴──────────┘     │
-│  • Unified config (~/.omo/providers.yaml)            │
-│  • Auto failover                                     │
-│  • Cost optimization                                 │
-└─────────────────────────────────────────────────────┘
-```
+
+### Core Components:
+
+1.  **OpenSpec Manager**: Parses and manages the specification (`.openspec/spec.md`). It ensures the AI always has a "Source of Truth" for requirements.
+2.  **Beads Engine**: 
+    *   **Planning**: Converts specifications into a Directed Acyclic Graph (DAG) of atomic tasks.
+    *   **Execution**: Manages task dependencies, state persistence (`graph.json`), and sequential execution.
+3.  **Skills Library**: A repository of reusable code patterns. It automatically matches relevant skills to tasks and injects them into the agent's context.
+4.  **Agent Orchestrator**: Coordinates specialized AI agents (like the general-purpose "Sisyphus") to execute specific beads.
+5.  **Unified LLM Interface**: A vendor-neutral abstraction layer that integrates with **OhMyOpenCode** to provide multi-provider failover and consistent API access.
+
+---
 
 ## 🧪 Development
 
