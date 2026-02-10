@@ -338,7 +338,10 @@ ${doc.content?.slice(0, 10000)}
         return t(`[Image content from ${filePath} - AI OCR placeholder]`, `[来自 ${filePath} 的图片内容 - AI OCR 占位符]`);
     }
 
-    private scanDirectory(dirPath: string): string[] {
+    /**
+     * Scan a directory for supported files
+     */
+    public scanDirectory(dirPath: string): string[] {
         const files: string[] = [];
         const entries = readdirSync(dirPath);
 

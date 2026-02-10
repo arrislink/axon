@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { existsSync } from 'fs';
 import { DocumentManager } from '../core/docs/manager';
 import { logger } from '../utils/logger';
 import { t } from '../utils/i18n';
@@ -28,12 +29,43 @@ docsCommand
 
 // ax docs add-dir
 docsCommand
-    .command('add-dir <directory>')
+    .command('add-dir [directory]')
     .description(t('Add all documents in a directory', '批量添加目录下的文档'))
     .action(async (dirPath) => {
+        const targetDir = dirPath || './docs';
+        if (!existsSync(targetDir)) {
+            logger.error(t(`Directory does not exist: ${targetDir}`, `目录不存在: ${targetDir}`));
+            return;
+        }
+
         const manager = new DocumentManager();
+        const files = manager.scanDirectory(targetDir);
+
+        if (files.length === 0) {
+            logger.warn(t('No supported documents found in directory.', '目录中未找到支持的文档。'));
+            return;
+        }
+
+        logger.info(t(`Found ${files.length} documents in ${targetDir}:`, `在 ${targetDir} 中找到 ${files.length} 个文档:`));
+        files.forEach(f => console.log(chalk.dim(`  • ${f}`)));
+
+        // Skill recommendation
+        const { ConfigManager } = await import('../core/config');
+        const { SkillRecommender } = await import('../core/skills/recommender');
+        const projectRoot = process.cwd();
+        if (ConfigManager.isAxonProject(projectRoot)) {
+            const config = new ConfigManager(projectRoot).get();
+            const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
+            const recommended = await recommender.recommendForFiles(files);
+            await recommender.suggest([...recommended, 'brainsstorm']);
+        }
+
+        console.log('');
+        logger.info(t('Starting AI metadata enrichment for all files...', '开始为所有文件提取 AI 元数据...'));
+
         try {
-            await manager.addDirectory(dirPath);
+            const docs = await manager.addDirectory(targetDir);
+            logger.success(t(`Successfully added ${docs.length} documents.`, `成功添加了 ${docs.length} 个文档。`));
         } catch (error) {
             logger.error(t(`Failed to add directory: ${(error as Error).message}`, `批量添加失败: ${(error as Error).message}`));
         }

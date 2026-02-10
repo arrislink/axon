@@ -180,6 +180,46 @@ skillsCommand
     logger.success(`技能已保存: ${targetPath}`);
   });
 
+// ax skills install
+skillsCommand
+  .command('install <name>')
+  .description(t('Install a skill from global library', '从全局库安装技能到当前项目'))
+  .action(async (name: string) => {
+    const projectRoot = process.cwd();
+
+    if (!ConfigManager.isAxonProject(projectRoot)) {
+      throw new AxonError('当前目录不是 Axon 项目', 'SKILLS_ERROR', [
+        '请先运行 `ax init` 初始化项目',
+      ]);
+    }
+
+    const configManager = new ConfigManager(projectRoot);
+    const config = configManager.get();
+
+    const localPath = join(projectRoot, config.tools.skills.local_path);
+    const globalPath = config.tools.skills.global_path;
+    const library = new SkillsLibrary(localPath, globalPath);
+
+    spinner.start(t(`Finding skill: ${name}...`, `正在查找技能: ${name}...`));
+    const results = await library.search(name, 1);
+
+    if (results.length === 0 || results[0].skill.metadata.name.toLowerCase() !== name.toLowerCase()) {
+      spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
+      return;
+    }
+
+    const { skill } = results[0];
+    const targetPath = join(localPath, `${name}.md`);
+
+    if (existsSync(targetPath)) {
+      spinner.warn(t(`Skill already installed: ${name}`, `技能已存在: ${name}`));
+      return;
+    }
+
+    await library.save(skill, targetPath);
+    spinner.succeed(t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`));
+  });
+
 // ax skills stats
 skillsCommand
   .command('stats')

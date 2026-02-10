@@ -17,8 +17,8 @@ export class BeadsGenerator {
     /**
      * Generate beads from specification document
      */
-    async generateFromSpec(specContent: string): Promise<BeadsGraph> {
-        const prompt = this.buildPrompt(specContent);
+    async generateFromSpec(specContent: string, skillContext?: string): Promise<BeadsGraph> {
+        const prompt = this.buildPrompt(specContent, skillContext);
 
         const response = await this.llm.chat([{ role: 'user', content: prompt }], {
             agent: 'sisyphus',
@@ -51,9 +51,10 @@ export class BeadsGenerator {
         return graph;
     }
 
-    private buildPrompt(spec: string): string {
+    private buildPrompt(spec: string, skillContext?: string): string {
         return `你是一个专业的任务拆解专家。请将以下项目规格拆解为可执行的原子任务（Beads）。
 
+${skillContext ? `参考专家知识 (Skills):\n${skillContext}\n\n` : ''}
 规格文档:
 ${spec}
 

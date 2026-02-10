@@ -56,6 +56,11 @@ export const planCommand = new Command('plan')
     const specContent = readFileSync(specPath, 'utf-8');
     spinner.succeed(`规格文档: ${specContent.length} 字符`);
 
+    // Skill recommendation
+    const { SkillRecommender } = await import('../core/skills/recommender');
+    const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
+    await recommender.suggest(['write-plan', 'brainsstorm']);
+
     if (options.dryRun) {
       logger.success('空运行完成，规格文档有效');
       return;
@@ -64,7 +69,16 @@ export const planCommand = new Command('plan')
     // Generate tasks
     spinner.start('调用 AI 拆解任务...');
     const generator = new BeadsGenerator(config);
-    const graph = await generator.generateFromSpec(specContent);
+
+    // Find and load relevant local skills for planning
+    const { SkillsLibrary } = await import('../core/skills/library');
+    const localSkillsPath = join(projectRoot, config.tools.skills.local_path);
+    const globalSkillsPath = config.tools.skills.global_path;
+    const skillsLibrary = new SkillsLibrary(localSkillsPath, globalSkillsPath);
+    const planningSkills = await skillsLibrary.search('write-plan', 3);
+    const skillContext = planningSkills.map(s => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`).join('\n\n');
+
+    const graph = await generator.generateFromSpec(specContent, skillContext);
     spinner.succeed(`生成 ${graph.beads.length} 个任务`);
 
     // Validate
