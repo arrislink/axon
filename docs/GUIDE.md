@@ -166,8 +166,8 @@ To collaborate, ensure the following directories are committed to your repositor
 *   `.skills/`: Shares high-quality code patterns and prompts across the team.
 
 ### 2. Configuration Strategy
-*   **Shared Logic (`.axon/config.yaml`)**: Commit this to Git to define project models and safety rules.
-*   **Personal Credentials**: Use environment variables (`ANTHROPIC_API_KEY`) or OMO for personal API keys. Axon combines shared logic with local credentials automatically.
+*   **Shared Logic (`.axon/config.yaml`)**: Commit this file to Git to define project models and safety rules.
+*   **Personal Credentials**: Use environment variables (`ANTHROPIC_API_KEY`) or **OhMyOpenCode (OMO)** for personal API keys. Axon automatically resolves credentials from your local OMO configuration and Antigravity authentication (`~/.config/opencode/antigravity-accounts.json`) to power enterprise-grade agents without leaking secrets. Axon merges these local credentials with your shared project logic at runtime.
 
 ### 3. Recommended .gitignore
 Add the following to your project's `.gitignore`:
@@ -203,7 +203,7 @@ Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git �
 
 ### 2. 配置策略
 *   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
-*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 **OhMyOpenCode (OMO)** 管理个人 API 密钥。Axon 会自动从本地 OMO 配置和 Antigravity 认证（`~/.config/opencode/antigravity-accounts.json`）中解析凭据，在不泄露私钥的情况下驱动企业级代理。Axon 将这些本地凭据与共享的项目逻辑在运行时自动结合。
 
 ### 3. 推荐的 .gitignore
 在项目 `.gitignore` 中添加以下内容：
@@ -300,6 +300,22 @@ ax docs show <doc-id>
 | `ax config list` | List available LLM providers and models. |
 | `ax config show` | Show the current resolved configuration. |
 | `ax config setup` | Interactive wizard to setup LLM provider. |
+
+### `ax config test`
+
+Test if LLM connection is working properly.
+
+```bash
+ax config test
+ax config test --provider antigravity
+ax config test --model gpt-4o
+ax config test --mode direct  # Force direct API mode
+```
+
+Options:
+- `-p, --provider <name>`: Specify Provider to test.
+- `-m, --model <model>`: Specify model for testing.
+- `--mode <mode>`: Force specific mode (`cli`, `direct`, `fallback`).
 
 ### Skill Commands
 

@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.2] - 2026-02-10
+
+### Added
+- **Google Gemini Support**: Added native support for Google Gemini models in `UnifiedLLMClient`, including direct REST API calls and proxy routing via Antigravity.
+- **Antigravity Authentication**: Implemented automatic resolution of Antigravity tokens from `~/.config/opencode/antigravity-accounts.json`. Axon now uses these tokens as a universal authentication source for proxy-based provider access.
+
+### Improved
+- **LLM Configuration Resolution**: 
+  - Rewrote `OMOConfigReader` to properly map model prefixes (e.g., `opencode/*` → `antigravity`, `google/*` → `google`) to their respective provider types.
+  - Enhanced config merging to combine agent definitions from `oh-my-opencode.json` with provider definitions from `opencode.json`.
+  - Added multi-environment variable lookup for API keys in `getProviderApiKey()`.
+- **Diagnostics & Troubleshooting**:
+  - Enhanced `ax doctor` to correctly detect and verify API keys sourced from Antigravity tokens and OMO configurations.
+  - Improved error messages in `AxonLLMClient` with detailed diagnostic information (config source, provider count, token status) when no valid LLM configuration is found.
+  - Updated `ax config show` and `ax config list` to display accurate provider types and diagnostic states.
 
 ## [1.1.1] - 2026-02-10
 

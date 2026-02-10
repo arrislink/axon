@@ -167,7 +167,7 @@ Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git �
 
 ### 2. 配置策略
 *   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
-*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 OMO 管理个人 API 密钥。Axon 会自动将共享逻辑与本地凭据结合使用。
+*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 **OhMyOpenCode (OMO)** 管理个人 API 密钥。Axon 会自动从本地 OMO 配置和 Antigravity 认证（`~/.config/opencode/antigravity-accounts.json`）中解析凭据，在不泄露私钥的情况下驱动企业级代理。Axon 将这些本地凭据与共享的项目逻辑在运行时自动结合。
 
 ### 3. 推荐的 .gitignore
 在项目 `.gitignore` 中添加以下内容：
@@ -263,6 +263,23 @@ ax docs show <doc-id>
 | `ax config list` | 列出可用的 LLM 提供商和模型。 |
 | `ax config show` | 显示当前解析后的配置。 |
 | `ax config setup` | 设置 LLM 提供商的交互式向导。 |
+| `ax config test` | 测试 LLM 连接是否正常。 |
+
+### `ax config test`
+
+测试 LLM 连接是否正常。
+
+```bash
+ax config test
+ax config test --provider antigravity
+ax config test --model gpt-4o
+ax config test --mode direct  # 强制使用直接 API 模式
+```
+
+参数：
+- `-p, --provider <name>`: 指定要测试的 Provider。
+- `-m, --model <model>`: 指定测试使用的模型。
+- `--mode <mode>`: 强制使用的模式 (`cli`, `direct`, `fallback`)。
 
 ### 技能命令
 

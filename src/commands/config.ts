@@ -116,6 +116,7 @@ configCommand
   .description(t('Test Provider connection', '测试 Provider 连接'))
   .option('-p, --provider <name>', t('Specify Provider to test', '指定 Provider 测试'))
   .option('-m, --model <model>', t('Specify model for testing', '指定测试使用的模型'))
+  .option('--mode <mode>', t('Force specific LLM mode (cli, direct, fallback)', '强制使用特定 LLM 模式 (cli, direct, fallback)'))
   .action(async (options) => {
     const spinner = ora('正在初始化 LLM 客户端...').start();
     try {
@@ -138,9 +139,10 @@ configCommand
       }
 
       const model = options.model || primary?.models?.[0];
-      spinner.text = `测试连接: ${chalk.cyan(providerName)}${model ? ` (模型: ${chalk.cyan(model)})` : ''}...`;
+      const mode = options.mode;
+      spinner.text = `测试连接: ${chalk.cyan(providerName)}${model ? ` (模型: ${chalk.cyan(model)})` : ''}${mode ? ` [模式: ${chalk.cyan(mode)}]` : ''}...`;
 
-      const client = new AxonLLMClient();
+      const client = new AxonLLMClient(mode);
       const start = Date.now();
 
       const response = await client.chat(

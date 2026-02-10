@@ -161,8 +161,8 @@ ax plan  # Uses configured provider
 
 **Provider Priority:**
 1. **CLI Mode** - Uses OpenCode CLI (inherits full OMO capabilities)
-2. **Direct Mode** - Reads OMO config, calls APIs directly
-3. **Fallback Mode** - Uses `ANTHROPIC_API_KEY` environment variable
+2. **Direct Mode** - Reads OMO config and resolves **Antigravity** tokens automatically
+3. **Fallback Mode** - Uses `ANTHROPIC_API_KEY` etc. environment variables
 
 ### Environment Variables
 
@@ -216,8 +216,8 @@ graph TD
     
     subgraph "LLM Layer"
         Orch --> LLMInt[Unified LLM Interface]
-        LLMInt --> OMO[OhMyOpenCode Registry]
-        OMO --> Providers[Providers: Anthropic, OpenAI, Antigrav, etc.]
+        LLMInt --> OMO[OMO Config & Antigravity Auth]
+        OMO --> Providers[Providers: Anthropic, Google Gemini, OpenAI, etc.]
     end
 ```
 

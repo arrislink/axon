@@ -156,12 +156,12 @@ omo config set-provider antigravity
 
 # Axon 自动检测并使用 OMO 配置
 ax plan  # 使用配置的提供商
-```
 
-**提供商优先级:**
-1. **CLI 模式** - 使用 OpenCode CLI（继承 OMO 全部能力）
-2. **直接模式** - 读取 OMO 配置，直接调用 API
-3. **回退模式** - 使用 `ANTHROPIC_API_KEY` 环境变量
+**Provider 优先级：**
+1. **CLI 模式** - 使用 OpenCode CLI (继承完整的 OMO 能力)
+2. **Direct 模式** - 读取 OMO 配置并自动解析 **Antigravity** 刷新令牌
+3. **Fallback 模式** - 使用 `ANTHROPIC_API_KEY` 等环境变量
+```
 
 ### 环境变量
 
@@ -215,8 +215,8 @@ graph TD
     
     subgraph "LLM 层"
         Orch --> LLMInt[统一 LLM 接口]
-        LLMInt --> OMO[OhMyOpenCode 注册表]
-        OMO --> Providers[平台: Anthropic, OpenAI, Antigrav 等]
+        LLMInt --> OMO[OMO 配置 & Antigravity 认证]
+        OMO --> Providers[提供商: Anthropic, Google Gemini, OpenAI, etc.]
     end
 ```
 

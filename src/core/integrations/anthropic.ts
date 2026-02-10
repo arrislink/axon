@@ -66,12 +66,29 @@ export class AnthropicClient {
             });
 
             if (!response.ok) {
-                const errorData = (await response.json().catch(() => ({}))) as any;
-                throw new APIError(`LLM API 调用失败 (${response.status}): ${errorData.error?.message || response.statusText}`, response.status);
+                const errorText = await response.text().catch(() => '');
+                let errorData: any = {};
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    // Not JSON, use raw text if available
+                }
+
+                throw new APIError(
+                    `LLM API 调用失败 (${response.status}): ${errorData.error?.message || errorText || response.statusText}`,
+                    response.status
+                );
             }
 
-            const data = (await response.json()) as any;
-            const textContent = data.content.find((c: any) => c.type === 'text');
+            const responseText = await response.text();
+            let data: any;
+            try {
+                data = JSON.parse(responseText);
+            } catch (err) {
+                throw new APIError(`LLM API 响应解析失败 (无效的 JSON): ${responseText.substring(0, 100)}...`, 500);
+            }
+
+            const textContent = data.content?.find((c: any) => c.type === 'text');
             const content = textContent?.text || '';
 
             return {

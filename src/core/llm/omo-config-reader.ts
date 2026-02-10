@@ -19,6 +19,22 @@ interface OpenCodeConfig {
 }
 
 /**
+ * Map model prefix to actual LLM provider type
+ */
+function resolveProviderType(modelString: string): string {
+  const [prefix] = (modelString || '').split('/');
+  const typeMap: Record<string, string> = {
+    opencode: 'antigravity', // opencode/* models go through Antigravity proxy
+    anthropic: 'anthropic',
+    google: 'google',
+    openai: 'openai',
+    mistral: 'mistral',
+    deepseek: 'deepseek',
+  };
+  return typeMap[prefix] || prefix;
+}
+
+/**
  * Gets the OMO config file paths in priority order
  */
 export function getOMOConfigPaths(): string[] {
@@ -45,9 +61,11 @@ export class OMOConfigReader {
   private configSource = '';
   private defaultProvider: string | undefined;
   private fallbackChain: string[] = [];
+  private antigravityToken: string | undefined;
 
   constructor() {
     this.loadConfig();
+    this.loadAntigravityToken();
   }
 
   /**
@@ -64,7 +82,7 @@ export class OMOConfigReader {
           if (path.endsWith('.yaml') || path.endsWith('.yml')) {
             this.loadYamlConfig(content);
           } else if (path.endsWith('.json')) {
-            this.loadJsonConfig(content);
+            this.loadJsonConfig(content, path);
           }
 
           if (this.providers.length > 0) {
@@ -75,6 +93,64 @@ export class OMOConfigReader {
           console.warn(`Failed to parse config at ${path}:`, e);
         }
       }
+    }
+
+    // If agents were loaded but no real provider info, try to merge opencode.json providers
+    if (this.providers.length > 0 && !this.configSource.endsWith('opencode.json')) {
+      this.mergeOpenCodeProviders();
+    }
+  }
+
+  /**
+   * Load Antigravity auth token from accounts file
+   */
+  private loadAntigravityToken(): void {
+    try {
+      const accountsPath = `${homedir()}/.config/opencode/antigravity-accounts.json`;
+      if (existsSync(accountsPath)) {
+        const accounts = JSON.parse(readFileSync(accountsPath, 'utf-8'));
+        if (accounts.accounts?.length > 0) {
+          // Find the first enabled account, or use activeIndex
+          const activeIdx = accounts.activeIndex ?? 0;
+          const account =
+            accounts.accounts.find((a: any) => a.enabled !== false) ||
+            accounts.accounts[activeIdx];
+          if (account) {
+            this.antigravityToken = account.token || account.refreshToken;
+          }
+        }
+      }
+    } catch {
+      // Silently ignore token extraction errors
+    }
+  }
+
+  /**
+   * Merge provider definitions from opencode.json into existing agents
+   */
+  private mergeOpenCodeProviders(): void {
+    const opencodePath = `${homedir()}/.config/opencode/opencode.json`;
+    if (!existsSync(opencodePath)) return;
+
+    try {
+      const content = readFileSync(opencodePath, 'utf-8');
+      const config = JSON.parse(content) as OpenCodeConfig;
+
+      if (config.provider) {
+        // Add provider entries that don't already exist
+        for (const [name, details] of Object.entries(config.provider)) {
+          if (!this.providers.some((p) => p.name === name)) {
+            this.providers.push({
+              name,
+              type: name,
+              models: Object.keys(details.models || {}),
+              endpoint: details.endpoint,
+            });
+          }
+        }
+      }
+    } catch {
+      // Silently ignore
     }
   }
 
@@ -87,19 +163,19 @@ export class OMOConfigReader {
     }
   }
 
-  private loadJsonConfig(content: string): void {
+  private loadJsonConfig(content: string, _filePath?: string): void {
     const config = JSON.parse(content) as OpenCodeConfig;
 
     // Strategy 1: Map 'agents' to providers (oh-my-opencode.json style)
     if (config.agents) {
       this.providers = Object.entries(config.agents).map(([name, agent]) => {
-        const [providerType] = (agent.model || '').split('/');
+        const resolvedType = resolveProviderType(agent.model || '');
         return {
           name,
           models: [agent.model || 'unknown'],
-          type: providerType || 'unknown',
+          type: resolvedType,
           endpoint: undefined,
-          api_key: undefined, // JSON configs usually don't have raw keys
+          api_key: undefined,
         };
       });
 
@@ -139,11 +215,15 @@ export class OMOConfigReader {
       if (p) return p;
     }
 
-    // 3. Priority list
-    const priority = ['antigravity', 'anthropic', 'openai', 'google', 'sisyphus'];
-    for (const name of priority) {
-      const p = this.getProvider(name);
-      if (p) return p;
+    // 3. Priority by provider type (match by name OR type)
+    const priority = ['antigravity', 'anthropic', 'openai', 'google'];
+    for (const target of priority) {
+      // Try exact name match first
+      const byName = this.getProvider(target);
+      if (byName) return byName;
+      // Then try type match (e.g. sisyphus has type 'antigravity')
+      const byType = this.providers.find((p) => p.type === target);
+      if (byType) return byType;
     }
 
     return this.providers[0] || null;
@@ -167,35 +247,53 @@ export class OMOConfigReader {
   }
 
   /**
+   * Check if Antigravity auth is available
+   */
+  hasAntigravityAuth(): boolean {
+    return !!this.antigravityToken;
+  }
+
+  /**
+   * Get Antigravity token
+   */
+  getAntigravityToken(): string | undefined {
+    return this.antigravityToken;
+  }
+
+  /**
    * Get provider API key with env var resolution
-   * Note: API keys are rarely in JSON configs, usually in ~/.config/opencode/antigravity-accounts.json
-   * or environment variables.
+   * Resolution order:
+   * 1. Explicit api_key in provider config (with ${ENV} expansion)
+   * 2. Environment variable (e.g. ANTHROPIC_API_KEY)
+   * 3. Antigravity token (universal fallback for proxy-based access)
    */
   getProviderApiKey(provider: OMOProvider): string | undefined {
+    // 1. Explicit key from config
     if (provider.api_key) {
       const match = provider.api_key.match(/^\$\{(\w+)\}$/);
       return match ? process.env[match[1]] : provider.api_key;
     }
 
-    // Fallback for known provider types
+    // 2. Environment variable based on resolved provider type
     const type = provider.type || provider.name;
-    const envVar = `${type.toUpperCase()}_API_KEY`;
-    const envKey = process.env[envVar];
-    if (envKey) return envKey;
+    const envMappings: Record<string, string[]> = {
+      anthropic: ['ANTHROPIC_API_KEY'],
+      openai: ['OPENAI_API_KEY'],
+      google: ['GOOGLE_API_KEY', 'GEMINI_API_KEY'],
+      antigravity: ['ANTIGRAVITY_API_KEY'],
+      deepseek: ['DEEPSEEK_API_KEY'],
+    };
 
-    // Try antigravity token as universal fallback
-    try {
-      const accountsPath = `${homedir()}/.config/opencode/antigravity-accounts.json`;
-      if (existsSync(accountsPath)) {
-        const accounts = JSON.parse(readFileSync(accountsPath, 'utf-8'));
-        if (accounts.accounts?.length > 0) {
-          const activeIdx = accounts.activeIndex ?? 0;
-          const account = accounts.accounts[activeIdx];
-          return account?.token || account?.refreshToken;
-        }
-      }
-    } catch {
-      // Silently ignore antigravity token extraction errors
+    const envVars = envMappings[type] || [`${type.toUpperCase()}_API_KEY`];
+    for (const envVar of envVars) {
+      const envKey = process.env[envVar];
+      if (envKey) return envKey;
+    }
+
+    // 3. Antigravity token as universal fallback
+    // Works for providers routed through Antigravity proxy (opencode/*, google/*)
+    if (this.antigravityToken) {
+      return this.antigravityToken;
     }
 
     return undefined;

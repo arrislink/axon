@@ -88,11 +88,22 @@ export const doctorCommand = new Command('doctor')
 
       // Check OMO if env not set
       if (!apiKey) {
-        const provider = omoReader.getProvider(name);
+        // Try direct provider name match
+        let provider = omoReader.getProvider(name);
+        // Also try finding by provider type (e.g. agent 'sisyphus' has type 'antigravity')
+        if (!provider) {
+          provider = omoReader.getAllProviders().find((p) => p.type === name) || null;
+        }
         if (provider) {
           apiKey = omoReader.getProviderApiKey(provider);
-          source = 'OMO config (~/.omo/providers.yaml)';
+          source = `OMO config (${omoReader.getConfigSource()})`;
         }
+      }
+
+      // Last resort: Antigravity token works as universal proxy auth
+      if (!apiKey && omoReader.hasAntigravityAuth()) {
+        apiKey = omoReader.getAntigravityToken();
+        source = 'Antigravity token (~/.config/opencode/antigravity-accounts.json)';
       }
 
       if (apiKey) {
@@ -145,6 +156,7 @@ export const doctorCommand = new Command('doctor')
         });
       }
     }
+
 
     // Check 4: Bun version
     try {
