@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { AxonConfig } from '../../types';
+import type { AxonConfig, BeadsGraph } from '../../types';
 import type { CollectedSpec } from '../../types/spec';
 import { BeadsExecutor } from '../beads/executor';
 import { BeadsGenerator } from '../beads/generator';
@@ -285,7 +285,7 @@ export class FlowRunner {
     const spec = existsSync(specPath) ? readFileSync(specPath, 'utf-8') : undefined;
     const prd = existsSync(prdPath) ? readFileSync(prdPath, 'utf-8') : undefined;
 
-    let graph: any;
+    let graph: BeadsGraph | undefined;
     if (existsSync(graphPath)) {
       try {
         graph = JSON.parse(readFileSync(graphPath, 'utf-8'));

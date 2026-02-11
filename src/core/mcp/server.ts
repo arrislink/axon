@@ -5,6 +5,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { BeadStatus, BeadsGraph } from '../../types';
 import { ensurePathInProject } from '../../utils/paths';
 import { BeadsExecutor } from '../beads/executor';
 import { getGraphStats } from '../beads/graph';
@@ -234,14 +235,14 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
 
       case 'axon.bead_set_status': {
         const beadId = String(args.id || '');
-        const status = String(args.status || '');
+        const status = String(args.status || '') as BeadStatus;
         const error = args.error ? String(args.error) : undefined;
 
         if (!existsSync(graphPath)) {
           throw new Error('Plan file (graph.json) not found.');
         }
 
-        let graph: any;
+        let graph: BeadsGraph;
         try {
           graph = JSON.parse(readFileSync(graphPath, 'utf-8'));
         } catch (e) {
