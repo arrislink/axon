@@ -167,7 +167,7 @@ export class AxonLLMClient {
 
       // 2. Direct Mode (OMO-aware)
       if (this.mode === 'direct' && this.unifiedClient) {
-        // UnifiedLLMClient.chat currently doesn't support streaming, 
+        // UnifiedLLMClient.chat currently doesn't support streaming,
         // but we wrap it in a generator for consistency
         const response = await this.unifiedClient.chat(messages, options);
         if (options?.onStream) options.onStream(response.content);

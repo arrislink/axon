@@ -33,7 +33,9 @@
     "format": "bunx @biomejs/biome format --write .",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
+    "pre-release": "bun run lint && bun run type-check && bun run test",
     "release": "./scripts/publish.sh",
+    "release:dry-run": "./scripts/publish.sh --dry-run",
     "prepublishOnly": "bun run build:js"
   },
   "keywords": [

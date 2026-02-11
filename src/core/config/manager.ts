@@ -150,7 +150,7 @@ export class ConfigManager {
    * Check if Axon project exists in current directory
    */
   static isAxonProject(dir: string = process.cwd()): boolean {
-    return !!this.findRoot(dir);
+    return !!ConfigManager.findRoot(dir);
   }
 
   /**
