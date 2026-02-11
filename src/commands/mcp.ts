@@ -1,5 +1,5 @@
-import { Command } from 'commander';
 import chalk from 'chalk';
+import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
 import { type McpLLMMode, startAxonMcpServer } from '../core/mcp/server';
 import { AxonError } from '../utils/errors';
@@ -66,4 +66,3 @@ mcpCommand
       chalk.yellow('💡 提示: --llm off 模式将完全消耗 IDE 的模型额度，这是推荐的集成方式。'),
     );
   });
-
