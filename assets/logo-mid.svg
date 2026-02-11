@@ -1,0 +1,84 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glow Filters -->
+    <filter id="core-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="circuit-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <!-- Gradients -->
+    <linearGradient id="axon-grad" x1="200" y1="200" x2="824" y2="824" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/> <!-- Cyan -->
+      <stop offset="0.5" stop-color="#818CF8"/> <!-- Purple -->
+      <stop offset="1" stop-color="#C084FC"/> <!-- Magenta -->
+    </linearGradient>
+    
+    <radialGradient id="sphere-grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 420) rotate(90) scale(60)">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#1E3A8A"/>
+    </radialGradient>
+
+    <!-- Circuit Trace Pattern -->
+    <pattern id="circuit-bg" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M0 50H20L30 30H50L60 70H80L90 50H100" stroke="#1E293B" stroke-width="1" fill="none" opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- Dark Background -->
+  <rect width="1024" height="1024" fill="#0F172A"/>
+  <rect width="1024" height="1024" fill="url(#circuit-bg)"/>
+
+  <!-- Background Circuit Traces (Simplified) -->
+  <g opacity="0.15" stroke="#38BDF8" stroke-width="2">
+    <path d="M512 100V300M300 420H100M724 420H924M512 700V900"/>
+    <path d="M200 200L350 350M824 200L674 350M200 640L350 490M824 640L674 490"/>
+  </g>
+
+  <!-- Main Icon Group -->
+  <g transform="translate(512, 420)">
+    
+    <!-- Central Core -->
+    <circle r="70" fill="#0F172A" stroke="url(#axon-grad)" stroke-width="2" filter="url(#core-glow)"/>
+    <circle r="45" fill="url(#sphere-grad)" filter="url(#core-glow)">
+      <animate attributeName="r" values="42;48;42" dur="3s" repeatCount="indefinite" />
+    </circle>
+
+    <!-- Branching Axons -->
+    <g filter="url(#circuit-glow)">
+      <g id="branch">
+        <path d="M0 -70V-180M0 -110C35 -130 55 -165 55 -210M0 -110C-35 -130 -45 -165 -45 -210" stroke="url(#axon-grad)" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="0" cy="-180" r="10" fill="url(#axon-grad)"/>
+        <circle cx="55" cy="-210" r="10" fill="url(#axon-grad)"/>
+        <circle cx="-45" cy="-210" r="10" fill="url(#axon-grad)"/>
+      </g>
+      
+      <use href="#branch" transform="rotate(45)"/>
+      <use href="#branch" transform="rotate(90)"/>
+      <use href="#branch" transform="rotate(135)"/>
+      <use href="#branch" transform="rotate(180)"/>
+      <use href="#branch" transform="rotate(225)"/>
+      <use href="#branch" transform="rotate(270)"/>
+      <use href="#branch" transform="rotate(315)"/>
+    </g>
+
+    <!-- Interactive Elements -->
+    <g font-family="monospace" font-weight="bold" font-size="40" fill="#38BDF8" opacity="0.5">
+      <text x="-240" y="-120">{ }</text>
+      <text x="180" y="-120">&gt; _</text>
+      <text x="-240" y="160">{ }</text>
+      <text x="180" y="160">&gt; _</text>
+    </g>
+  </g>
+
+  <!-- Text Section -->
+  <g transform="translate(512, 800)" text-anchor="middle">
+    <text font-family="Archivo, sans-serif" font-weight="900" font-size="120" letter-spacing="12" fill="url(#axon-grad)" filter="url(#core-glow)">AXON</text>
+  </g>
+  
+  <!-- Star Sparkle -->
+  <path d="M920 920L940 940M940 920L920 940" stroke="#94A3B8" stroke-width="3" opacity="0.6"/>
+</svg>

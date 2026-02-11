@@ -1,0 +1,70 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glow Filters -->
+    <filter id="core-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="path-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <!-- Gradients -->
+    <linearGradient id="axon-gradient" x1="200" y1="100" x2="600" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/> <!-- Cyan/Blue -->
+      <stop offset="0.5" stop-color="#818CF8"/> <!-- Purple -->
+      <stop offset="1" stop-color="#C084FC"/> <!-- Magenta -->
+    </linearGradient>
+    
+    <radialGradient id="sphere-gradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(400 220) rotate(90) scale(40)">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#1E3A8A"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Dark Background -->
+  <rect width="800" height="600" fill="#0F172A"/>
+
+  <!-- Logo Icon Group -->
+  <g transform="translate(400, 220)">
+    
+    <!-- Central Core -->
+    <circle r="45" fill="#0F172A" stroke="url(#axon-gradient)" stroke-width="2" filter="url(#core-glow)"/>
+    <circle r="30" fill="url(#sphere-gradient)" filter="url(#core-glow)">
+      <animate attributeName="r" values="28;32;28" dur="3s" repeatCount="indefinite" />
+    </circle>
+
+    <!-- Radial Axon Paths -->
+    <g filter="url(#path-glow)">
+      <g id="branch-pair">
+        <path d="M0 -45V-120M0 -80C20 -90 30 -110 30 -130M0 -80C-20 -90 -30 -110 -30 -130" stroke="url(#axon-gradient)" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="0" cy="-120" r="6" fill="url(#axon-gradient)"/>
+        <circle cx="30" cy="-130" r="6" fill="url(#axon-gradient)"/>
+        <circle cx="-30" cy="-130" r="6" fill="url(#axon-gradient)"/>
+      </g>
+      
+      <use href="#branch-pair" transform="rotate(45)"/>
+      <use href="#branch-pair" transform="rotate(90)"/>
+      <use href="#branch-pair" transform="rotate(135)"/>
+      <use href="#branch-pair" transform="rotate(180)"/>
+      <use href="#branch-pair" transform="rotate(225)"/>
+      <use href="#branch-pair" transform="rotate(270)"/>
+      <use href="#branch-pair" transform="rotate(315)"/>
+    </g>
+
+    <!-- Symbols -->
+    <g font-family="monospace" font-weight="bold" font-size="24" fill="#38BDF8" opacity="0.6">
+      <text x="-140" y="-80">{ }</text>
+      <text x="110" y="-80">&gt; _</text>
+      <text x="-140" y="100">{ }</text>
+      <text x="110" y="100">&gt; _</text>
+    </g>
+  </g>
+
+  <!-- Text Section -->
+  <g transform="translate(400, 480)" text-anchor="middle">
+    <text font-family="Archivo, sans-serif" font-weight="900" font-size="72" letter-spacing="8" fill="url(#axon-gradient)" filter="url(#core-glow)">AXON</text>
+    <text y="50" font-family="Inter, sans-serif" font-size="18" fill="#94A3B8" letter-spacing="1">Unified AI-Assisted Development Environment</text>
+  </g>
+</svg>

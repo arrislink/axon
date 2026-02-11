@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/logo.svg" width="240" alt="Axon Logo">
+</p>
+
 # Axon
 
 > 🧠 AI 驱动的开发操作系统
@@ -366,7 +370,7 @@ bun run build:js
 ## 📮 支持
 
 - 📧 邮箱: support@axon.dev
-- 💬 Discord: [加入我们的社区](https://discord.gg/axon)
+- 💬 Discord: [加入我们的社区](https://discord.gg/Zu9YJ6zHbd)
 - 🐛 问题: [GitHub Issues](https://github.com/arrislink/axon/issues)
 
 ---

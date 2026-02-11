@@ -219,7 +219,7 @@ bun test tests/unit/config.test.ts
 ## Questions?
 
 - Open an issue for questions
-- Join our [Discord community](https://discord.gg/axon)
+- Join our [Discord community](https://discord.gg/Zu9YJ6zHbd)
 - Email: support@axon.dev
 
 ## License

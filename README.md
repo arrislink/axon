@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/logo.svg" width="240" alt="Axon Logo">
+</p>
+
 # Axon
 
 > 🧠 AI-Powered Development Operating System
@@ -310,7 +314,8 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## 📮 Support
 
-- 📧 Email: gocoder@hotmail.com
+- 📧 Email: support@axon.dev
+- 💬 Discord: [Join our community](https://discord.gg/Zu9YJ6zHbd)
 - 🐛 Issues: [GitHub Issues](https://github.com/arrislink/axon/issues)
 
 ---
