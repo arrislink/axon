@@ -12,10 +12,28 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 import { logger } from '../../utils/logger';
 
-export async function getGitStatus(cwd: string = process.cwd()) {
-  const proc = Bun.spawn(['git', 'status', '--porcelain'], { cwd, stdout: 'pipe', stderr: 'pipe' });
+export async function getGitStatus(
+  cwd: string = process.cwd(),
+  options: { includeUntracked?: boolean } = { includeUntracked: true },
+) {
+  const args = ['status', '--porcelain'];
+  if (options.includeUntracked === false) {
+    args.push('--untracked-files=no');
+  }
+
+  const proc = Bun.spawn(['git', ...args], { cwd, stdout: 'pipe', stderr: 'pipe' });
   const text = await new Response(proc.stdout).text();
-  return text.trim();
+  const lines = text.trim().split('\n').filter(Boolean);
+
+  // Filter out Axon internal temporary files that might not be in .gitignore
+  const filtered = lines.filter((line) => {
+    const filePath = line.slice(3).trim();
+    // Ignore axon editor temporary files
+    if (filePath.includes('.axon-editor-')) return false;
+    return true;
+  });
+
+  return filtered.join('\n');
 }
 
 export async function getCurrentBranch(cwd: string = process.cwd()) {
@@ -28,12 +46,18 @@ export async function getCurrentBranch(cwd: string = process.cwd()) {
   return text.trim();
 }
 
-export async function ensureGitSafety(options?: { cwd?: string; allowDirty?: boolean }) {
+export async function ensureGitSafety(options?: {
+  cwd?: string;
+  allowDirty?: boolean;
+  includeUntracked?: boolean;
+}) {
   const cwd = options?.cwd || process.cwd();
 
   // 1. Check Git Status
   if (!options?.allowDirty) {
-    const status = await getGitStatus(cwd);
+    // Default to NOT including untracked files for safety checks to be less intrusive
+    const includeUntracked = options?.includeUntracked ?? false;
+    const status = await getGitStatus(cwd, { includeUntracked });
     if (status) {
       logger.warn('⚠️  工作目录不干净 (包含未提交的更改)');
       console.log(chalk.dim(status));

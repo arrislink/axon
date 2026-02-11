@@ -135,10 +135,52 @@ ax plan                   # 依赖关系不正确时，重生成任务图
 - 产物：`PRD.md`, `TECH.md`, `ARCHITECTURE.md`, `VERIFY.md`
 
 ### MCP（IDE 集成）
-- 命令：`ax mcp --llm off|auto`
+- 命令：`ax mcp run --llm off|auto`
+- 辅助：`ax mcp info` 获取配置指南
 - 用途：让 IDE 调用 `axon.*` 工具，保持规格/任务图/产物一致
 
-### Verify（质量）
+---
+
+## 🛠️ IDE 深度集成 (MCP)
+
+Axon 支持通过 **Model Context Protocol (MCP)** 与现代 AI IDE (如 Trae, Cursor, Claude Desktop) 深度集成。
+
+### 1. 获取配置信息
+在你的项目终端运行以下命令，获取适配你当前环境的配置信息：
+```bash
+ax mcp info
+```
+
+### 2. 在 Trae 中配置
+1. 打开 Trae `Settings` -> `MCP`。
+2. 点击 **"Add Server"**。
+3. 填写以下信息：
+   - **Name**: `Axon`
+   - **Type**: `stdio`
+   - **Command**: (填入 `ax mcp info` 输出的路径)
+   - **Args**: `mcp run --llm off`
+4. 保存后，你可以在对话框中输入 `@Axon` 或直接要求 AI "使用 Axon 查看项目进度"。
+
+### 3. 在 Cursor 中配置
+1. 打开 Cursor `Settings` -> `Features` -> `MCP`。
+2. 点击 **"+ Add New MCP Server"**。
+3. 填写以下信息：
+   - **Name**: `Axon`
+   - **Type**: `command`
+   - **Command**: (填入 `ax mcp info` 输出的完整命令，包含参数)
+4. 保存并确认状态图标变为绿色。
+
+### 4. LLM 模式说明
+- **`--llm off` (推荐)**：Axon 仅作为“工具箱”提供本地数据（如 Spec, Beads 状态）。AI 的逻辑推理和决策由 IDE 自身的大模型完成，消耗的是你 IDE 的订阅额度。
+- **`--llm auto`**：Axon 的部分复杂工具（如 `axon.flow_run`）会尝试调用你本地配置的 OMO/LLM。这适用于你希望在 IDE 内部触发全自动工作流的场景。
+
+### 5. 常见问题
+- **多窗口运行**：IDE 通常会为每个工作区启动独立的 MCP 实例。Axon 会自动识别 `PROJECT_ROOT` 环境变量或当前工作目录来定位项目。
+- **日志排查**：在 IDE 的 MCP 日志输出面板中，你可以看到 Axon 打印的 `[Axon] Tool Call` 日志，用于追踪 AI 到底调用了哪些工具。
+
+---
+
+## Verify（质量）
 - `run_checks` 执行配置的检查命令（例如 `bun test`, `bun run type-check`）
 - `verify_requirements` 基于 spec/PRD/graph/checks 生成 `VERIFY.md`
 

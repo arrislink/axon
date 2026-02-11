@@ -42,6 +42,15 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
   process.stderr.write(
     `[Axon] MCP Server started (LLM: ${options.llm}, Project: ${options.projectRoot})\n`,
   );
+  if (options.llm === 'off') {
+    process.stderr.write(
+      '[Axon] Mode: Passive Tooling. AI logic is hosted by IDE, consuming IDE quotas.\n',
+    );
+  } else {
+    process.stderr.write(
+      '[Axon] Mode: Autonomous. Complex tasks will call LLM via Axon/OMO config.\n',
+    );
+  }
   process.stderr.write('[Axon] Listening for JSON-RPC messages on stdio...\n');
 
   const projectRoot = options.projectRoot;
@@ -168,6 +177,11 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const name = request.params.name;
     const args = (request.params.arguments || {}) as Record<string, unknown>;
+
+    process.stderr.write(`[Axon] Tool Call: ${name}\n`);
+    if (Object.keys(args).length > 0) {
+      process.stderr.write(`[Axon] Args: ${JSON.stringify(args)}\n`);
+    }
 
     switch (name) {
       case 'axon.project_info': {

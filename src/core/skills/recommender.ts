@@ -27,8 +27,8 @@ export class SkillRecommender {
     const hasDocx = filePaths.some((p) => p.toLowerCase().endsWith('.docx'));
     const hasMarkdown = filePaths.some((p) => p.toLowerCase().endsWith('.md'));
 
-    if (hasPDF) recommendations.add('pdf');
-    if (hasDocx || hasMarkdown) recommendations.add('docs');
+    if (hasPDF) recommendations.add('obra/superpowers@pdf');
+    if (hasDocx || hasMarkdown) recommendations.add('obra/superpowers@writing-plans');
 
     // Add more complex logic here (e.g., scanning content keywords)
 

@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { SkillsLibrary } from '../../src/core/skills/library';
 
-const TEST_DIR = `/tmp/axos-test-skills-${Date.now()}`;
+const TEST_DIR = `/tmp/axon-test-skills-${Date.now()}`;
 
 describe('SkillsLibrary', () => {
   beforeEach(async () => {

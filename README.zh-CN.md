@@ -159,12 +159,14 @@ ax work
 ### 范例 3：IDE 工作流（Cursor / Trae / VSCode）
 
 ```bash
-# 推荐：由 IDE 托管 LLM，Axon 仅提供工具与落盘
-ax mcp --llm off
+# 获取针对你当前 IDE 的 MCP 配置指南
+ax mcp info
 
-# 可选：由 Axon 执行 flow/work 等工具内的 LLM 调用
-ax mcp --llm auto
+# 手动运行 MCP 服务 (通常由 IDE 自动唤起)
+ax mcp run --llm off
 ```
+
+详细配置步骤见：[GUIDE.zh-CN.md](./docs/GUIDE.zh-CN.md#️-ide-深度集成-mcp)。
 
 ### 故障排查：提示“没有可执行的任务”
 

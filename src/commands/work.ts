@@ -34,11 +34,6 @@ export const workCommand = new Command('work')
       ]);
     }
 
-    // Check Git Safety before starting work
-    if (!options.dryRun) {
-      await ensureGitSafety({ cwd: projectRoot });
-    }
-
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.get();
 
@@ -67,6 +62,11 @@ export const workCommand = new Command('work')
 
     // Execute specific bead
     if (options.bead) {
+      // Check Git Safety before starting work
+      if (!options.dryRun) {
+        await ensureGitSafety({ cwd: projectRoot });
+      }
+
       const result = await executor.executeById(options.bead);
       if (result.success) {
         logger.success(`任务 ${options.bead} 执行完成`);
@@ -78,6 +78,11 @@ export const workCommand = new Command('work')
 
     // Execute all
     if (options.all) {
+      // Check Git Safety before starting work
+      if (!options.dryRun) {
+        await ensureGitSafety({ cwd: projectRoot });
+      }
+
       logger.info('执行所有待处理任务...');
       const results = await executor.executeAll();
       const succeeded = results.filter((r) => r.success).length;
@@ -95,6 +100,7 @@ export const workCommand = new Command('work')
 
     if (!nextBead) {
       logger.warn('没有可执行的任务');
+      // ... (rest of the blocked diagnostics)
       const validation = validateGraph(graph);
       if (!validation.valid) {
         logger.blank();
@@ -151,6 +157,11 @@ export const workCommand = new Command('work')
       logger.info('如果确认任务依赖关系不合理，建议重新生成任务图:');
       logger.info(`  ${chalk.cyan('ax plan')}  ${chalk.dim('# 根据当前 OpenSpec 重新拆解')}`);
       return;
+    }
+
+    // Check Git Safety before starting work
+    if (!options.dryRun) {
+      await ensureGitSafety({ cwd: projectRoot });
     }
 
     console.log(chalk.bold('下一个任务:'));

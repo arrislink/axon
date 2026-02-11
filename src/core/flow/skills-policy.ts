@@ -31,14 +31,20 @@ export class SkillsPolicy {
   constructor(library: SkillsLibrary, options?: SkillsPolicyOptions) {
     this.library = library;
     this.stageDefaults = {
-      spec_generate: ['brainstorming'],
-      prd_generate: ['brainstorming'],
-      tech_select: ['architecture-patterns', 'api-design-principles'],
-      design_generate: ['architecture-patterns'],
-      plan_generate: ['writing-plans'],
+      spec_generate: ['obra/superpowers@brainstorming'],
+      prd_generate: ['obra/superpowers@brainstorming'],
+      tech_select: [
+        'obra/superpowers@architecture-patterns',
+        'obra/superpowers@api-design-principles',
+      ],
+      design_generate: ['obra/superpowers@architecture-patterns'],
+      plan_generate: ['obra/superpowers@writing-plans'],
       work_execute: [],
-      run_checks: ['verification-before-completion'],
-      verify_requirements: ['test-driven-development', 'verification-before-completion'],
+      run_checks: ['obra/superpowers@verification-before-completion'],
+      verify_requirements: [
+        'obra/superpowers@test-driven-development',
+        'obra/superpowers@verification-before-completion',
+      ],
       ...(options?.stageDefaults || {}),
     };
   }
