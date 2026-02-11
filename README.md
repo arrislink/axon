@@ -117,7 +117,7 @@ ax status
 - Use `ax mcp --llm off` for IDE-first workflows; use `--llm auto` for automation.
 - Keep `.openspec/` and `.beads/` committed for team/CI repeatability.
 
-More playbooks and examples: [GUIDE.md](file:///Users/zhh/Axon-Projects/axon/docs/GUIDE.md).
+More playbooks and examples: [GUIDE.md](./docs/GUIDE.md).
 
 ## 📚 Core Concepts
 
@@ -146,7 +146,7 @@ graph LR
 └── graph.json          # Task dependency graph
 
 .skills/
-└── local/              # Project-specific skills
+└── *.md                # Project-specific skills (default; configurable)
 ```
 
 ## 🛠️ Commands
@@ -164,10 +164,13 @@ graph LR
 | `ax work` | Execute the next task |
 | `ax status` | View project progress and diagnostics |
 | `ax doctor` | Diagnose environment issues |
+| `ax skills find [query]` | Find official skills from skills.sh |
+| `ax skills install <owner/repo@skill>` | Install skill into this project |
+| `ax clean --clutter` | Clean redundant agent folders (.claude/.cursor/...) |
 
 ## ⚙️ Configuration
 
-For a first-time setup checklist, see [GUIDE.md](file:///Users/zhh/Axon-Projects/axon/docs/GUIDE.md).
+For a first-time setup checklist, see [GUIDE.md](./docs/GUIDE.md).
 
 ### LLM Provider Configuration
 

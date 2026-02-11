@@ -4,6 +4,8 @@
 
 import type { AxonConfig, Bead, BeadsGraph } from '../../types';
 import { BeadsError } from '../../utils/errors';
+import { t } from '../../utils/i18n';
+import { logger } from '../../utils/logger';
 import { AxonLLMClient } from '../llm';
 import { validateGraph } from './graph';
 
@@ -20,6 +22,12 @@ export class BeadsGenerator {
   async generateFromSpec(specContent: string, skillContext?: string): Promise<BeadsGraph> {
     const prompt = this.buildPrompt(specContent, skillContext);
 
+    logger.info(
+      t(
+        '🔍 Decomposing project into atomic tasks (Beads) using AI...',
+        '🔍 正在通过 AI 将项目拆解为原子任务 (Beads)...',
+      ),
+    );
     const response = await this.llm.chat([{ role: 'user', content: prompt }], {
       agent: 'sisyphus',
       temperature: 0.7,

@@ -5,6 +5,8 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { CollectedSpec } from '../../types/spec';
+import { t } from '../../utils/i18n';
+import { logger } from '../../utils/logger';
 import { AxonLLMClient } from '../llm';
 
 export class SpecGenerator {
@@ -51,6 +53,9 @@ export class SpecGenerator {
 确保文档清晰、可执行，便于后续任务拆解。`;
 
     try {
+      logger.info(
+        t('🔍 Generating structured OpenSpec with AI...', '🔍 正在通过 AI 生成结构化规格文档...'),
+      );
       const response = await this.llm?.chat([{ role: 'user', content: prompt }], {
         temperature: 0.7,
         maxTokens: 4000,

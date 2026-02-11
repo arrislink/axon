@@ -69,20 +69,68 @@ export class SkillRecommender {
     const recommendations: Set<string> = new Set();
 
     if (stack.includes('frontend')) {
-      recommendations.add('ui/ux-pro-max');
-      recommendations.add('frontend-best-practices');
+      recommendations.add('vercel-labs/agent-skills@web-design-guidelines');
+      recommendations.add('vercel-labs/agent-skills@vercel-react-best-practices');
     }
 
     if (stack.includes('backend')) {
-      recommendations.add('backend-architecture');
-      recommendations.add('api-design-standards');
+      recommendations.add('bmad-labs/skills@typescript-clean-code');
     }
 
     if (stack.includes('typescript') || stack.includes('nodejs')) {
-      recommendations.add('node-best-practices');
+      recommendations.add('bmad-labs/skills@typescript-clean-code');
+      recommendations.add('bmad-labs/skills@typescript-unit-testing');
     }
 
     return Array.from(recommendations);
+  }
+
+  /**
+   * Recommend official skill packages based on detected tech stack
+   */
+  public recommendPackages(stack: string[]): { title: string; value: string; description: string }[] {
+    const packages: { title: string; value: string; description: string }[] = [];
+
+    if (stack.includes('frontend')) {
+      packages.push({
+        title: 'vercel-labs/agent-skills',
+        value: 'vercel-labs/agent-skills',
+        description: t('Official Vercel React/Web best practices', 'Vercel 官方 React/Web 最佳实践'),
+      });
+    }
+
+    if (stack.includes('typescript') || stack.includes('nodejs')) {
+      packages.push({
+        title: 'bmad-labs/skills',
+        value: 'bmad-labs/skills',
+        description: t('TypeScript/Node clean code and unit testing', 'TypeScript/Node 清洁代码与单元测试'),
+      });
+    }
+
+    // Always recommend superpowers for planning
+    packages.push({
+      title: 'obra/superpowers',
+      value: 'obra/superpowers',
+      description: t('Advanced planning and brainstorming skills', '深度规划与头脑风暴技能'),
+    });
+
+    return packages;
+  }
+
+  /**
+   * Get search keywords for npx skills find based on tech stack
+   */
+  public getSearchKeywords(stack: string[]): string {
+    const keywords = new Set<string>();
+    for (const item of stack) {
+      keywords.add(item);
+    }
+    // Add common high-quality keywords
+    if (stack.includes('typescript') || stack.includes('nodejs')) {
+      keywords.add('best-practices');
+      keywords.add('clean-code');
+    }
+    return Array.from(keywords).join(' ');
   }
 
   /**
@@ -90,10 +138,10 @@ export class SkillRecommender {
    */
   async recommendForCommand(command: string): Promise<string[]> {
     if (command === 'plan') {
-      return ['write-plan', 'brainsstorm'];
+      return ['obra/superpowers@writing-plans', 'obra/superpowers@brainstorming'];
     }
     if (command === 'docs') {
-      return ['docs', 'search-index'];
+      return ['vercel-labs/agent-skills@web-design-guidelines'];
     }
     return [];
   }
@@ -104,7 +152,15 @@ export class SkillRecommender {
   async getMissingSkills(names: string[]): Promise<string[]> {
     const missing: string[] = [];
     for (const name of names) {
-      const localPath = join(this.projectRoot, this.localSkillsPath, `${name}.md`);
+      // Extract skill name from full identifier (e.g., owner/repo@skill-name -> skill-name)
+      let skillName = name;
+      if (name.includes('@')) {
+        skillName = name.split('@')[1];
+      } else if (name.includes('/')) {
+        skillName = name.split('/').pop() || name;
+      }
+
+      const localPath = join(this.projectRoot, this.localSkillsPath, `${skillName}.md`);
       if (!existsSync(localPath)) {
         missing.push(name);
       }

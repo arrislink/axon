@@ -257,7 +257,22 @@ skillsCommand
       results.length === 0 ||
       results[0].skill.metadata.name.toLowerCase() !== name.toLowerCase()
     ) {
-      spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
+      spinner.info(t(`Skill not found locally, trying official library: ${name}...`, `本地未找到技能，尝试从官方库查找: ${name}...`));
+      
+      const { spawnSync } = await import('node:child_process');
+      const args = ['skills', 'add', name];
+      if (options.symlink) args.push('--symlink');
+      if (options.all) args.push('--all');
+      if (options.skill) args.push('--skill', options.skill);
+      if (options.agent) args.push('--agent', options.agent);
+      if (options.yes) args.push('--yes');
+
+      const result = spawnSync('npx', args, { stdio: 'inherit' });
+      if (result.status === 0) {
+        logger.success(t(`Successfully installed from official library: ${name}`, `成功从官方库安装技能: ${name}`));
+      } else {
+        spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
+      }
       return;
     }
 
@@ -326,16 +341,23 @@ skillsCommand
         console.log(`  ${diff}: ${count}`);
       }
     }
-
-    logger.blank();
   });
 
-// ax skills update (Wrapper for npx skills update)
+// ax skills check
 skillsCommand
-  .command('update')
-  .description(t('Update all skills to latest versions', '更新所有技能到最新版本'))
+  .command('check')
+  .description(t('Check for skill updates from official library', '从官方库检查技能更新'))
   .action(async () => {
     const { spawnSync } = await import('node:child_process');
-    logger.info(t('Checking for skill updates...', '正在检查技能更新...'));
+    spawnSync('npx', ['skills', 'check'], { stdio: 'inherit' });
+  });
+
+// ax skills update
+skillsCommand
+  .command('update')
+  .description(t('Update all skills from official library', '从官方库更新所有技能'))
+  .action(async () => {
+    const { spawnSync } = await import('node:child_process');
+    logger.info(t('Updating all skills to latest versions...', '正在更新所有技能到最新版本...'));
     spawnSync('npx', ['skills', 'update'], { stdio: 'inherit' });
   });

@@ -144,14 +144,18 @@ ax plan                   # 依赖关系不正确时，重生成任务图
 
 ### Skills（可复用经验）
 - 目录：`.skills/`, `.agents/skills/`, `.agent/skills/`，以及全局 skills
-- 常用命令：`ax skills search`, `ax skills install`, `axon.skills_add/update`（通过 MCP）
+- 查找：`ax skills find [query]`（skills.sh 官方）/ `ax skills search <query>`（本地已安装）
+- 安装与维护：`ax skills install <owner/repo@skill>`, `ax skills check`, `ax skills update`
 
 ### Docs（上下文库）
 - 常用命令：`ax docs add`, `ax docs add-dir`, `ax docs search`, `ax docs show`
 
+### Clean（清理）
+- 常用命令：`ax clean --logs|--beads|--skills|--clutter|--all`
+
 ---
 
 ## 🔗 更多
-- 项目概览：[README.md](file:///Users/zhh/Axon-Projects/axon/README.md)
-- 工作流手册：[2026-02-10-workflow-playbooks.md](file:///Users/zhh/Axon-Projects/axon/docs/plans/2026-02-10-workflow-playbooks.md)
-- 发布记录：[CHANGELOG.md](file:///Users/zhh/Axon-Projects/axon/CHANGELOG.md)
+- 项目概览：[README.md](../README.md)
+- 工作流手册：[2026-02-10-workflow-playbooks.md](./plans/2026-02-10-workflow-playbooks.md)
+- 发布记录：[CHANGELOG.md](../CHANGELOG.md)

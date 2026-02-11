@@ -223,7 +223,12 @@ specCommand
     const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
     await recommender.suggest(['brainsstorm', 'write-plan']);
 
-    spinner.start(t('Generating professional PRD...', '正在生成专业 PRD...'));
+    spinner.start(
+      t(
+        'Analyzing specification and generating professional PRD...',
+        '正在分析规格文档并生成专业 PRD...',
+      ),
+    );
 
     try {
       const { SpecAnalyzer } = await import('../core/spec/analyzer');

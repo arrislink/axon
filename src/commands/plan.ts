@@ -67,7 +67,12 @@ export const planCommand = new Command('plan')
     }
 
     // Generate tasks
-    spinner.start('调用 AI 拆解任务...');
+    spinner.start(
+      t(
+        'AI is decomposing specification into atomic tasks (Beads)...',
+        'AI 正在将规格文档拆解为原子任务 (Beads)...',
+      ),
+    );
     const generator = new BeadsGenerator(config);
 
     // Find and load relevant local skills for planning

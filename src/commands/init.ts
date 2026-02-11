@@ -158,58 +158,53 @@ export const initCommand = new Command('init')
       const stack = await recommender.detectTechStack();
 
       if (stack.length > 0) {
-        const recommendations = await recommender.recommendForStack(stack);
-        if (recommendations.length > 0) {
+        logger.blank();
+        logger.info(
+          `${chalk.bold(t('🚀 Tech Stack Detected:', '🚀 检测到技术栈:'))} ${stack.join(', ')}`,
+        );
+
+        const packages = recommender.recommendPackages(stack);
+        const response = await prompts({
+          type: 'multiselect',
+          name: 'selectedPackages',
+          message: t(
+            'The following official skill packages are recommended. Which would you like to explore?',
+            '推荐以下官方技能包，你想探索哪些？',
+          ),
+          choices: packages.map((pkg) => ({
+            title: pkg.title,
+            value: pkg.value,
+            description: pkg.description,
+            selected: true,
+          })),
+          hint: t('- Space to select, Enter to confirm', '- 空格选择，回车确认'),
+        });
+
+        if (response.selectedPackages && response.selectedPackages.length > 0) {
+          const { spawnSync } = await import('node:child_process');
+
           logger.blank();
-          logger.info(
-            `${chalk.bold(t('🚀 Tech Stack Detected:', '🚀 检测到技术栈:'))} ${stack.join(', ')}`,
-          );
+          logger.info(chalk.yellow(t(
+            '💡 Tip: To avoid "folder explosion", we recommend selecting only the IDE you are currently using when prompted for "Target Agent".',
+            '💡 提示：为避免“文件夹爆炸”，建议在提示“Target Agent”时仅选择你当前使用的 IDE。'
+          )));
+          logger.info(chalk.dim(t(
+            '   If you only use Axon CLI, you can select "opencode" or skip agent selection.',
+            '   如果你仅使用 Axon CLI，可以选择 "opencode" 或跳过 Agent 选择。'
+          )));
+          logger.blank();
 
-          const response = await prompts({
-            type: 'multiselect',
-            name: 'skills',
-            message: t(
-              'Would you like to install recommended expert skills?',
-              '是否安装推荐的专家技能？',
-            ),
-            choices: recommendations.map((name) => ({
-              title: name,
-              value: name,
-              selected: true,
-            })),
-            hint: t('- Space to select, Enter to confirm', '- 空格选择，回车确认'),
-          });
-
-          if (response.skills && response.skills.length > 0) {
-            if (response.skills && response.skills.length > 0) {
-              const { spawnSync } = await import('node:child_process');
-              // Install from the official Axon skills repository
-              // TODO: Make this configurable or discoverable
-              const packageSource = 'arrislink/axon-skills';
-
-              spinner.start(t('Installing recommended skills...', '正在安装推荐技能...'));
-
-              const args = ['skills', 'add', packageSource, '--yes'];
-              for (const name of response.skills) {
-                args.push('--skill', name);
-              }
-
-              try {
-                const result = spawnSync('npx', args, { stdio: 'inherit', cwd: projectPath });
-                if (result.status === 0) {
-                  spinner.succeed(t('Skills installed successfully', '技能安装成功'));
-                } else {
-                  spinner.warn(
-                    t(
-                      'Failed to install some skills. Please try manually with `ax skills install`.',
-                      '部分技能安装失败，请尝试手动运行 `ax skills install`。',
-                    ),
-                  );
-                }
-              } catch (e) {
-                spinner.fail(t('Failed to run npx skills add', '无法运行 npx skills add'));
-              }
-            }
+          for (const pkg of response.selectedPackages) {
+            logger.info(t(`\n📦 Opening official wizard for: ${pkg}...`, `\n📦 正在打开官方安装向导: ${pkg}...`));
+            
+            // Run npx skills add WITHOUT --yes to trigger official interactive UI
+            // This allows user to:
+            // 1. Pick specific skills from the repo
+            // 2. Select target agents (avoiding folder explosion)
+            spawnSync('npx', ['skills', 'add', pkg], {
+              stdio: 'inherit',
+              cwd: projectPath,
+            });
           }
         }
       }
@@ -269,17 +264,29 @@ bunx oh-my-opencode config set-provider antigravity
 ax config test
 \`\`\`
 
-## 2. Define Requirements
+## 2. (Optional) Install Skills
+\`\`\`bash
+# Find skills from the official skills.sh ecosystem
+ax skills find <query>
+
+# Install a skill into this project
+ax skills install <owner/repo@skill>
+
+# If you created redundant agent folders during install
+ax clean --clutter
+\`\`\`
+
+## 3. Define Requirements
 \`\`\`bash
 ax spec init
 \`\`\`
 
-## 3. Generate Plan
+## 4. Generate Plan
 \`\`\`bash
 ax plan
 \`\`\`
 
-## 4. Start Working
+## 5. Start Working
 \`\`\`bash
 ax work
 \`\`\`
@@ -302,17 +309,29 @@ bunx oh-my-opencode config set-provider antigravity
 ax config test
 \`\`\`
 
-## 2. 定义需求
+## 2.（可选）安装技能
+\`\`\`bash
+# 从 skills.sh 官方生态查找技能
+ax skills find <query>
+
+# 安装技能到当前项目
+ax skills install <owner/repo@skill>
+
+# 若安装时误选过多 Agent，出现冗余文件夹
+ax clean --clutter
+\`\`\`
+
+## 3. 定义需求
 \`\`\`bash
 ax spec init
 \`\`\`
 
-## 3. 生成计划
+## 4. 生成计划
 \`\`\`bash
 ax plan
 \`\`\`
 
-## 4. 开始工作
+## 5. 开始工作
 \`\`\`bash
 ax work
 \`\`\`
@@ -355,6 +374,9 @@ ax work
 | \`ax status\` | View project status |
 | \`ax work\` | Execute next task |
 | \`ax skills search <query>\` | Search skill templates |
+| \`ax skills find [query]\` | Find official skills from skills.sh |
+| \`ax skills install <owner/repo@skill>\` | Install skill into this project |
+| \`ax clean --clutter\` | Clean redundant agent folders |
 | \`ax doctor\` | Diagnose environment issues |
 
 ---
@@ -392,6 +414,9 @@ ax work
 | \`ax status\` | 查看项目状态 |
 | \`ax work\` | 执行下一个任务 |
 | \`ax skills search <query>\` | 搜索技能模板 |
+| \`ax skills find [query]\` | 从 skills.sh 查找官方技能 |
+| \`ax skills install <owner/repo@skill>\` | 安装技能到当前项目 |
+| \`ax clean --clutter\` | 清理冗余 Agent 文件夹 |
 | \`ax doctor\` | 诊断环境问题 |
 
 ---

@@ -144,14 +144,18 @@ ax plan                   # regenerate graph if dependencies are wrong
 
 ### Skills (Reusable expertise)
 - Paths: `.skills/`, `.agents/skills/`, `.agent/skills/`, global skills
-- Commands: `ax skills search`, `ax skills install`, `axon.skills_add/update` (via MCP)
+- Discover: `ax skills find [query]` (official skills.sh) / `ax skills search <query>` (local)
+- Install & maintain: `ax skills install <owner/repo@skill>`, `ax skills check`, `ax skills update`
 
 ### Docs (Context library)
 - Commands: `ax docs add`, `ax docs add-dir`, `ax docs search`, `ax docs show`
 
+### Clean (Project hygiene)
+- Commands: `ax clean --logs|--beads|--skills|--clutter|--all`
+
 ---
 
 ## 🔗 More
-- Project overview: [README.md](file:///Users/zhh/Axon-Projects/axon/README.md)
-- Workflow playbooks: [2026-02-10-workflow-playbooks.md](file:///Users/zhh/Axon-Projects/axon/docs/plans/2026-02-10-workflow-playbooks.md)
-- Release notes: [CHANGELOG.md](file:///Users/zhh/Axon-Projects/axon/CHANGELOG.md)
+- Project overview: [README.md](../README.md)
+- Workflow playbooks: [2026-02-10-workflow-playbooks.md](./plans/2026-02-10-workflow-playbooks.md)
+- Release notes: [CHANGELOG.md](../CHANGELOG.md)

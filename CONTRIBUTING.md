@@ -194,9 +194,13 @@ bun test tests/unit/config.test.ts
 
 ### Adding a New Skill Template
 
-1. Skills are now managed in external repositories (e.g., [axon-skills](https://github.com/arrislink/axon-skills)).
-2. To create a new skill, please contribute to the skills repository following the standard `folder/SKILL.md` format.
-3. Once published, users can install it via `ax skills install <name>`.
+1. Axon integrates the official [skill.sh](https://skills.sh) ecosystem via `npx skills` (and wrappers under `ax skills`).
+2. To create a new skill, contribute to a skills repository (e.g., [agent-skills](https://github.com/vercel-labs/agent-skills)) following that repository’s conventions.
+3. Once published, users can:
+   - Discover: `ax skills find [query]` (official) / `ax skills search <query>` (local)
+   - Install: `ax skills install <owner/repo@skill>` (or `npx skills add <owner/repo@skill>`)
+   - Maintain: `ax skills check` / `ax skills update`
+4. If you accidentally selected too many target agents during install and created redundant folders, run `ax clean --clutter`.
 
 ## Documentation
 

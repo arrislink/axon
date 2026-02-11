@@ -49,6 +49,13 @@ flowCommand
       throw new AxonError(`无效的 skills 模式: ${skillsMode}`, 'FLOW_ERROR');
     }
 
+    logger.title(t('Axon Workflow Run', '启动 Axon 工作流'));
+    logger.info(`${chalk.dim(t('Project:', '当前项目:'))} ${chalk.cyan(projectRoot)}`);
+    logger.info(
+      `${chalk.dim(t('Skills Mode:', '技能模式:'))} ${chalk.cyan(options.skills || 'suggest')}`,
+    );
+    logger.blank();
+
     const runner = new FlowRunner(projectRoot, config);
     const result = await runner.run({
       stages: stages as FlowStage[] | undefined,

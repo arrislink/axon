@@ -26,7 +26,23 @@ function tool(name: string, description: string, inputSchema: Tool['inputSchema'
 }
 
 export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise<void> {
-  const server = new Server({ name: 'axon', version: '1.0.0' }, { capabilities: { tools: {} } });
+  const server = new Server(
+    {
+      name: 'axon-mcp-server',
+      version: '1.0.0',
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    },
+  );
+
+  // Print startup message to stderr to avoid interfering with stdout/stdin communication
+  process.stderr.write(
+    `[Axon] MCP Server started (LLM: ${options.llm}, Project: ${options.projectRoot})\n`,
+  );
+  process.stderr.write('[Axon] Listening for JSON-RPC messages on stdio...\n');
 
   const projectRoot = options.projectRoot;
   const configManager = new ConfigManager(projectRoot);

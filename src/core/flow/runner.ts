@@ -1,7 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import chalk from 'chalk';
 import type { AxonConfig, BeadsGraph } from '../../types';
 import type { CollectedSpec } from '../../types/spec';
+import { t } from '../../utils/i18n';
+import { logger } from '../../utils/logger';
 import { BeadsExecutor } from '../beads/executor';
 import { BeadsGenerator } from '../beads/generator';
 import { ConfigManager } from '../config/manager';
@@ -60,8 +63,15 @@ export class FlowRunner {
 
     for (const stage of stages) {
       try {
+        const stageName = this.getStageDisplayName(stage);
+        logger.info(
+          `${chalk.yellow('➜')} ${t('Executing stage:', '正在执行阶段:')} ${chalk.bold(stageName)}...`,
+        );
+
         await this.executeStage(stage, context, skillsMode);
         stagesExecuted.push(stage);
+        logger.success(`${t('Stage finished:', '阶段已完成:')} ${chalk.bold(stageName)}`);
+        logger.blank();
       } catch (error) {
         console.error(`Error in stage ${stage}:`, error);
         throw error;
@@ -69,6 +79,20 @@ export class FlowRunner {
     }
 
     return { stagesExecuted, artifacts: context.artifacts };
+  }
+
+  private getStageDisplayName(stage: FlowStage): string {
+    const names: Record<FlowStage, string> = {
+      spec_generate: t('Specification Generation', '生成规格文档'),
+      prd_generate: t('PRD Generation', '生成 PRD'),
+      tech_select: t('Technology Selection', '技术选型'),
+      design_generate: t('Architecture Design', '架构设计'),
+      plan_generate: t('Task Planning', '任务规划'),
+      work_execute: t('Task Execution', '任务执行'),
+      run_checks: t('Running Checks', '运行检查'),
+      verify_requirements: t('Verifying Requirements', '验证需求'),
+    };
+    return names[stage] || stage;
   }
 
   private async executeStage(
@@ -189,6 +213,7 @@ export class FlowRunner {
       skillContext ? `参考技能:\n${skillContext}\n\n` : ''
     }PRD:\n${prd}\n\n要求:\n- 只输出 Markdown\n- 包含：目标/约束、核心技术栈、关键依赖、替代方案与取舍、风险与缓解\n- 内容简洁可执行`;
 
+    logger.info(t('🔍 Selecting optimal technology stack...', '🔍 正在进行技术选型...'));
     const resp = await this.llm.chat([{ role: 'user', content: prompt }], {
       agent: 'oracle',
       temperature: 0.3,
@@ -224,6 +249,7 @@ export class FlowRunner {
       skillContext ? `参考技能:\n${skillContext}\n\n` : ''
     }PRD:\n${prd}\n\nTECH:\n${tech}\n\n要求:\n- 只输出 Markdown\n- 包含：模块边界、关键数据流、关键接口/API 草案、数据模型、验收点落地方式\n- 内容简洁可执行`;
 
+    logger.info(t('🔍 Designing system architecture...', '🔍 正在进行架构设计...'));
     const resp = await this.llm.chat([{ role: 'user', content: prompt }], {
       agent: 'oracle',
       temperature: 0.3,

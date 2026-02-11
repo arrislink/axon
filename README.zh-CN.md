@@ -201,7 +201,7 @@ graph LR
 └── graph.json          # 任务依赖图
 
 .skills/
-└── local/              # 项目特定技能
+└── *.md                # 项目特定技能（默认；可配置）
 ```
 
 ## 🛠️ 命令
@@ -219,10 +219,13 @@ graph LR
 | `ax work` | 执行下一个任务 |
 | `ax status` | 查看项目进度与阻塞诊断 |
 | `ax doctor` | 诊断环境问题 |
+| `ax skills find [query]` | 从 skills.sh 查找官方技能 |
+| `ax skills install <owner/repo@skill>` | 安装技能到当前项目 |
+| `ax clean --clutter` | 清理冗余 Agent 文件夹（.claude/.cursor/...） |
 
 ## ⚙️ 配置
 
-首次配置清单见：[GUIDE.zh-CN.md](file:///Users/zhh/Axon-Projects/axon/docs/GUIDE.zh-CN.md)。
+首次配置清单见：[GUIDE.zh-CN.md](./docs/GUIDE.zh-CN.md)。
 
 ### LLM 提供商配置
 
