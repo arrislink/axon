@@ -33,6 +33,21 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", "dist", "*.json"]
+    "ignore": [
+      "node_modules",
+      "dist",
+      "*.json",
+      ".trae",
+      ".cursor",
+      ".claude",
+      ".windsurf",
+      ".continue",
+      ".agents",
+      ".agent",
+      ".axon",
+      ".beads",
+      ".skills",
+      ".openspec"
+    ]
   }
 }
