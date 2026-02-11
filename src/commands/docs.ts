@@ -68,7 +68,7 @@ docsCommand
       const config = new ConfigManager(projectRoot).get();
       const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
       const recommended = await recommender.recommendForFiles(files);
-      await recommender.suggest([...recommended, 'brainsstorm']);
+      await recommender.suggest([...recommended, 'obra/superpowers@brainstorming']);
     }
 
     console.log('');

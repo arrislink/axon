@@ -31,8 +31,8 @@ export class SkillsPolicy {
   constructor(library: SkillsLibrary, options?: SkillsPolicyOptions) {
     this.library = library;
     this.stageDefaults = {
-      spec_generate: ['brainsstorm'],
-      prd_generate: ['brainsstorm'],
+      spec_generate: ['brainstorming'],
+      prd_generate: ['brainstorming'],
       tech_select: ['architecture-patterns', 'api-design-principles'],
       design_generate: ['architecture-patterns'],
       plan_generate: ['writing-plans'],

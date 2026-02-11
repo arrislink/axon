@@ -221,7 +221,7 @@ specCommand
     // Skill recommendation
     const { SkillRecommender } = await import('../core/skills/recommender');
     const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
-    await recommender.suggest(['brainsstorm', 'write-plan']);
+    await recommender.suggest(['obra/superpowers@brainstorming', 'obra/superpowers@writing-plans']);
 
     spinner.start(
       t(
@@ -241,7 +241,7 @@ specCommand
         officialLocalPath,
         config.tools.skills.global_path,
       ]);
-      const relevantSkills = await library.search('brainsstorm', 2);
+      const relevantSkills = await library.search('brainstorming', 2);
       const skillContext = relevantSkills
         .map((s) => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`)
         .join('\n\n');

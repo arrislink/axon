@@ -59,7 +59,7 @@ export const planCommand = new Command('plan')
     // Skill recommendation
     const { SkillRecommender } = await import('../core/skills/recommender');
     const recommender = new SkillRecommender(projectRoot, config.tools.skills.local_path);
-    await recommender.suggest(['write-plan', 'brainsstorm']);
+    await recommender.suggest(['obra/superpowers@writing-plans', 'obra/superpowers@brainstorming']);
 
     if (options.dryRun) {
       logger.success('空运行完成，规格文档有效');
@@ -83,7 +83,7 @@ export const planCommand = new Command('plan')
       officialLocalPath,
       config.tools.skills.global_path,
     ]);
-    const planningSkills = await skillsLibrary.search('write-plan', 3);
+    const planningSkills = await skillsLibrary.search('writing-plans', 3);
     const skillContext = planningSkills
       .map((s) => `[Skill: ${s.skill.metadata.name}]\n${s.skill.content}`)
       .join('\n\n');
