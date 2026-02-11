@@ -4,8 +4,8 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { ConfigManager } from '../core/config';
 import { getNextExecutable, validateGraph } from '../core/beads';
+import { ConfigManager } from '../core/config';
 import { AxonError } from '../utils/errors';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';

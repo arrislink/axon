@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
-import { startAxonMcpServer, type McpLLMMode } from '../core/mcp/server';
+import { type McpLLMMode, startAxonMcpServer } from '../core/mcp/server';
 import { AxonError } from '../utils/errors';
 import { t } from '../utils/i18n';
 
@@ -17,4 +17,3 @@ mcpCommand
     const llm = (options.llm === 'off' ? 'off' : 'auto') as McpLLMMode;
     await startAxonMcpServer({ projectRoot, llm });
   });
-

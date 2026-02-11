@@ -2,7 +2,7 @@
  * Path Utilities - Handles file and directory path resolution
  */
 
-import { resolve, relative } from 'node:path';
+import { relative, resolve } from 'node:path';
 
 /**
  * Ensure a path is within the project root to prevent path traversal
@@ -17,4 +17,3 @@ export function ensurePathInProject(projectRoot: string, relPath: string): strin
 
   return absPath;
 }
-

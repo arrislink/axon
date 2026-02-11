@@ -7,15 +7,14 @@ import { AxonError } from '../utils/errors';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
 
-export const flowCommand = new Command('flow').description(t('Run end-to-end workflow', '运行端到端工作流'));
+export const flowCommand = new Command('flow').description(
+  t('Run end-to-end workflow', '运行端到端工作流'),
+);
 
 flowCommand
   .command('run')
   .description(t('Run workflow stages in order', '按阶段顺序运行工作流'))
-  .option(
-    '--stages <list>',
-    t('Comma-separated stages', '逗号分隔的阶段列表'),
-  )
+  .option('--stages <list>', t('Comma-separated stages', '逗号分隔的阶段列表'))
   .option(
     '--skills <mode>',
     t('Skills mode: off|suggest|auto', 'Skills 模式: off|suggest|auto'),
@@ -30,7 +29,9 @@ flowCommand
   .action(async (options) => {
     const projectRoot = process.cwd();
     if (!ConfigManager.isAxonProject(projectRoot)) {
-      throw new AxonError('当前目录不是 Axon 项目', 'FLOW_ERROR', ['请先运行 `ax init` 初始化项目']);
+      throw new AxonError('当前目录不是 Axon 项目', 'FLOW_ERROR', [
+        '请先运行 `ax init` 初始化项目',
+      ]);
     }
 
     const configManager = new ConfigManager(projectRoot);
@@ -79,4 +80,3 @@ flowCommand
       }
     }
   });
-

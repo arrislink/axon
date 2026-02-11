@@ -1,5 +1,5 @@
 import type { Skill } from '../../types';
-import { SkillsLibrary } from '../skills/library';
+import type { SkillsLibrary } from '../skills/library';
 
 export type FlowStage =
   | 'spec_generate'
@@ -58,7 +58,10 @@ export class SkillsPolicy {
 
     for (const name of required) {
       const found = await this.library.search(name, 1);
-      if (found.length > 0 && found[0].skill.metadata.name.toLowerCase().includes(name.toLowerCase())) {
+      if (
+        found.length > 0 &&
+        found[0].skill.metadata.name.toLowerCase().includes(name.toLowerCase())
+      ) {
         resolved.push(found[0].skill);
       } else {
         missing.push(name);
@@ -81,4 +84,3 @@ export class SkillsPolicy {
     return { required, resolved, missing, suggestedCommands };
   }
 }
-

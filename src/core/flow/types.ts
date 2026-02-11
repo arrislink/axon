@@ -1,6 +1,6 @@
 import type { AxonConfig, BeadExecutionResult } from '../../types';
-import type { FlowStage, SkillsEnsureMode } from './skills-policy';
 import type { CheckResult } from '../verify/check-runner';
+import type { FlowStage, SkillsEnsureMode } from './skills-policy';
 
 export interface FlowInput {
   description?: string;
@@ -43,4 +43,3 @@ export interface FlowRunResult {
   stagesExecuted: FlowStage[];
   artifacts: FlowRunArtifacts;
 }
-
