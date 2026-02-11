@@ -3,7 +3,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import type { AgentConfig, AxonConfig } from '../../types';
 import { ConfigError } from '../../utils/errors';
@@ -150,7 +150,28 @@ export class ConfigManager {
    * Check if Axon project exists in current directory
    */
   static isAxonProject(dir: string = process.cwd()): boolean {
-    return existsSync(join(dir, '.axon', 'config.yaml'));
+    return !!this.findRoot(dir);
+  }
+
+  /**
+   * Find project root by searching upwards for .axon directory
+   */
+  static findRoot(startDir: string = process.cwd()): string | null {
+    let currentDir = resolve(startDir);
+
+    while (true) {
+      if (existsSync(join(currentDir, '.axon', 'config.yaml'))) {
+        return currentDir;
+      }
+
+      const parentDir = dirname(currentDir);
+      if (parentDir === currentDir) {
+        break;
+      }
+      currentDir = parentDir;
+    }
+
+    return null;
   }
 
   /**

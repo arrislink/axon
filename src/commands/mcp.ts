@@ -13,9 +13,11 @@ mcpCommand
   .description(t('Start the MCP server', '启动 MCP 服务器'))
   .option('--llm <mode>', t('LLM mode: auto|off', 'LLM 模式: auto|off'), 'auto')
   .action(async (options) => {
-    const projectRoot = process.cwd();
-    if (!ConfigManager.isAxonProject(projectRoot)) {
-      throw new AxonError('当前目录不是 Axon 项目', 'MCP_ERROR', ['请先运行 `ax init` 初始化项目']);
+    const projectRoot = ConfigManager.findRoot(process.cwd());
+    if (!projectRoot) {
+      throw new AxonError('当前目录或上级目录不是 Axon 项目', 'MCP_ERROR', [
+        '请先运行 `ax init` 初始化项目',
+      ]);
     }
 
     const llm = (options.llm === 'off' ? 'off' : 'auto') as McpLLMMode;
@@ -26,7 +28,13 @@ mcpCommand
   .command('info')
   .description(t('Show MCP configuration info for IDEs', '显示 IDE 的 MCP 配置信息'))
   .action(async () => {
-    const projectRoot = process.cwd();
+    const projectRoot = ConfigManager.findRoot(process.cwd());
+    if (!projectRoot) {
+      throw new AxonError('当前目录或上级目录不是 Axon 项目', 'MCP_ERROR', [
+        '请先运行 `ax init` 初始化项目',
+      ]);
+    }
+
     const axPath = process.argv[1]; // Usually the absolute path to the 'ax' binary or entry point
 
     logger.title('Axon MCP 集成配置指南');
@@ -50,13 +58,16 @@ mcpCommand
 
     logger.blank();
 
-    console.log(chalk.bold('3. JSON 配置块 (可直接复制):'));
+    console.log(chalk.bold('3. JSON 配置块 (可直接复制到 mcpservers.json):'));
     const configJson = {
-      name: 'Axon',
-      command: axPath,
-      args: ['mcp', 'run', '--llm', 'off'],
-      env: {
-        PROJECT_ROOT: projectRoot,
+      mcpServers: {
+        Axon: {
+          command: axPath,
+          args: ['mcp', 'run', '--llm', 'off'],
+          env: {
+            PROJECT_ROOT: projectRoot,
+          },
+        },
       },
     };
     console.log(chalk.dim(JSON.stringify(configJson, null, 2)));
