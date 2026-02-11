@@ -25,18 +25,42 @@ build/
 .env.*.local
 !.env.example
 
-# Axon runtime files
-.axon
-.ax/logs/
-.axon/logs/
+# Axon runtime and local files
+.axon/
+.ax/
+.env
+.env.*
+!.env.example
+
+# Axon shared files (Uncomment if you want to keep them private)
+# .openspec/
+# .beads/
+# .skills/
+
+# Logs
 *.log
-.ax/usage.db
-.axon/usage.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+.axon/logs/
+.ax/logs/
+
+# Databases
+*.db
+*.sqlite
+
+# Temporary and backup files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
 
 # Test coverage
 coverage/
 .nyc_output/
-
-# Temporary files
-tmp/
-temp/
