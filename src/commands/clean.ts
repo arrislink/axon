@@ -2,22 +2,28 @@
  * ax clean command - Clean project artifacts
  */
 
-import { existsSync, rmSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import prompts from 'prompts';
 import { ConfigManager } from '../core/config';
+import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
 import { spinner } from '../utils/spinner';
-import { t } from '../utils/i18n';
 
 export const cleanCommand = new Command('clean')
   .description(t('Clean project artifacts and logs', '清理项目产物与日志'))
   .option('--logs', t('Clean logs only', '仅清理日志'))
   .option('--beads', t('Clean task graph (beads)', '清理任务图 (beads)'))
   .option('--skills', t('Clean local skills', '清理本地技能'))
-  .option('--clutter', t('Clean redundant agent folders (.claude, .cursor, etc.)', '清理冗余 Agent 文件夹 (.claude, .cursor 等)'))
+  .option(
+    '--clutter',
+    t(
+      'Clean redundant agent folders (.claude, .cursor, etc.)',
+      '清理冗余 Agent 文件夹 (.claude, .cursor 等)',
+    ),
+  )
   .option('--all', t('Clean all artifacts', '清理所有产物'))
   .option('-y, --yes', t('Skip confirmation', '跳过确认阶段'))
   .action(async (options) => {
@@ -39,9 +45,10 @@ export const cleanCommand = new Command('clean')
     }
 
     const targets: { name: string; path: string; type: 'dir-content' | 'dir' }[] = [];
-    
+
     // Determine what to clean
-    const cleanLogs = options.all || options.logs || (!options.beads && !options.skills && !options.clutter);
+    const cleanLogs =
+      options.all || options.logs || (!options.beads && !options.skills && !options.clutter);
     const cleanBeads = options.all || options.beads;
     const cleanSkills = options.all || options.skills;
     const cleanClutter = options.all || options.clutter;
@@ -50,7 +57,7 @@ export const cleanCommand = new Command('clean')
       targets.push({
         name: t('Logs', '日志'),
         path: join(projectRoot, logsPath),
-        type: 'dir-content'
+        type: 'dir-content',
       });
     }
 
@@ -58,7 +65,7 @@ export const cleanCommand = new Command('clean')
       targets.push({
         name: t('Task Graph (Beads)', '任务图 (Beads)'),
         path: join(projectRoot, beadsPath),
-        type: 'dir-content'
+        type: 'dir-content',
       });
     }
 
@@ -66,7 +73,7 @@ export const cleanCommand = new Command('clean')
       targets.push({
         name: t('Local Skills', '本地技能'),
         path: join(projectRoot, skillsPath),
-        type: 'dir-content'
+        type: 'dir-content',
       });
     }
 
@@ -77,14 +84,14 @@ export const cleanCommand = new Command('clean')
           targets.push({
             name: t(`Agent Folder (${folder})`, `Agent 文件夹 (${folder})`),
             path: folderPath,
-            type: 'dir'
+            type: 'dir',
           });
         }
       }
     }
 
     // Filter existing targets that actually have content or exist
-    const existingTargets = targets.filter(target => {
+    const existingTargets = targets.filter((target) => {
       if (!existsSync(target.path)) return false;
       if (target.type === 'dir') return true; // Always include if directory exists
       try {
@@ -111,7 +118,7 @@ export const cleanCommand = new Command('clean')
         type: 'confirm',
         name: 'confirm',
         message: t('Are you sure you want to proceed?', '确认继续清理吗？'),
-        initial: false
+        initial: false,
       });
 
       if (!response.confirm) {
@@ -135,7 +142,12 @@ export const cleanCommand = new Command('clean')
         }
         spinner.succeed();
       } catch (error) {
-        spinner.fail(t(`Failed to clean ${target.name}: ${(error as Error).message}`, `清理 ${target.name} 失败: ${(error as Error).message}`));
+        spinner.fail(
+          t(
+            `Failed to clean ${target.name}: ${(error as Error).message}`,
+            `清理 ${target.name} 失败: ${(error as Error).message}`,
+          ),
+        );
       }
     }
 

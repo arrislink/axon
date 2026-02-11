@@ -184,19 +184,32 @@ export const initCommand = new Command('init')
           const { spawnSync } = await import('node:child_process');
 
           logger.blank();
-          logger.info(chalk.yellow(t(
-            '💡 Tip: To avoid "folder explosion", we recommend selecting only the IDE you are currently using when prompted for "Target Agent".',
-            '💡 提示：为避免“文件夹爆炸”，建议在提示“Target Agent”时仅选择你当前使用的 IDE。'
-          )));
-          logger.info(chalk.dim(t(
-            '   If you only use Axon CLI, you can select "opencode" or skip agent selection.',
-            '   如果你仅使用 Axon CLI，可以选择 "opencode" 或跳过 Agent 选择。'
-          )));
+          logger.info(
+            chalk.yellow(
+              t(
+                '💡 Tip: To avoid "folder explosion", we recommend selecting only the IDE you are currently using when prompted for "Target Agent".',
+                '💡 提示：为避免“文件夹爆炸”，建议在提示“Target Agent”时仅选择你当前使用的 IDE。',
+              ),
+            ),
+          );
+          logger.info(
+            chalk.dim(
+              t(
+                '   If you only use Axon CLI, you can select "opencode" or skip agent selection.',
+                '   如果你仅使用 Axon CLI，可以选择 "opencode" 或跳过 Agent 选择。',
+              ),
+            ),
+          );
           logger.blank();
 
           for (const pkg of response.selectedPackages) {
-            logger.info(t(`\n📦 Opening official wizard for: ${pkg}...`, `\n📦 正在打开官方安装向导: ${pkg}...`));
-            
+            logger.info(
+              t(
+                `\n📦 Opening official wizard for: ${pkg}...`,
+                `\n📦 正在打开官方安装向导: ${pkg}...`,
+              ),
+            );
+
             // Run npx skills add WITHOUT --yes to trigger official interactive UI
             // This allows user to:
             // 1. Pick specific skills from the repo

@@ -8,10 +8,10 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import {
+  cleanCommand,
   configCommand,
   docsCommand,
   doctorCommand,
-  cleanCommand,
   flowCommand,
   initCommand,
   mcpCommand,
@@ -30,13 +30,11 @@ const VERSION = pkg.version || '1.6.0';
 
 const program = new Command();
 
-program
-  .name('ax')
-  .description(
-    `${chalk.green('🧠')} ${chalk.bold('Axon')} - ${t('AI-Powered Development Operating System', 'AI 驱动的开发操作系统')} (v${VERSION})
+program.name('ax').description(
+  `${chalk.green('🧠')} ${chalk.bold('Axon')} - ${t('AI-Powered Development Operating System', 'AI 驱动的开发操作系统')} (v${VERSION})
   
   ${t('From requirements to code, let AI be your development partner, not a tool.', '从需求到代码，让 AI 成为你的开发伙伴，而非工具。')}`,
-  );
+);
 
 program
   .version(VERSION, '-v, --version', t('Show version', '显示版本信息'))

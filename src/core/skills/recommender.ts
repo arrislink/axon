@@ -88,14 +88,19 @@ export class SkillRecommender {
   /**
    * Recommend official skill packages based on detected tech stack
    */
-  public recommendPackages(stack: string[]): { title: string; value: string; description: string }[] {
+  public recommendPackages(
+    stack: string[],
+  ): { title: string; value: string; description: string }[] {
     const packages: { title: string; value: string; description: string }[] = [];
 
     if (stack.includes('frontend')) {
       packages.push({
         title: 'vercel-labs/agent-skills',
         value: 'vercel-labs/agent-skills',
-        description: t('Official Vercel React/Web best practices', 'Vercel 官方 React/Web 最佳实践'),
+        description: t(
+          'Official Vercel React/Web best practices',
+          'Vercel 官方 React/Web 最佳实践',
+        ),
       });
     }
 
@@ -103,7 +108,10 @@ export class SkillRecommender {
       packages.push({
         title: 'bmad-labs/skills',
         value: 'bmad-labs/skills',
-        description: t('TypeScript/Node clean code and unit testing', 'TypeScript/Node 清洁代码与单元测试'),
+        description: t(
+          'TypeScript/Node clean code and unit testing',
+          'TypeScript/Node 清洁代码与单元测试',
+        ),
       });
     }
 
