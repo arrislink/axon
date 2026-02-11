@@ -21,6 +21,8 @@ export const ToolsConfigSchema = z.object({
     path: z.string(),
     auto_commit: z.boolean(),
     commit_template: z.string().optional(),
+    commit_scope: z.enum(['all', 'artifacts']).optional(),
+    commit_graph: z.boolean().optional(),
   }),
   skills: z.object({
     enabled: z.boolean(),
@@ -65,6 +67,11 @@ export const ConfigSchema = z.object({
   safety: SafetyConfigSchema,
   logging: LoggingConfigSchema,
   hooks: HooksConfigSchema,
+  verify: z
+    .object({
+      commands: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export type ValidatedConfig = z.infer<typeof ConfigSchema>;

@@ -22,6 +22,10 @@ Axon 是构建在强大的 **OpenCode** 智能体引擎和 **OhMyOpenCode (OMO)*
 3.  **执行 (Execute)**：**OpenCode** 智能体使用 **OMO** 访问 LLM，逐个执行任务。
 4.  **验证 (Verify)**：人类审查和自动化检查。
 
+Axon 支持两种核心运行模式：
+- **全自动 Flow 模式**: 使用 `ax flow run` 在非 IDE 环境或全自动流水线中运行。
+- **IDE 集成模式**: 使用 `ax mcp` 为 IDE (Cursor/Trae) 赋予 Axon 的规划、上下文与验证能力。
+
 ---
 
 ## 🏛️ 系统架构
@@ -84,17 +88,61 @@ graph TD
 *   **安全性**: 每个任务完成后都会自动提交到 Git。
 *   **可恢复性**: 如果某个任务失败，你可以重试该任务，而无需重启整个项目。
 
-### 5. 技能编排 (Orchestration)
+### 5. 全自动工作流 (Flow)
+`ax flow run` 自动化了从需求定义到最终验证的全生命周期。它是 CI/CD 或背景批处理任务的理想选择。
+- **里程碑驱动**: 自动在 Spec、PRD、Tech、Architecture、Planning 和 Execution 阶段间流转。
+- **自我闭环**: 执行完成后自动运行验证检查并输出 `VERIFY.md`。
+
+### 6. IDE 原生集成 (MCP)
+`ax mcp` 启动 Model Context Protocol 服务器。
+- **无缝接入**: 像 Cursor 或 Trae 这样的 IDE 可以直接调用 `axon.flow_run`、`axon.spec_write` 或 `axon.run_checks`。
+- **状态同步**: IDE 和 CLI 共享同一份 `.beads/graph.json` 和 `.openspec/spec.md`，确保双端一致。
+
+### 7. 技能编排 (Orchestration)
 Axon 会在初始化时自动检测你的技术栈，并建议相关的专家技能。你可以使用 `ax skills install --symlink` 来集中化地采纳全局最佳实践。
 
-### 6. 文档集成
+### 8. 文档集成
 使用 `ax docs add-dir` 批量导入整个目录。AI 代理将利用这些文档在规格生成和任务执行期间更好地理解背景信息。
 
-### 6. 配置优先级与安全
+### 9. 配置优先级与安全
 *   **配置优先级**: CLI 参数 > 项目配置 > OMO 配置 > 环境变量。
 *   **Git 安全**: 防止在不干净的工作区执行任务，并在向保护分支 (`main`/`master`) 提交前发出警告。
 
 ---
+
+## ✅ 最佳实践与流程手册
+- **分支策略**：尽量在特性分支上运行，避免在保护分支（`main`/`master`）直接操作。
+- **保持工作区干净**：执行 `ax work` 前先处理未提交改动，避免误覆盖或丢失本地修改。
+- **批处理优先走 Flow**：需要端到端闭环时使用 `ax flow run --work all`，并输出 `VERIFY.md` 作为交付证明。
+- **IDE 优先走 MCP**：IDE 托管 LLM 时用 `ax mcp --llm off`；需要 Axon 直接驱动 LLM 时用 `ax mcp --llm auto`。
+- **把 `.openspec/` 和 `.beads/` 当作单一真理来源**：纳入版本管理，保证团队与 CI 复现一致。
+
+### 手册：新项目（CLI / CI）
+
+```bash
+ax init my-project
+cd my-project
+ax flow run --work all --skills suggest
+ax status
+```
+
+### 手册：在已有仓库中引入 Axon
+
+```bash
+cd existing-repo
+ax init .
+ax docs add-dir ./docs
+ax plan
+ax work
+```
+
+### 手册：排查执行阻塞
+
+```bash
+ax status --beads
+ax work --bead <bead-id>      # 重新执行失败任务
+ax plan                       # 若依赖关系不合理，重新生成任务图
+```
 
 ## 🚀 教程：构建一个 REST API
 

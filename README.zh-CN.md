@@ -16,11 +16,14 @@ Axon 是一个统一的 AI 辅助开发环境，解决 AI 编程中的上下文�
 
 - **🧠 规格优先**: 拒绝随意对话。在 `spec.md` 中定义需求，让 AI 保持专注。
 - **🗺️ 珠子规划**: 将复杂功能拆解为原子的、按依赖排序的任务 (Beads)。
+- **🔄 全程自动化**: 使用 `ax flow run` 一键开启从需求、规划、执行到验证的全生命周期编排。
+- **🔌 IDE 原生集成**: 通过 **MCP** (Model Context Protocol) 协议无缝接入 Cursor/Trae/VSCode 等 IDE。
 - **🤖 代理执行**: **OpenCode** 智能体逐个执行任务，确保上下文完整和代码质量。
+- **🛡️ 质量守卫**: 自动运行 `run_checks` 并生成 `VERIFY.md` 验证报告，确保每个里程碑可交付。
 - **♻️ 技能复用**: 自动应用团队库中经过验证的模式 (如“安全认证”)。
 - **📚 文档集成**: 导入 PDF/Word/MD 文档作为 AI 上下文，使用 `ax docs` 辅助生成规格和代码。
 - **🚀 技能编排**: 自动检测技术栈（React, Go, PHP）并建议相关的专家技能。
-- **🛡️ 企业级安全**: Token 预算控制、Git 安全检查以及通过 **OMO** 实现的多模型故障转移。
+- **🛡️ 企业级安全**: 路径沙盒隔离、Git 安全检查以及通过 **OMO** 实现的多模型故障转移。
 
 ## 🎯 适用场景
 
@@ -95,6 +98,68 @@ ax plan
 ax status
 ```
 
+## ✅ 最佳实践
+- **Git 安全优先**：尽量在特性分支上运行，保持工作区干净，避免在保护分支（`main`/`master`）上直接执行。
+- **优先走完整闭环**：需要“规格 → 规划 → 执行 → 验证”确定性流水线时，使用 `ax flow run`。
+- **提交单一真理来源**：将 `.openspec/` 与 `.beads/` 纳入版本管理，让团队/CI 共享同一份规格与任务图。
+- **把技能当依赖管理**：显式安装/更新 skills，保证规划与执行可复现。
+
+### 范例 1：新项目（CLI / CI）
+
+```bash
+ax init my-project
+cd my-project
+
+# 一键端到端工作流
+ax flow run \
+  --work all \
+  --skills suggest \
+  --description "构建一个内部管理后台" \
+  --project-type "web" \
+  --tech-stack "auto" \
+  --features "auth,rbac,audit-log" \
+  --requirements "包含单元测试与类型检查"
+
+# 查看产物与进度
+ax status
+```
+
+### 范例 2：在已有仓库中引入 Axon
+
+```bash
+cd existing-repo
+ax init .
+
+# 可选：导入 docs 提升规格质量
+ax docs add-dir ./docs
+
+# 生成规划并逐个执行任务
+ax plan
+ax work
+```
+
+### 范例 3：IDE 工作流（Cursor / Trae / VSCode）
+
+```bash
+# 推荐：由 IDE 托管 LLM，Axon 仅提供工具与落盘
+ax mcp --llm off
+
+# 可选：由 Axon 执行 flow/work 等工具内的 LLM 调用
+ax mcp --llm auto
+```
+
+### 故障排查：提示“没有可执行的任务”
+
+```bash
+ax status --beads
+
+# 重新执行失败任务
+ax work --bead <bead-id>
+
+# 若依赖关系不合理，从 spec 重新生成任务图
+ax plan
+```
+
 ## 📚 核心概念
 
 ### 工作流
@@ -130,18 +195,15 @@ graph LR
 | 命令 | 描述 |
 |------|------|
 | `ax init [name]` | 初始化新的 Axon 项目 |
+| `ax flow run` | 运行全自动化工作流 (Spec -> Plan -> Work -> Verify) |
+| `ax mcp` | 启动 MCP 服务，用于 IDE 插件集成 (Cursor/Trae/VSCode) |
 | `ax spec init` | 交互式创建项目规格 |
 | `ax spec analyze` | 将规格文档优化为专业 PRD.md |
 | `ax docs add <file>` | 导入文档 (PDF, Word, MD) 到项目 |
 | `ax docs add-dir [dir]` | 批量导入目录下所有文档 (默认为 ./docs) |
-| `ax docs list` | 列出并过滤项目文档 |
-| `ax docs search <q>` | 在文档中进行语义搜索 |
-| `ax plan` | 从规格生成任务图 (使用专家技能) |
+| `ax plan` | 从规格生成任务图 |
 | `ax work` | 执行下一个任务 |
-| `ax work --interactive` | 交互模式执行任务 |
-| `ax skills search <query>` | 搜索技能模板 |
-| `ax skills install <name>` | 安装/链接技能到本地项目 |
-| `ax status` | 查看项目进度 |
+| `ax status` | 查看项目进度与阻塞诊断 |
 | `ax doctor` | 诊断环境问题 |
 
 ## ⚙️ 配置

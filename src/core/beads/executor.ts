@@ -21,12 +21,12 @@ export class BeadsExecutor {
   private git: GitOperations;
   private skillsLibrary: SkillsLibrary;
 
-  constructor(config: AxonConfig, projectRoot: string, apiKey: string) {
+  constructor(config: AxonConfig, projectRoot: string) {
     this.config = config;
     this.projectRoot = projectRoot;
     this.graphPath = join(projectRoot, config.tools.beads.path, 'graph.json');
     this.graph = this.loadGraph();
-    this.orchestrator = new AgentOrchestrator(config, apiKey);
+    this.orchestrator = new AgentOrchestrator(config);
     this.git = new GitOperations(projectRoot);
 
     const agentsSkillsPath = join(this.projectRoot, '.agents', 'skills');
@@ -136,16 +136,16 @@ export class BeadsExecutor {
         skills,
       });
 
-      // Auto commit if enabled
-      if (this.config.tools.beads.auto_commit && result.artifacts.files.length > 0) {
-        await this.commitChanges(bead, result.artifacts.commits);
-      }
-
       // Mark as completed
       this.updateBeadStatus(bead.id, 'completed', {
         artifacts: result.artifacts,
         completed_at: new Date().toISOString(),
       });
+
+      // Auto commit if enabled
+      if (this.config.tools.beads.auto_commit) {
+        await this.commitChanges(bead, result.artifacts.files, result.artifacts.commits);
+      }
 
       logger.success(`任务完成！Token 消耗: ${result.tokensUsed.toLocaleString()}`);
 
@@ -187,16 +187,35 @@ export class BeadsExecutor {
     this.saveGraph();
   }
 
-  private async commitChanges(bead: Bead, existingCommits: string[]): Promise<void> {
+  private async commitChanges(
+    bead: Bead,
+    artifactFiles: string[],
+    existingCommits: string[],
+  ): Promise<void> {
     if (!this.git.isGitRepo()) return;
-
-    const hasChanges = await this.git.hasChanges();
-    if (!hasChanges) return;
 
     const template = this.config.tools.beads.commit_template || '✅ {bead_id}: {title}';
     const message = template.replace('{bead_id}', bead.id).replace('{title}', bead.title);
 
-    await this.git.addAll();
+    const commitScope = this.config.tools.beads.commit_scope || 'all';
+    const commitGraph = this.config.tools.beads.commit_graph ?? true;
+
+    if (commitScope === 'all') {
+      const hasChanges = await this.git.hasChanges();
+      if (!hasChanges) return;
+      await this.git.addAll();
+    } else {
+      const filesToAdd: string[] = [];
+      filesToAdd.push(...artifactFiles);
+      if (commitGraph) {
+        filesToAdd.push(join(this.config.tools.beads.path, 'graph.json'));
+      }
+      await this.git.addFiles(filesToAdd);
+    }
+
+    const hasStagedChanges = await this.git.hasStagedChanges();
+    if (!hasStagedChanges) return;
+
     const commitHash = await this.git.commit(message);
 
     if (commitHash) {

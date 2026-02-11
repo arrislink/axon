@@ -1,9 +1,14 @@
 {
   "name": "@arrislink/axon",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "description": "AI-Powered Development Operating System with unified LLM provider support",
   "type": "module",
+  "sideEffects": false,
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "ax": "dist/index.js"
   },
@@ -12,10 +17,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "files": [
-    "dist/index.js",
+    "dist",
     "templates",
     "README.md",
     "README.zh-CN.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -28,7 +34,7 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "release": "./scripts/publish.sh",
-    "prepublishOnly": "npm run clean && npm run build:js"
+    "prepublishOnly": "bun run build:js"
   },
   "keywords": [
     "ai",
@@ -58,6 +64,7 @@
   },
   "homepage": "https://github.com/arrislink/axon#readme",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.5",
     "commander": "^12.0.0",
@@ -65,7 +72,7 @@
     "ora": "^8.0.0",
     "prompts": "^2.4.2",
     "yaml": "^2.3.4",
-    "zod": "^3.22.4"
+    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.5.0",

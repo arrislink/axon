@@ -24,6 +24,8 @@ export const DEFAULT_CONFIG: AxonConfig = {
       path: '.beads',
       auto_commit: true,
       commit_template: '✅ {bead_id}: {title}',
+      commit_scope: 'all',
+      commit_graph: true,
     },
     skills: {
       enabled: true,
@@ -58,6 +60,10 @@ export const DEFAULT_CONFIG: AxonConfig = {
   logging: {
     level: 'info',
     file: '.axon/logs/axon.log',
+  },
+
+  verify: {
+    commands: ['bun test', 'bun run type-check', 'bun run lint'],
   },
 };
 

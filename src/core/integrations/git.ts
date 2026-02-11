@@ -35,6 +35,15 @@ export class GitOperations {
   }
 
   /**
+   * Stage selected files (paths are relative to cwd)
+   */
+  async addFiles(paths: string[]): Promise<void> {
+    const unique = Array.from(new Set(paths.map((p) => p.trim()).filter(Boolean)));
+    if (unique.length === 0) return;
+    await $`git add -- ${unique}`.cwd(this.cwd).quiet();
+  }
+
+  /**
    * Commit changes with message
    */
   async commit(message: string): Promise<string> {
@@ -66,6 +75,11 @@ export class GitOperations {
    */
   async hasChanges(): Promise<boolean> {
     const result = await $`git status --porcelain`.cwd(this.cwd).quiet();
+    return result.stdout.toString().trim().length > 0;
+  }
+
+  async hasStagedChanges(): Promise<boolean> {
+    const result = await $`git diff --cached --name-only`.cwd(this.cwd).quiet();
     return result.stdout.toString().trim().length > 0;
   }
 

@@ -11,7 +11,9 @@ import {
   configCommand,
   docsCommand,
   doctorCommand,
+  flowCommand,
   initCommand,
+  mcpCommand,
   planCommand,
   skillsCommand,
   specCommand,
@@ -47,6 +49,8 @@ program.addCommand(statusCommand);
 program.addCommand(doctorCommand);
 program.addCommand(configCommand);
 program.addCommand(docsCommand);
+program.addCommand(flowCommand);
+program.addCommand(mcpCommand);
 
 // Custom help
 program.addHelpText(

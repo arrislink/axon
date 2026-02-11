@@ -5,6 +5,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { ConfigManager } from '../core/config';
+import { getNextExecutable, validateGraph } from '../core/beads';
 import { AxonError } from '../utils/errors';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
@@ -38,34 +39,13 @@ export const workCommand = new Command('work')
       await ensureGitSafety({ cwd: projectRoot });
     }
 
-    // Dynamic import ConfigPriorityResolver
-    const { ConfigPriorityResolver } = await import('../core/config/priority');
-    const { OMOConfigReader } = await import('../core/llm/omo-config-reader');
-
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.get();
-    const omoConfig = new OMOConfigReader();
-    const resolver = new ConfigPriorityResolver();
-
-    const resolved = resolver.resolve({
-      cliOptions: options,
-      projectConfig: config,
-      omoConfig,
-      env: process.env,
-    });
-
-    if (!resolved.apiKey) {
-      throw new AxonError('未找到 API Key', 'WORK_ERROR', [
-        '请配置 OMO Provider 或设置环境变量',
-        '运行 `ax config keys` 或 `bunx oh-my-opencode config`',
-      ]);
-    }
 
     logger.title('Axon 任务执行');
 
     // Initialize executor
-    // We use resolved.apiKey
-    const executor = new BeadsExecutor(config, projectRoot, resolved.apiKey);
+    const executor = new BeadsExecutor(config, projectRoot);
     const stats = executor.getStats();
 
     // Show current progress
@@ -111,18 +91,65 @@ export const workCommand = new Command('work')
 
     // Interactive mode or single execution
     const graph = executor.getGraph();
-    const nextBead = graph.beads.find(
-      (b) =>
-        b.status === 'pending' &&
-        b.dependencies.every((d) => {
-          const dep = graph.beads.find((x) => x.id === d);
-          return dep?.status === 'completed';
-        }),
-    );
+    const nextBead = getNextExecutable(graph.beads);
 
     if (!nextBead) {
       logger.warn('没有可执行的任务');
-      logger.info('可能存在依赖循环或所有任务已完成');
+      const validation = validateGraph(graph);
+      if (!validation.valid) {
+        logger.blank();
+        logger.warn('任务图存在问题:');
+        for (const err of validation.errors) {
+          logger.warn(`  - ${err}`);
+        }
+      }
+
+      const failed = graph.beads.filter((b) => b.status === 'failed');
+      const pending = graph.beads.filter((b) => b.status === 'pending');
+      if (failed.length > 0) {
+        logger.blank();
+        logger.warn(`存在失败任务 (${failed.length} 个)，可能阻塞后续执行:`);
+        for (const b of failed.slice(0, 5)) {
+          logger.warn(`  - ${b.id}: ${b.title}${b.error ? ` (${b.error})` : ''}`);
+        }
+        if (failed.length > 5) {
+          logger.warn(`  ... 还有 ${failed.length - 5} 个失败任务`);
+        }
+        logger.info('可尝试重跑失败任务:');
+        for (const b of failed.slice(0, 3)) {
+          logger.info(`  ${chalk.cyan('ax work --bead')} ${b.id}`);
+        }
+      }
+
+      if (pending.length > 0) {
+        const beadById = new Map(graph.beads.map((b) => [b.id, b]));
+        const blocked = pending
+          .map((b) => {
+            const unmet = b.dependencies
+              .map((depId) => {
+                const dep = beadById.get(depId);
+                if (!dep) return `${depId}(missing)`;
+                if (dep.status === 'completed') return null;
+                return `${depId}(${dep.status})`;
+              })
+              .filter((x): x is string => Boolean(x));
+            return { bead: b, unmet };
+          })
+          .filter((x) => x.unmet.length > 0)
+          .sort((a, b) => b.unmet.length - a.unmet.length);
+
+        if (blocked.length > 0) {
+          logger.blank();
+          logger.warn('部分待处理任务被依赖阻塞（展示前 5 个）:');
+          for (const item of blocked.slice(0, 5)) {
+            logger.warn(`  - ${item.bead.id}: ${item.bead.title}`);
+            logger.warn(`    依赖未完成: ${item.unmet.join(', ')}`);
+          }
+        }
+      }
+
+      logger.info('如果确认任务依赖关系不合理，建议重新生成任务图:');
+      logger.info(`  ${chalk.cyan('ax plan')}  ${chalk.dim('# 根据当前 OpenSpec 重新拆解')}`);
       return;
     }
 

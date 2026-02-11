@@ -121,6 +121,32 @@ export class ConfigManager {
   }
 
   /**
+   * Get the absolute path to the spec file
+   */
+  getSpecPath(): string {
+    return join(this.getPath('openspec'), 'spec.md');
+  }
+
+  /**
+   * Get the absolute path to the graph file
+   */
+  getGraphPath(): string {
+    return join(this.getPath('beads'), 'graph.json');
+  }
+
+  /**
+   * Get all relevant skills paths (local and global)
+   */
+  getAllSkillsPaths(): string[] {
+    return [
+      this.getPath('skills_local'),
+      join(this.projectRoot, '.agents', 'skills'),
+      join(this.projectRoot, '.agent', 'skills'),
+      this.getPath('skills_global'),
+    ];
+  }
+
+  /**
    * Check if Axon project exists in current directory
    */
   static isAxonProject(dir: string = process.cwd()): boolean {

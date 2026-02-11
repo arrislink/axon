@@ -4,8 +4,7 @@
 
 import type { AxonConfig, Bead, Skill } from '../../types';
 import { BeadsError } from '../../utils/errors';
-import { AnthropicClient } from '../integrations/anthropic';
-import { CostTracker } from './cost-tracker';
+import { AxonLLMClient } from '../llm';
 
 export interface ExecutionContext {
   bead: Bead;
@@ -29,14 +28,12 @@ interface GeneratedFile {
 }
 
 export class AgentOrchestrator {
-  private client: AnthropicClient;
   private config: AxonConfig;
-  private costTracker: CostTracker;
+  private llm: AxonLLMClient;
 
-  constructor(config: AxonConfig, apiKey: string) {
+  constructor(config: AxonConfig) {
     this.config = config;
-    this.client = new AnthropicClient(apiKey, config.agents.sisyphus);
-    this.costTracker = new CostTracker(config.safety);
+    this.llm = new AxonLLMClient();
   }
 
   /**
@@ -49,19 +46,16 @@ export class AgentOrchestrator {
     // Build prompt
     const prompt = this.buildPrompt(context);
 
-    // Check cost limit
-    await this.costTracker.checkLimit(bead.estimated_tokens);
-
     // Call LLM
-    const response = await this.client.chat([{ role: 'user', content: prompt }], {
+    const response = await this.llm.chat([{ role: 'user', content: prompt }], {
+      agent: bead.agent,
       model: agentConfig.model,
       temperature: agentConfig.temperature,
       maxTokens: agentConfig.max_tokens,
     });
 
-    // Track cost
-    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
-    const cost = this.costTracker.recordUsage(agentConfig.model || 'unknown', tokensUsed);
+    const tokensUsed = response.tokens.input + response.tokens.output;
+    const cost = response.cost;
 
     // Parse and write files
     const artifacts = await this.processResponse(response.content);
@@ -165,12 +159,5 @@ ${skill.content}
       files,
       commits: [],
     };
-  }
-
-  /**
-   * Get cost statistics
-   */
-  getStats() {
-    return this.costTracker.getStatistics();
   }
 }

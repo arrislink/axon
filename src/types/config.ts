@@ -22,6 +22,8 @@ export interface ToolsConfig {
     path: string;
     auto_commit: boolean;
     commit_template?: string;
+    commit_scope?: 'all' | 'artifacts';
+    commit_graph?: boolean;
   };
   skills: {
     enabled: boolean;
@@ -49,6 +51,10 @@ export interface LoggingConfig {
   file: string;
 }
 
+export interface VerifyConfig {
+  commands: string[];
+}
+
 export interface ProjectConfig {
   name: string;
   description?: string;
@@ -68,4 +74,5 @@ export interface AxonConfig {
   safety: SafetyConfig;
   logging: LoggingConfig;
   hooks?: HooksConfig;
+  verify?: VerifyConfig;
 }

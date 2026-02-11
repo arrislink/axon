@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { getGraphStats } from '../core/beads';
+import { getGraphStats, getNextExecutable, validateGraph } from '../core/beads';
 import { ConfigManager } from '../core/config';
 import type { BeadsGraph } from '../types';
 import { AxonError } from '../utils/errors';
@@ -123,12 +123,7 @@ export const statusCommand = new Command('status')
 
       // Current queue
       const pending = graph.beads.filter((b) => b.status === 'pending');
-      const nextExecutable = pending.find((b) =>
-        b.dependencies.every((d) => {
-          const dep = graph.beads.find((x) => x.id === d);
-          return dep?.status === 'completed';
-        }),
-      );
+      const nextExecutable = getNextExecutable(graph.beads);
 
       if (pending.length > 0) {
         console.log(`\n${chalk.bold('任务队列')}:`);
@@ -154,6 +149,17 @@ export const statusCommand = new Command('status')
 
         if (pending.length > 4) {
           console.log(chalk.dim(`  ... 还有 ${pending.length - 4} 个任务`));
+        }
+      }
+
+      const validation = validateGraph(graph);
+      if (!validation.valid) {
+        console.log(`\n${chalk.bold('任务图诊断')}: ${chalk.red('存在问题')}`);
+        for (const err of validation.errors.slice(0, 5)) {
+          console.log(`  ${chalk.red('•')} ${err}`);
+        }
+        if (validation.errors.length > 5) {
+          console.log(chalk.dim(`  ... 还有 ${validation.errors.length - 5} 项问题`));
         }
       }
     } else {

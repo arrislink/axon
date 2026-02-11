@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-02-11
+
+### Added
+- **Autonomous Workflow**: Introduced `ax flow run` for one-click orchestration from requirements to verification.
+- **MCP Server Support**: New `ax mcp` command to integrate Axon as a Model Context Protocol server for IDEs like Cursor and Trae.
+- **Milestone State Machine**: New `FlowRunner` to manage transitions between Spec, PRD, Tech, Architecture, Planning, and Execution.
+- **Quality Verification**: Added `verify/check` module and `run_checks` stage that generates comprehensive `VERIFY.md` reports.
+- **Security Sandboxing**: Implemented path sandbox for file operations to prevent directory traversal attacks during AI execution.
+- **Enhanced Diagnostics**: Improved `ax status` and `ax work` with detailed blocked task analysis and dependency resolution hints.
+- **Git Commit Strategies**: New support for `all` vs `artifacts` commit scopes in `.axon/config.yaml`.
+- **Unified LLM Client**: Centralized `AxonLLMClient` for consistent model handling across all stages.
+
+### Changed
+- **Config Refactoring**: Improved `ConfigManager` with unified path resolution and skill directory discovery.
+- **Stage-Specific Skills**: `SkillsPolicy` now enforces stage-specific skill matching and suggestions.
+- **Orchestrator Cleanup**: Unified bead execution logic and removed redundant cost-tracking calls.
+
+### Fixed
+- Fixed issue where blocked tasks had no clear error message in `ax work`.
+- Improved path resolution for local and global skill directories.
+
 ## [1.5.3] - 2026-02-10
 
 ### Added

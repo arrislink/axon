@@ -16,11 +16,14 @@ Axon is a unified AI-assisted development environment that solves context loss, 
 
 - **🧠 Spec-First**: Don't just chat. Define requirements in `spec.md` to keep the AI focused.
 - **🗺️ Bead Planning**: Complex features are broken into atomic, dependency-sorted tasks (Beads).
+- **🔄 Full Flow**: One-click orchestration from requirements to verification using `ax flow run`.
+- **🔌 IDE Ready**: Integrate with Cursor/Trae/VSCode via **MCP** (Model Context Protocol).
 - **🤖 Agentic Execution**: **OpenCode** agents execute tasks one-by-one, ensuring context and quality.
+- **🛡️ Quality Guard**: Automated `run_checks` and generated `VERIFY.md` reports for every milestone.
 - **♻️ Skill Reuse**: Automatically apply proven patterns (e.g., "Secure Auth") from your team's library.
 - **📚 Document Integration**: Import PDF/Word/MD docs as context for AI to generate specs and code using `ax docs`.
 - **🚀 Skill Orchestration**: Automatically detect tech stacks (React, Go, PHP) and suggest relevant expertise.
-- **🛡️ Enterprise Safe**: Token budgeting, Git safety checks, and multi-provider failover via **OMO**.
+- **🛡️ Enterprise Safe**: Path sandboxing, Git safety checks, and multi-provider failover via **OMO**.
 
 ## 🎯 Applicable Scenarios
 
@@ -95,6 +98,13 @@ ax plan
 ax status
 ```
 
+## ✅ Best Practices (Short)
+- Prefer `ax flow run` for a deterministic Spec → Plan → Work → Verify loop.
+- Use `ax mcp --llm off` for IDE-first workflows; use `--llm auto` for automation.
+- Keep `.openspec/` and `.beads/` committed for team/CI repeatability.
+
+More playbooks and examples: [GUIDE.md](file:///Users/zhh/Axon-Projects/axon/docs/GUIDE.md).
+
 ## 📚 Core Concepts
 
 ### Workflow
@@ -130,19 +140,15 @@ graph LR
 | Command | Description |
 |---------|-------------|
 | `ax init [name]` | Initialize a new Axon project |
+| `ax flow run` | Run full automated workflow (Spec -> Plan -> Work -> Verify) |
+| `ax mcp` | Start MCP server for IDE integration (Cursor/Trae/VSCode) |
 | `ax spec init` | Create project specification interactively |
-| `ax spec edit` | Edit the existing specification |
 | `ax spec analyze` | Refine specification into professional PRD.md |
 | `ax docs add <file>` | Import document (PDF, Word, MD) into project |
 | `ax docs add-dir [dir]` | Import all documents in a directory (defaults to ./docs) |
-| `ax docs list` | List and filter project documents |
-| `ax docs search <q>` | Semantic search within documents |
-| `ax plan` | Generate task graph from specification (uses expert skills) |
+| `ax plan` | Generate task graph from specification |
 | `ax work` | Execute the next task |
-| `ax work --interactive` | Execute tasks in interactive mode |
-| `ax skills search <query>` | Search for skill templates |
-| `ax skills install <name>` | Install/Symlink a skill to local project |
-| `ax status` | View project progress |
+| `ax status` | View project progress and diagnostics |
 | `ax doctor` | Diagnose environment issues |
 
 ## ⚙️ Configuration
@@ -261,7 +267,7 @@ bun run build:js
 
 ## 📖 Documentation
  
-- [**User Guide**](./docs/GUIDE.md) - **Start Here** (Philosophy, Arch, Features, API)
+- [**User Guide**](./docs/GUIDE.md) - **Start Here** (Quick Start + Features)
 - [Contributing Guide](./CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)
 
