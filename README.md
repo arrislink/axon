@@ -40,16 +40,30 @@ It is **NOT** designed for:
 
 ## 🆚 Tool Comparison
 
+Note: capabilities vary by product version and configuration; this table reflects common defaults and emphasis.
+
+Also note the abstraction level:
+- **Axon** is a workflow/orchestration layer (spec, planning graph, execution, verification).
+- **OpenCode** is the underlying agent execution engine.
+- **OhMyOpenCode (OMO)** is the provider layer for connecting to different LLM backends/accounts.
+
 | Feature | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
 | :--- | :--- | :--- | :--- |
-| **Core Philosophy** | **Plan-Execute-Verify** (Agentic) | **Autocomplete** (Assistive) | **Chat-to-Code** (Autonomous) |
-| **Context Awareness** | **High** (Project-wide Spec + Graph) | **Medium** (Open Files + RAG) | **High** (Repo Map) |
-| **Planning** | ✅ **Pre-execution Task Graph** | ❌ None (Streaming) | ⚠️ Implicit (Step-by-step) |
-| **Human Control** | ✅ **High** (Review Plan & Spec) | ✅ High (Accept/Reject) | ⚠️ Application Dependent |
-| **Cost Control** | ✅ **Token Budgeting & Tracking** | ❌ Subscription Based | ⚠️ Often Unbounded |
-| **Knowledge Reuse** | ✅ **Skill Templates** (.skills) | ❌ None | ❌ None |
+| **Core Philosophy** | **Spec/Plan/Work/Verify** (workflow-first) | **IDE assistant** (chat + completions) | **Agent-driven coding** (chat + patches/tools) |
+| **Context Awareness** | **Persisted artifacts** (`.openspec` + `.beads`) | **Workspace context** (open files + index/RAG, varies) | **Repo context** (repo map/tools, varies) |
+| **Planning** | ✅ **Explicit task graph** (Beads) | ⚠️ **Ad-hoc** (chat planning; no shared graph by default) | ⚠️ **Tool-dependent** (can follow plans; some have planning) |
+| **Human Control** | ✅ **High** (reviewable docs/graph + git safety) | ✅ **High** (accept/reject + manual edits) | ⚠️ **Mode-dependent** (git-based review; autonomy optional) |
+| **Cost Control** | ✅ **Usage tracking** (limits if configured/provider supports) | ⚠️ **Provider/subscription** (quotas vary) | ⚠️ **Provider-dependent** (budgets need explicit guardrails) |
+| **Knowledge Reuse** | ✅ **Skills templates** (`.skills`) | ⚠️ **Rules/prompts** (workspace/user; less structured) | ⚠️ **Prompts/scripts** (reuse possible; tool-dependent) |
 
 ## 🚀 Quick Start
+
+### First-time LLM setup (Recommended)
+
+Axon can run in different LLM modes depending on your workflow:
+- **IDE-owned LLM**: run `ax mcp --llm off` and let Cursor/Trae handle model calls (Axon focuses on spec/plan/verify artifacts).
+- **OMO + OpenCode CLI**: install/configure OMO, then run `ax config test` and (optionally) `ax config set-model <model> -p <provider>` to persist project defaults in `.axon/config.yaml`.
+- **Fallback (env vars)**: set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY` / `GOOGLE_API_KEY`), then run `ax config test --mode fallback`.
 
 ### Global Installation (Recommended)
 
@@ -152,6 +166,8 @@ graph LR
 | `ax doctor` | Diagnose environment issues |
 
 ## ⚙️ Configuration
+
+For a first-time setup checklist, see [GUIDE.md](file:///Users/zhh/Axon-Projects/axon/docs/GUIDE.md).
 
 ### LLM Provider Configuration
 

@@ -103,6 +103,15 @@ ax work --bead <bead-id>  # re-run a failed task
 ax plan                   # regenerate graph if dependencies are wrong
 ```
 
+### LLM setup checklist (best practices)
+
+1. Choose your mode:
+   - **IDE-owned LLM (recommended)**: `ax mcp --llm off`
+   - **Axon-owned LLM**: use OMO/OpenCode, then run `ax config test`
+2. Verify connectivity before long runs: `ax config test --provider <p> --model <m>`
+3. Persist non-secret defaults in the project: `ax config set-model <model> -p <provider>`
+4. Keep secrets out of git: prefer OMO config or environment variables; do not commit keys to `.axon/config.yaml`
+
 ---
 
 ## 🧩 Basic Features (基本功能说明)

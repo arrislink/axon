@@ -67,57 +67,9 @@ graph TD
 
 ---
 
-## ✨ 核心特性
+## 🚀 快速开始
 
-### 1. 规格驱动开发 (Spec-First)
-拒绝直接开始写代码。`ax spec init` 通过与 AI 进行交互式访谈，帮助你理清需求。这会生成一个 `spec.md` 文件，作为项目的“单一真理来源”。
-
-### 2. PRD 深度优化
-使用 `ax spec analyze` 将你的初步想法转化为专业、结构化的产品需求文档 (`PRD.md`)。此过程会利用专家技能（如 `brainsstorm`）来确保架构和业务逻辑的严密性。
-
-### 3. 智能任务规划
-`ax plan` 分析你的规格说明，并将其拆解为任务依赖图。
-*   **原子化 (Atomic)**: 每个任务都足够小，可以由 AI 可靠地完成。
-*   **有序性 (Ordered)**: 任务按依赖关系排序（例如，“创建数据库架构”必须在“创建 API”之前）。
-*   **专家知识**: 将本地技能（如 `write-plan`）集成到规划提示词中。
-*   **可视化**: 你可以在执行前预览并调整规划。
-
-### 4. 代理式执行
-`ax work` 执行规划好的任务。
-*   **上下文感知**: 代理知道当前任务、整体规格和项目结构。
-*   **安全性**: 每个任务完成后都会自动提交到 Git。
-*   **可恢复性**: 如果某个任务失败，你可以重试该任务，而无需重启整个项目。
-
-### 5. 全自动工作流 (Flow)
-`ax flow run` 自动化了从需求定义到最终验证的全生命周期。它是 CI/CD 或背景批处理任务的理想选择。
-- **里程碑驱动**: 自动在 Spec、PRD、Tech、Architecture、Planning 和 Execution 阶段间流转。
-- **自我闭环**: 执行完成后自动运行验证检查并输出 `VERIFY.md`。
-
-### 6. IDE 原生集成 (MCP)
-`ax mcp` 启动 Model Context Protocol 服务器。
-- **无缝接入**: 像 Cursor 或 Trae 这样的 IDE 可以直接调用 `axon.flow_run`、`axon.spec_write` 或 `axon.run_checks`。
-- **状态同步**: IDE 和 CLI 共享同一份 `.beads/graph.json` 和 `.openspec/spec.md`，确保双端一致。
-
-### 7. 技能编排 (Orchestration)
-Axon 会在初始化时自动检测你的技术栈，并建议相关的专家技能。你可以使用 `ax skills install --symlink` 来集中化地采纳全局最佳实践。
-
-### 8. 文档集成
-使用 `ax docs add-dir` 批量导入整个目录。AI 代理将利用这些文档在规格生成和任务执行期间更好地理解背景信息。
-
-### 9. 配置优先级与安全
-*   **配置优先级**: CLI 参数 > 项目配置 > OMO 配置 > 环境变量。
-*   **Git 安全**: 防止在不干净的工作区执行任务，并在向保护分支 (`main`/`master`) 提交前发出警告。
-
----
-
-## ✅ 最佳实践与流程手册
-- **分支策略**：尽量在特性分支上运行，避免在保护分支（`main`/`master`）直接操作。
-- **保持工作区干净**：执行 `ax work` 前先处理未提交改动，避免误覆盖或丢失本地修改。
-- **批处理优先走 Flow**：需要端到端闭环时使用 `ax flow run --work all`，并输出 `VERIFY.md` 作为交付证明。
-- **IDE 优先走 MCP**：IDE 托管 LLM 时用 `ax mcp --llm off`；需要 Axon 直接驱动 LLM 时用 `ax mcp --llm auto`。
-- **把 `.openspec/` 和 `.beads/` 当作单一真理来源**：纳入版本管理，保证团队与 CI 复现一致。
-
-### 手册：新项目（CLI / CI）
+### 新项目（CLI / CI）
 
 ```bash
 ax init my-project
@@ -126,7 +78,7 @@ ax flow run --work all --skills suggest
 ax status
 ```
 
-### 手册：在已有仓库中引入 Axon
+### 在已有仓库中引入
 
 ```bash
 cd existing-repo
@@ -136,254 +88,70 @@ ax plan
 ax work
 ```
 
-### 手册：排查执行阻塞
+### IDE 工作流（MCP）
+
+```bash
+ax mcp --llm off   # IDE 托管 LLM（推荐）
+ax mcp --llm auto  # Axon 运行 flow/work 的 LLM 调用
+```
+
+### 排查：没有可执行任务
 
 ```bash
 ax status --beads
-ax work --bead <bead-id>      # 重新执行失败任务
-ax plan                       # 若依赖关系不合理，重新生成任务图
+ax work --bead <bead-id>  # 重试失败任务
+ax plan                   # 依赖关系不正确时，重生成任务图
 ```
 
-## 🚀 教程：构建一个 REST API
+### LLM 配置清单（最佳实践）
 
-让我们演练一个真实场景：**使用 Hono 构建一个简单的用户 API。**
-
-### 第一步：初始化项目
-创建标准的 Axon 项目结构。
-
-```bash
-ax init my-user-api
-cd my-user-api
-```
-
-### 第二步：定义需求 (Spec)
-告诉 Axon 你想要构建什么。
-
-```bash
-ax spec init
-```
-
-*Axon 提问:* "你想构建什么项目？"
-*你回答:* "一个基于 Hono 的 REST API，包含 `GET /users` 端点，返回模拟用户列表。"
-
-Axon 生成 `.openspec/spec.md`:
-```markdown
-# User API 规格说明
-## 需求
-1.  **服务器**: 使用 Hono 框架。
-2.  **API**: 实现 `GET /users` 返回 JSON 数组。
-3.  **数据**: 使用内存模拟数据。
-```
-
-### 第三步：生成规划 (Plan)
-将规格转换为可执行任务。
-
-```bash
-ax plan
-```
-
-Axon 分析规格并创建 `.beads/graph.json`:
-1.  **Setup Hono**: 安装依赖 (`hono`, `tsx`)。
-2.  **Create Server**: 实现基础服务器结构。
-3.  **Implement Route**: 添加 `GET /users` 处理函数。
-
-### 第四步：执行 (Work)
-让 AI 代理开始构建。
-
-```bash
-ax work
-```
-
-*   **智能体** 领取任务 "Setup Hono"。
-*   **智能体** 运行 `npm install hono`。
-*   **Axon** 提交代码: "✅ setup: Install Hono"。
-*   **智能体** 领取任务 "Create Server"。
-*   **智能体** 编写 `src/index.ts`。
-*   **Axon** 提交代码: "✅ feature: Basic server setup"。
-
-### 第五步：验证
-运行生成的代码。
-
-```bash
-bun start
-# Server running on http://localhost:3000
-```
+1. 选择模式：
+   - **IDE 托管 LLM（推荐）**：`ax mcp --llm off`
+   - **Axon 托管 LLM**：配置 OMO/OpenCode 后先运行 `ax config test`
+2. 在长流程前先验证连通性：`ax config test --provider <p> --model <m>`
+3. 将非敏感默认值固化到项目：`ax config set-model <model> -p <provider>`
+4. 密钥不要进 Git：优先用 OMO 配置或环境变量；不要把 key 写进 `.axon/config.yaml`
 
 ---
 
-## 👥 团队协作
+## 🧩 基本功能说明
 
-Axon 采用“文档即代码”的设计理念，使其天然兼容基于 Git 的协作流程。
+### Spec（OpenSpec）
+- 单一真理来源：`.openspec/spec.md`
+- 常用命令：`ax spec init`, `ax spec analyze`, `ax spec edit`, `ax spec show`
 
-### 1. 以 Git 作为“单一真理来源”
-为了进行协作，请确保将以下目录提交到 Git 仓库：
-*   `.openspec/`: 确保团队对需求的理解保持一致。
-*   `.beads/`: 充当团队的实时“任务看板”。
-*   `.skills/`: 在团队内共享高质量的代码模式和提示词模板。
+### Plan（Beads 任务图）
+- 输出：`.beads/graph.json`（任务 DAG）
+- 命令：`ax plan`
 
-### 2. 配置策略
-*   **共享逻辑 (`.axon/config.yaml`)**: 提交此文件以定义项目模型和安全规则。
-*   **个人凭据**: 使用环境变量 (`ANTHROPIC_API_KEY`) 或 **OhMyOpenCode (OMO)** 管理个人 API 密钥。Axon 会自动从本地 OMO 配置和 Antigravity 认证（`~/.config/opencode/antigravity-accounts.json`）中解析凭据，在不泄露私钥的情况下驱动企业级代理。Axon 将这些本地凭据与共享的项目逻辑在运行时自动结合。
+### Work（执行 beads）
+- 常用命令：`ax work`, `ax work --all`, `ax work --bead <id>`
+- 排查：`ax status` / `ax status --beads`
+- Git 安全：阻止在不干净工作区 / 保护分支上进行高风险执行
 
-### 3. 推荐的 .gitignore
-在项目 `.gitignore` 中添加以下内容：
-```gitignore
-# 运行日志
-.axon/logs/
-dist/
+### Flow（端到端闭环）
+- 命令：`ax flow run`
+- 阶段：spec → prd → tech → design → plan → work → checks → verify
+- 产物：`PRD.md`, `TECH.md`, `ARCHITECTURE.md`, `VERIFY.md`
 
-# 必须保留在 Git 中
-!.axon/config.yaml
-!.openspec/
-!.beads/
-!.skills/
-```
+### MCP（IDE 集成）
+- 命令：`ax mcp --llm off|auto`
+- 用途：让 IDE 调用 `axon.*` 工具，保持规格/任务图/产物一致
 
-### 4. 协同工作流
-1.  **负责人**: 运行 `ax spec init` 和 `ax plan`，然后推送到 Git。
-2.  **开发者**: 拉取仓库，通过 `ax status` 查看进度并领取任务。
-3.  **执行**: 开发者运行 `ax work` 完成任务。Axon 会生成与 Bead ID 关联的原子提交。
-4.  **评审**: 评审人通过 Bead ID 将代码改动追溯到原始规格需求。
+### Verify（质量）
+- `run_checks` 执行配置的检查命令（例如 `bun test`, `bun run type-check`）
+- `verify_requirements` 基于 spec/PRD/graph/checks 生成 `VERIFY.md`
 
----
+### Skills（可复用经验）
+- 目录：`.skills/`, `.agents/skills/`, `.agent/skills/`，以及全局 skills
+- 常用命令：`ax skills search`, `ax skills install`, `axon.skills_add/update`（通过 MCP）
 
-## 🆚 与同类工具对比
-
-| 特性 | Axon | GitHub Copilot / Cursor | Aider / OpenDevin |
-| :--- | :--- | :--- | :--- |
-| **核心理念** | **规划-执行-验证** (代理式) | **自动补全** (辅助式) | **聊天即代码** (自主式) |
-| **上下文感知** | **高** (全项目规格 + 任务图) | **中** (打开文件 + RAG) | **高** (仓库地图) |
-| **规划能力** | ✅ **显式任务图** | ❌ 无 (流式生成) | ⚠️ 隐式 (逐步进行) |
-| **人类控制** | ✅ **高** (审查规划与规格) | ✅ 高 (接受/拒绝) | ⚠️ 依赖于具体应用 |
-| **成本控制** | ✅ **Token 预算与追踪** | ❌ 基于订阅 | ⚠️ 通常无限制 |
-| **知识复用** | ✅ **技能模板** (.skills) | ❌ 无 | ❌ 无 |
+### Docs（上下文库）
+- 常用命令：`ax docs add`, `ax docs add-dir`, `ax docs search`, `ax docs show`
 
 ---
 
-## 📚 文档管理
-
-Axon 允许你导入外部文档，为 AI 智能体提供上下文。这对于确保 AI 理解你的具体业务规则、遗留架构或详细的产品需求至关重要。
-
-### 支持的格式
-- **Markdown (.md)**: 技术文档的最佳选择。
-- **Word (.docx)**: 需求文档、PRD。
-- **PDF (.pdf)**: 遗留规格说明书、大量手册。
-- **文本与代码 (.txt, .yaml 等)**: 配置文件、日志。
-
-### 上下文工作流
-1.  **导入**: 将文档添加到库中。
-2.  **索引**: Axon 提取文本并使用 AI 生成元数据（摘要、标签）。
-3.  **使用**: 
-    - `ax spec init` 自动检测文档并询问是否使用。
-    - `ax work` 智能体可以在编码过程中搜索并引用这些文档。
-
-### 管理文档
-
-```bash
-# 添加单个文件
-ax docs add ./docs/PRD_v1.0.docx --title "产品需求文档"
-
-# 添加整个目录
-ax docs add-dir ./legacy-docs/
-
-# 列出所有文档
-ax docs list
-
-# 搜索内容
-ax docs search "认证"
-
-# 查看详情
-ax docs show <doc-id>
-```
-
----
-
-## 📚 API 与命令参考
-
-### 核心命令
-
-| 命令 | 描述 |
-| :--- | :--- |
-| `ax init [name]` | 初始化新的 Axon 项目，包含结构创建和技术栈检测。 |
-| `ax spec init` | 交互式地创建项目规格 (`.openspec/spec.md`)。 |
-| `ax spec analyze` | 将规格文档转化为专业的 `PRD.md`。 |
-| `ax spec edit` | 在默认编辑器中编辑现有项目规格。 |
-| `ax spec show` | 显示当前规格文档。 |
-| `ax plan` | 使用专家技能从规格生成任务图 (`.beads/graph.json`)。 |
-| `ax work` | 执行图中的待办任务。 |
-| `ax work --interactive` | 以手动确认模式执行任务。 |
-| `ax status` | 查看详细的项目进度和 Bead 状态。 |
-
-### 配置命令
-
-| 命令 | 描述 |
-| :--- | :--- |
-| `ax config list` | 列出可用的 LLM 提供商和模型。 |
-| `ax config show` | 显示当前解析后的配置。 |
-| `ax config setup` | 设置 LLM 提供商的交互式向导。 |
-| `ax config test` | 测试 LLM 连接是否正常。 |
-
-### `ax config test`
-
-测试 LLM 连接是否正常。
-
-```bash
-ax config test
-ax config test --provider antigravity
-ax config test --model gpt-4o
-ax config test --mode direct  # 强制使用直接 API 模式
-```
-
-参数：
-- `-p, --provider <name>`: 指定要测试的 Provider。
-- `-m, --model <model>`: 指定测试使用的模型。
-- `--mode <mode>`: 强制使用的模式 (`cli`, `direct`, `fallback`)。
-
-### 技能命令
-
-| 命令 | 描述 |
-| :--- | :--- |
-| `ax skills search <query>` | 搜索可用的技能。 |
-| `ax skills install <name>` | 安装或链接技能到本项目。 |
-
-### 工具命令
-
-| 命令 | 描述 |
-| :--- | :--- |
-| `ax doctor` | 诊断环境问题（Node 版本、工具安装、密钥）。 |
-| `ax doctor --fix` | 尝试自动修复诊断出的问题。 |
-
-### 文档命令
-
-| 命令 | 描述 |
-| :--- | :--- |
-| `ax docs add <path>` | 导入文档。 |
-| `ax docs add-dir <path>` | 导入目录下的所有文档。 |
-| `ax docs list` | 列出已索引的文档。 |
-| `ax docs search <query>` | 在文档内搜索。 |
-| `ax docs show <id>` | 查看文档元数据和内容。 |
-| `ax docs summarize <id>` | 生成文档的 AI 摘要。 |
-
----
-
-## ⚙️ 配置参考
-
-Axon 使用层级配置系统。
-
-### 文件: `.axon/config.yaml`
-```yaml
-project:
-  name: "my-project"
-agents:
-  sisyphus:
-    model: "claude-3-5-sonnet-20240620"
-    provider: "anthropic"
-    temperature: 0.5
-safety:
-  daily_token_limit: 1000000
-  auto_commit: true
-```
-
-### 环境变量
-*   `ANTHROPIC_API_KEY`: 如果未配置 OMO 提供商，则作为回退密钥。
-*   `OPENAI_API_KEY` 等: OMO 提供商使用。
+## 🔗 更多
+- 项目概览：[README.md](file:///Users/zhh/Axon-Projects/axon/README.md)
+- 工作流手册：[2026-02-10-workflow-playbooks.md](file:///Users/zhh/Axon-Projects/axon/docs/plans/2026-02-10-workflow-playbooks.md)
+- 发布记录：[CHANGELOG.md](file:///Users/zhh/Axon-Projects/axon/CHANGELOG.md)
