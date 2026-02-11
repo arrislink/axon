@@ -39,26 +39,60 @@ export class AgentOrchestrator {
   /**
    * Execute a bead with the appropriate agent
    */
-  async execute(context: ExecutionContext): Promise<ExecutionResult> {
+  async execute(
+    context: ExecutionContext,
+    onProgress?: (message: string) => void,
+  ): Promise<ExecutionResult> {
     const { bead } = context;
     const agentConfig = this.config.agents[bead.agent] || this.config.agents.sisyphus;
 
     // Build prompt
     const prompt = this.buildPrompt(context);
 
-    // Call LLM
-    const response = await this.llm.chat([{ role: 'user', content: prompt }], {
+    if (onProgress) {
+      onProgress('🧠 AI 正在构思实现方案...');
+    }
+
+    // Call LLM with streaming for progress feedback
+    let fullContent = '';
+    let tokensUsed = 0;
+    let cost = 0;
+    let lastProgressUpdate = Date.now();
+    let chunkCount = 0;
+
+    const iterator = this.llm.streamChat([{ role: 'user', content: prompt }], {
       agent: bead.agent,
       model: agentConfig.model,
       temperature: agentConfig.temperature,
       maxTokens: agentConfig.max_tokens,
     });
 
-    const tokensUsed = response.tokens.input + response.tokens.output;
-    const cost = response.cost;
+    let result = await iterator.next();
+    while (!result.done) {
+      const chunk = result.value;
+      fullContent += chunk;
+      chunkCount++;
+
+      // Update progress every 500ms or 50 chunks
+      if (onProgress && (Date.now() - lastProgressUpdate > 500 || chunkCount % 50 === 0)) {
+        const wordCount = fullContent.split(/\s+/).length;
+        onProgress(`🧠 AI 正在生成代码 (${wordCount} 词)...`);
+        lastProgressUpdate = Date.now();
+      }
+
+      result = await iterator.next();
+    }
+
+    const response = result.value;
+    tokensUsed = response.tokens.input + response.tokens.output;
+    cost = response.cost;
+
+    if (onProgress) {
+      onProgress('📂 正在处理生成的文件...');
+    }
 
     // Parse and write files
-    const artifacts = await this.processResponse(response.content);
+    const artifacts = await this.processResponse(fullContent);
 
     return {
       success: true,

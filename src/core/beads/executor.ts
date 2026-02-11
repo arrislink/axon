@@ -129,12 +129,22 @@ export class BeadsExecutor {
         }
       }
 
-      // Execute with orchestrator
-      const result = await this.orchestrator.execute({
-        bead,
-        spec,
-        skills,
-      });
+      // Execute with orchestrator and provide progress updates
+      const { spinner } = await import('../../utils/spinner');
+      const result = await this.orchestrator.execute(
+        {
+          bead,
+          spec,
+          skills,
+        },
+        (progress) => {
+          if (spinner.isRunning()) {
+            spinner.update(progress);
+          } else {
+            logger.info(progress);
+          }
+        },
+      );
 
       // Mark as completed
       this.updateBeadStatus(bead.id, 'completed', {

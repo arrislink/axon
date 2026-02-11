@@ -33,6 +33,7 @@ export interface LLMOptions {
   temperature?: number;
   maxTokens?: number;
   system?: string;
+  onStream?: (chunk: string) => void;
 }
 
 /**

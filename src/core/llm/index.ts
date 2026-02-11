@@ -127,14 +127,26 @@ export class AxonLLMClient {
    * Send chat messages with cascading fallback
    */
   async chat(messages: LLMMessage[], options?: LLMOptions): Promise<LLMResponse> {
+    const iterator = this.streamChat(messages, options);
+    let result = await iterator.next();
+    while (!result.done) {
+      result = await iterator.next();
+    }
+    return result.value;
+  }
+
+  /**
+   * Stream chat response with cascading fallback
+   */
+  async *streamChat(
+    messages: LLMMessage[],
+    options?: LLMOptions,
+  ): AsyncGenerator<string, LLMResponse, unknown> {
     try {
       // 1. CLI Mode (Primary for OMO-Native)
       if (this.mode === 'cli' && this.openCodeClient) {
-        // Optimization: In CLI mode, if we have an agent, use it directly.
-        // If not, try to determine which agent to use based on Axon defaults.
         const chatOptions = { ...options };
         if (!chatOptions.agent && chatOptions.model) {
-          // If model matches a default, clear it to use CLI's agent default
           const isDefaultModel = [
             'claude-sonnet-4-20250514',
             'gemini-2.0-flash-exp',
@@ -143,31 +155,49 @@ export class AxonLLMClient {
           if (isDefaultModel) chatOptions.model = undefined;
         }
 
-        return await this.openCodeClient.chat(messages, chatOptions);
+        const iterator = this.openCodeClient.streamChat(messages, chatOptions);
+        let result = await iterator.next();
+        while (!result.done) {
+          if (options?.onStream) options.onStream(result.value);
+          yield result.value;
+          result = await iterator.next();
+        }
+        return result.value;
       }
 
       // 2. Direct Mode (OMO-aware)
       if (this.mode === 'direct' && this.unifiedClient) {
-        return await this.unifiedClient.chat(messages, options);
+        // UnifiedLLMClient.chat currently doesn't support streaming, 
+        // but we wrap it in a generator for consistency
+        const response = await this.unifiedClient.chat(messages, options);
+        if (options?.onStream) options.onStream(response.content);
+        yield response.content;
+        return response;
       }
 
       // 3. Fallback Mode (Env Vars or last-resort Unified)
       if (this.mode === 'fallback') {
-        // Fallback may have initialized either anthropicClient or unifiedClient
         if (this.anthropicClient) {
-          return await this.chatAnthropicFallback(messages, options);
+          const response = await this.chatAnthropicFallback(messages, options);
+          if (options?.onStream) options.onStream(response.content);
+          yield response.content;
+          return response;
         }
         if (this.unifiedClient) {
-          return await this.unifiedClient.chat(messages, options);
+          const response = await this.unifiedClient.chat(messages, options);
+          if (options?.onStream) options.onStream(response.content);
+          yield response.content;
+          return response;
         }
 
-        // Nothing available - generate diagnostic info
         const diagInfo = this.getDiagnosticInfo();
         throw new APIError(`未找到有效的 LLM 配置或 API 密钥 (${diagInfo})`, 401);
       }
 
       throw new Error(`未支持的 LLM 模式: ${this.mode}`);
     } catch (error) {
+      // For now, fallback logic is simplified for streaming
+      // In a real implementation, we'd want to handle fallback within the generator
       return this.handleChatError(error, messages, options);
     }
   }

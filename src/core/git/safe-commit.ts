@@ -16,7 +16,7 @@ export async function getGitStatus(
   cwd: string = process.cwd(),
   options: { includeUntracked?: boolean } = { includeUntracked: true },
 ) {
-  const args = ['status', '--porcelain'];
+  const args = ['-c', 'core.quotepath=false', 'status', '--porcelain'];
   if (options.includeUntracked === false) {
     args.push('--untracked-files=no');
   }
