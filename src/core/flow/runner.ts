@@ -2,18 +2,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { AxonConfig } from '../../types';
 import type { CollectedSpec } from '../../types/spec';
-import { SkillsLibrary } from '../skills/library';
-import { AxonLLMClient } from '../llm';
 import { BeadsExecutor } from '../beads/executor';
 import { BeadsGenerator } from '../beads/generator';
+import { ConfigManager } from '../config/manager';
+import { AxonLLMClient } from '../llm';
+import { SkillsLibrary } from '../skills/library';
 import { SpecAnalyzer } from '../spec/analyzer';
 import { SpecGenerator } from '../spec/generator';
 import type { CheckResult } from '../verify/check-runner';
 import { CheckRunner } from '../verify/check-runner';
 import { buildVerifyMarkdown } from '../verify/requirements-verifier';
-import { SkillsPolicy, type FlowStage, type SkillsEnsureMode } from './skills-policy';
-import type { FlowRunOptions, FlowRunResult, FlowContext } from './types';
-import { ConfigManager } from '../config/manager';
+import { type FlowStage, type SkillsEnsureMode, SkillsPolicy } from './skills-policy';
+import type { FlowContext, FlowRunOptions, FlowRunResult } from './types';
 
 const DEFAULT_STAGES: FlowStage[] = [
   'spec_generate',
@@ -71,7 +71,11 @@ export class FlowRunner {
     return { stagesExecuted, artifacts: context.artifacts };
   }
 
-  private async executeStage(stage: FlowStage, context: FlowContext, skillsMode: SkillsEnsureMode): Promise<void> {
+  private async executeStage(
+    stage: FlowStage,
+    context: FlowContext,
+    skillsMode: SkillsEnsureMode,
+  ): Promise<void> {
     switch (stage) {
       case 'spec_generate':
         context.artifacts.specPath = await this.stageSpecGenerate(context, skillsMode);
@@ -91,9 +95,7 @@ export class FlowRunner {
       case 'work_execute': {
         const mode = context.options.work?.mode || 'all';
         context.artifacts.workResults =
-          mode === 'next'
-            ? await this.stageWorkNext(context)
-            : await this.stageWorkAll(context);
+          mode === 'next' ? await this.stageWorkNext(context) : await this.stageWorkAll(context);
         break;
       }
       case 'run_checks':
@@ -120,7 +122,10 @@ export class FlowRunner {
     return this.configManager.getGraphPath();
   }
 
-  private async stageSpecGenerate(context: FlowContext, _skillsMode: SkillsEnsureMode): Promise<string> {
+  private async stageSpecGenerate(
+    context: FlowContext,
+    _skillsMode: SkillsEnsureMode,
+  ): Promise<string> {
     const targetPath = this.specPath();
     const input = context.options.input || {};
 
@@ -139,7 +144,10 @@ export class FlowRunner {
     return targetPath;
   }
 
-  private async stagePrdGenerate(context: FlowContext, skillsMode: SkillsEnsureMode): Promise<string> {
+  private async stagePrdGenerate(
+    context: FlowContext,
+    skillsMode: SkillsEnsureMode,
+  ): Promise<string> {
     const specPath = this.specPath();
     const prdPath = join(context.projectRoot, 'PRD.md');
 
@@ -160,7 +168,10 @@ export class FlowRunner {
     return prdPath;
   }
 
-  private async stageTechSelect(context: FlowContext, skillsMode: SkillsEnsureMode): Promise<string> {
+  private async stageTechSelect(
+    context: FlowContext,
+    skillsMode: SkillsEnsureMode,
+  ): Promise<string> {
     const prdPath = join(context.projectRoot, 'PRD.md');
     const techPath = join(context.projectRoot, 'TECH.md');
 
@@ -189,13 +200,16 @@ export class FlowRunner {
     return techPath;
   }
 
-  private async stageDesignGenerate(context: FlowContext, skillsMode: SkillsEnsureMode): Promise<string> {
+  private async stageDesignGenerate(
+    context: FlowContext,
+    skillsMode: SkillsEnsureMode,
+  ): Promise<string> {
     const prdPath = join(context.projectRoot, 'PRD.md');
     const techPath = join(context.projectRoot, 'TECH.md');
     const archPath = join(context.projectRoot, 'ARCHITECTURE.md');
 
     if (!existsSync(prdPath) || !existsSync(techPath)) {
-      throw new Error(`Stage DESIGN: PRD or TECH file missing.`);
+      throw new Error('Stage DESIGN: PRD or TECH file missing.');
     }
 
     const prd = readFileSync(prdPath, 'utf-8');
@@ -221,7 +235,10 @@ export class FlowRunner {
     return archPath;
   }
 
-  private async stagePlanGenerate(context: FlowContext, skillsMode: SkillsEnsureMode): Promise<string> {
+  private async stagePlanGenerate(
+    context: FlowContext,
+    skillsMode: SkillsEnsureMode,
+  ): Promise<string> {
     const specPath = this.specPath();
     if (!existsSync(specPath)) {
       throw new Error(`Stage PLAN: Spec file not found at ${specPath}`);
@@ -268,7 +285,7 @@ export class FlowRunner {
     const spec = existsSync(specPath) ? readFileSync(specPath, 'utf-8') : undefined;
     const prd = existsSync(prdPath) ? readFileSync(prdPath, 'utf-8') : undefined;
 
-    let graph;
+    let graph: any;
     if (existsSync(graphPath)) {
       try {
         graph = JSON.parse(readFileSync(graphPath, 'utf-8'));

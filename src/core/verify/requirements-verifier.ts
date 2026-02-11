@@ -15,7 +15,7 @@ function summarizeChecks(checks: CheckResult[] | undefined): string {
     const status = c.exitCode === 0 ? 'PASS' : 'FAIL';
     lines.push(`- ${status}: ${c.command}`);
   }
-  return lines.join('\n') + '\n';
+  return `${lines.join('\n')}\n`;
 }
 
 export function buildVerifyMarkdown(inputs: VerifyInputs): string {
@@ -49,4 +49,3 @@ export function buildVerifyMarkdown(inputs: VerifyInputs): string {
 
   return md.join('\n');
 }
-

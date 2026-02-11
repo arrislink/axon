@@ -1,17 +1,17 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { join, dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ConfigManager } from '../config/manager';
-import { getGraphStats } from '../beads/graph';
+import { ensurePathInProject } from '../../utils/paths';
 import { BeadsExecutor } from '../beads/executor';
-import { SkillsLibrary } from '../skills/library';
+import { getGraphStats } from '../beads/graph';
+import { ConfigManager } from '../config/manager';
 import { FlowRunner } from '../flow';
 import type { FlowStage, SkillsEnsureMode } from '../flow';
-import { ensurePathInProject } from '../../utils/paths';
+import { SkillsLibrary } from '../skills/library';
 
 export type McpLLMMode = 'auto' | 'off';
 
@@ -25,10 +25,7 @@ function tool(name: string, description: string, inputSchema: Tool['inputSchema'
 }
 
 export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise<void> {
-  const server = new Server(
-    { name: 'axon', version: '1.0.0' },
-    { capabilities: { tools: {} } },
-  );
+  const server = new Server({ name: 'axon', version: '1.0.0' }, { capabilities: { tools: {} } });
 
   const projectRoot = options.projectRoot;
   const configManager = new ConfigManager(projectRoot);
@@ -169,7 +166,14 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
 
       case 'axon.spec_show': {
         if (!existsSync(specPath)) {
-          return { content: [{ type: 'text', text: 'Spec file not found. Run axon.spec_init or axon.flow_run first.' }] };
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Spec file not found. Run axon.spec_init or axon.flow_run first.',
+              },
+            ],
+          };
         }
         const content = readFileSync(specPath, 'utf-8');
         return { content: [{ type: 'text', text: content }] };
@@ -187,7 +191,14 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
 
       case 'axon.plan_show': {
         if (!existsSync(graphPath)) {
-          return { content: [{ type: 'text', text: 'Plan file (graph.json) not found. Run axon.plan_generate or axon.flow_run first.' }] };
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Plan file (graph.json) not found. Run axon.plan_generate or axon.flow_run first.',
+              },
+            ],
+          };
         }
         const content = readFileSync(graphPath, 'utf-8');
         return { content: [{ type: 'text', text: content }] };
@@ -230,7 +241,7 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
           throw new Error('Plan file (graph.json) not found.');
         }
 
-        let graph;
+        let graph: any;
         try {
           graph = JSON.parse(readFileSync(graphPath, 'utf-8'));
         } catch (e) {
@@ -308,10 +319,17 @@ export async function startAxonMcpServer(options: AxonMcpServerOptions): Promise
         if (options.llm !== 'auto') throw new Error('LLM is disabled for this server');
         const runner = new FlowRunner(projectRoot, config);
 
-        const stages = Array.isArray(args.stages) ? (args.stages.map(String) as FlowStage[]) : undefined;
-        const skillsMode = (args.skillsMode ? String(args.skillsMode) : 'suggest') as SkillsEnsureMode;
+        const stages = Array.isArray(args.stages)
+          ? (args.stages.map(String) as FlowStage[])
+          : undefined;
+        const skillsMode = (
+          args.skillsMode ? String(args.skillsMode) : 'suggest'
+        ) as SkillsEnsureMode;
         const workMode = args.workMode ? String(args.workMode) : 'all';
-        const input = typeof args.input === 'object' && args.input ? (args.input as Record<string, unknown>) : {};
+        const input =
+          typeof args.input === 'object' && args.input
+            ? (args.input as Record<string, unknown>)
+            : {};
 
         const result = await runner.run({
           stages,
