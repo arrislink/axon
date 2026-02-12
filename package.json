@@ -30,11 +30,16 @@
     "dev": "bun run --watch src/index.ts",
     "build": "bun build --compile --minify src/index.ts --outfile dist/ax",
     "build:js": "bun build src/index.ts --outdir dist --target bun",
-    "test": "bun test",
+    "test": "bun test tests/",
     "lint": "bunx @biomejs/biome check --write .",
     "format": "bunx @biomejs/biome format --write .",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run build && bun run test",
+    "publish:patch": "bun run prepublishOnly && npm version patch && npm publish",
+    "publish:minor": "bun run prepublishOnly && npm version minor && npm publish",
+    "publish:major": "bun run prepublishOnly && npm version major && npm publish",
+    "publish:beta": "bun run prepublishOnly && npm version prerelease --preid=beta && npm publish --tag beta"
   },
   "keywords": [
     "ai",

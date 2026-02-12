@@ -59,5 +59,32 @@ export const doctorCommand = new Command('doctor')
       `  ${hasAnthropic ? chalk.green('✓') : chalk.yellow('⚠')} ANTHROPIC_API_KEY: ${hasAnthropic ? 'Configured' : 'Not set'}`,
     );
 
+    // Check API connectivity
+    if (hasAnthropic) {
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/health', {
+          method: 'HEAD',
+        });
+        if (response.ok) {
+          console.log(`  ${chalk.green('✓')} API Connectivity: Reachable`);
+        } else {
+          console.log(`  ${chalk.yellow('⚠')} API Connectivity: Issues detected`);
+        }
+      } catch {
+        console.log(`  ${chalk.yellow('⚠')} API Connectivity: Cannot reach Anthropic API`);
+      }
+    }
+
+    // Check .openspec directory
+    const hasOpenspec = require('node:fs').existsSync('.openspec/architecture.md');
+    console.log(
+      `  ${hasOpenspec ? chalk.green('✓') : chalk.yellow('⚠')} Openspec: ${hasOpenspec ? 'Found' : 'Not initialized'}`,
+    );
+
+    console.log('');
+    console.log(chalk.bold('📋 Pre-Coding Checklist:'));
+    console.log('  1. opencode run --agent sisyphus "echo hello"');
+    console.log('  2. npx repomix . --style xml --dry-run');
+    console.log('  3. npx skills (verify skills.md format)');
     console.log('');
   });

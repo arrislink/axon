@@ -7,6 +7,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { logger } from '../../utils/logger';
+import { LLMClient } from '../llm/client';
+import { SkillsManager } from '../perception/skills';
 
 export interface Bead {
   id: string;
@@ -43,9 +45,13 @@ export interface Spec {
 
 export class Planner {
   private projectRoot: string;
+  private llmClient: LLMClient;
+  private skillsManager: SkillsManager;
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
+    this.llmClient = new LLMClient();
+    this.skillsManager = new SkillsManager(projectRoot);
   }
 
   /**
@@ -97,7 +103,7 @@ export class Planner {
         } else if (currentSection.includes('constraint')) {
           spec.constraints.push(item);
         } else if (line.length > 10) {
-          spec.description += line + '\n';
+          spec.description = `${spec.description}${line}\n`;
         }
       }
     }
@@ -108,6 +114,7 @@ export class Planner {
 
   /**
    * Load bead graph from .beads/graph.json
+   * Includes state cleanup for interrupted beads (resuming mechanism)
    */
   loadGraph(): BeadGraph | null {
     const graphPath = join(this.projectRoot, '.beads', 'graph.json');
@@ -118,7 +125,25 @@ export class Planner {
 
     try {
       const content = readFileSync(graphPath, 'utf-8');
-      return JSON.parse(content);
+      const graph: BeadGraph = JSON.parse(content);
+
+      // State cleanup: Reset 'running' beads to 'pending' (process was killed)
+      let resetCount = 0;
+      for (const bead of graph.beads) {
+        if (bead.status === 'running') {
+          bead.status = 'pending';
+          bead.updated_at = new Date().toISOString();
+          resetCount++;
+          logger.warn(`⚠️ Resetting interrupted bead: ${bead.id}`);
+        }
+      }
+
+      if (resetCount > 0) {
+        this.saveGraph(graph);
+        logger.info(`Resuming from interruption: ${resetCount} beads reset to pending`);
+      }
+
+      return graph;
     } catch {
       return null;
     }
@@ -140,14 +165,106 @@ export class Planner {
   }
 
   /**
-   * Create initial bead graph from spec
+   * Create initial bead graph from spec with skills injection
    */
   async generateBeadsFromSpec(spec: Spec): Promise<BeadGraph> {
     logger.info(`Generating beads from spec: ${spec.title}`);
 
+    // Load skills and inject into planning context
+    const allSkills = await this.skillsManager.loadInstalled();
+    const skillsContext = await this.skillsManager.getSkillsContent(allSkills.slice(0, 5));
+
+    logger.info(`Injecting ${allSkills.length} skills into planning context`);
+
+    // Try to use LLM for better bead generation if available
+    if (this.llmClient.validate()) {
+      try {
+        return await this.generateBeadsWithLLM(spec, skillsContext);
+      } catch (error) {
+        logger.warn(`LLM generation failed, falling back to rule-based: ${error}`);
+      }
+    }
+
+    // Fallback to rule-based generation
+    return this.generateBeadsRuleBased(spec);
+  }
+
+  /**
+   * Generate beads using LLM for intelligent decomposition
+   */
+  private async generateBeadsWithLLM(spec: Spec, skillsContext: string): Promise<BeadGraph> {
+    const systemPrompt = `You are an expert software architect. Decompose the following specification into implementation beads (tasks).
+${skillsContext ? `\nReference these best practices when designing:\n${skillsContext}` : ''}
+
+Output a JSON object with this structure:
+{
+  "beads": [
+    {
+      "id": "bead_001",
+      "description": "Brief task description",
+      "instruction": "Detailed implementation instructions",
+      "dependsOn": [],
+      "skills_required": ["skill1", "skill2"],
+      "acceptance_criteria": ["criterion 1", "criterion 2"]
+    }
+  ]
+}`;
+
+    const userPrompt = `Specification:
+Title: ${spec.title}
+Description: ${spec.description}
+Requirements:
+${spec.requirements.map((r) => `- ${r}`).join('\n')}
+
+Tech Stack: ${spec.tech_stack.join(', ')}
+
+Generate beads that:
+1. Cover all requirements
+2. Have clear dependencies
+3. Are independently verifiable
+4. Follow best practices from skills context`;
+
+    const response = await this.llmClient.completeJSON<{
+      beads: Array<Omit<Bead, 'status' | 'created_at' | 'updated_at'>>;
+    }>([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ]);
+
+    if (!response.success || !response.data) {
+      throw new Error(`LLM generation failed: ${response.error}`);
+    }
+
+    const beads: Bead[] = response.data.beads.map((bead) => ({
+      ...bead,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+
+    const graph: BeadGraph = {
+      version: '2.0',
+      generated_at: new Date().toISOString(),
+      spec_version: spec.version,
+      beads,
+      metadata: {
+        total_beads: beads.length,
+        completed_beads: 0,
+        failed_beads: 0,
+      },
+    };
+
+    this.saveGraph(graph);
+    logger.success(`Generated ${beads.length} beads using LLM`);
+    return graph;
+  }
+
+  /**
+   * Generate beads using rule-based approach (fallback)
+   */
+  private generateBeadsRuleBased(spec: Spec): BeadGraph {
     const beads: Bead[] = [];
 
-    // Generate beads based on requirements
     for (let i = 0; i < spec.requirements.length; i++) {
       const requirement = spec.requirements[i];
       const beadId = `bead_${String(i + 1).padStart(3, '0')}`;

@@ -5,11 +5,11 @@
  * for best practice injection into prompts.
  */
 
-import { exec } from 'child_process';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import { promisify } from 'util';
+import { exec } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { promisify } from 'node:util';
 import { logger } from '../../utils/logger';
 
 const execAsync = promisify(exec);
@@ -200,13 +200,7 @@ export class SkillsManager {
 
   private scoreMatch(skill: Skill, keywords: string[]): number {
     let score = 0;
-    const searchText = (
-      skill.name +
-      ' ' +
-      skill.description +
-      ' ' +
-      skill.tags.join(' ')
-    ).toLowerCase();
+    const searchText = `${skill.name} ${skill.description} ${skill.tags.join(' ')}`.toLowerCase();
 
     for (const kw of keywords) {
       const lowerKw = kw.toLowerCase();

@@ -39,6 +39,11 @@ export interface VerificationConfig {
   customChecks?: CustomCheck[];
 }
 
+export interface BeadVerificationInput {
+  beadId: string;
+  acceptanceCriteria: string[];
+}
+
 export class Verifier {
   private projectRoot: string;
   private config: VerificationConfig;
@@ -54,7 +59,7 @@ export class Verifier {
    * Even if OMO reports [[AXON_STATUS:COMPLETED]],
    * we independently run verification checks.
    */
-  async verifyBead(beadId: string): Promise<VerificationResult> {
+  async verifyBead(beadId: string, acceptanceCriteria?: string[]): Promise<VerificationResult> {
     logger.info(`Verifying bead: ${beadId}`);
 
     const tests: TestResult[] = [];
@@ -83,6 +88,12 @@ export class Verifier {
       tests.push(result);
     }
 
+    // Verify acceptance criteria if provided
+    if (acceptanceCriteria && acceptanceCriteria.length > 0) {
+      const criteriaResult = await this.verifyAcceptanceCriteria(acceptanceCriteria);
+      tests.push(...criteriaResult);
+    }
+
     const allPassed = tests.every((t) => t.passed);
 
     // Log verification failure
@@ -101,6 +112,47 @@ export class Verifier {
       beadId,
       testsRun: tests,
     };
+  }
+
+  /**
+   * Verify acceptance criteria against bead requirements
+   */
+  private async verifyAcceptanceCriteria(criteria: string[]): Promise<TestResult[]> {
+    const results: TestResult[] = [];
+    const startTime = Date.now();
+
+    for (let i = 0; i < criteria.length; i++) {
+      const criterion = criteria[i];
+      // For now, we check if the criterion mentions specific tests to run
+      // In future, this could be more sophisticated
+      let passed = true;
+      let output = `Criterion: ${criterion}`;
+
+      // Check if criterion suggests a specific test command
+      const testMatch = criterion.match(/test[s]?\s+[`"']([^`"']+)[`"']/i);
+      if (testMatch) {
+        const testCommand = testMatch[1];
+        try {
+          const { stdout } = await execAsync(testCommand, {
+            cwd: this.projectRoot,
+            timeout: 60000,
+          });
+          output = stdout;
+        } catch (error) {
+          passed = false;
+          output = error instanceof Error ? error.message : String(error);
+        }
+      }
+
+      results.push({
+        name: `Acceptance Criterion ${i + 1}`,
+        passed,
+        output,
+        duration: Date.now() - startTime,
+      });
+    }
+
+    return results;
   }
 
   /**

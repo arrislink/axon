@@ -5,10 +5,10 @@
  * for injection into LLM prompts.
  */
 
-import { exec } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import { promisify } from 'util';
+import { exec } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { promisify } from 'node:util';
 import { logger } from '../../utils/logger';
 
 const execAsync = promisify(exec);
@@ -71,13 +71,12 @@ export class Repomod {
         const context = fs.readFileSync(outputFile, 'utf-8');
         logger.success('✅ Codebase context generated successfully');
         return { success: true, context };
-      } else {
-        return {
-          success: false,
-          context: '',
-          error: 'Repomod output file not found',
-        };
       }
+      return {
+        success: false,
+        context: '',
+        error: 'Repomod output file not found',
+      };
     } catch (error) {
       logger.error(`❌ Repomod failed: ${error}`);
       return {
