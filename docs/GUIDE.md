@@ -1,161 +1,133 @@
-# Axon User Guide
+# Axon 2.0 Guide
 
-> **AI-Powered Development Operating System**
+## Quick Start
 
-Axon is a unified AI-assisted development environment designed to solve the "context loss", "wheel reinvention", and "planning chaos" problems in AI programming. By deeply integrating **Specification-Driven Development (OpenSpec)**, **Task Management (Beads)**, and **Skill Reuse (FindSkills)**, Axon makes AI a true development partner rather than just a code completion tool.
+### 1. Environment Check
 
----
-
-## 🏗️ Design Philosophy
-
-### The Problems We Solve
-
-1.  **Context Amnesia**: Chat-based AI coding tools often forget long-term project architecture and decisions.
-2.  **Wheel Reinvention**: Developers and AI keep rewriting the same authentication, database, or API logic without reusing established best practices.
-3.  **Planning Chaos**: "Chat-to-Code" often leads to spaghetti code because there is no rigorous "Plan before Act" phase.
-
-### Our Solution
-
-Axon is an orchestration layer built upon the powerful **OpenCode** agentic engine and the **OhMyOpenCode (OMO)** provider system. It introduces a **Spec-Plan-Execute-Verify** loop:
-1.  **Spec**: Define *what* you want (Requirements).
-2.  **Plan**: Break it down into atomic tasks (Beads).
-3.  **Execute**: **OpenCode** agents implement tasks one by one, using **OMO** for LLM access.
-4.  **Verify**: Human review and automated checks.
-
-Axon supports two primary operation modes:
-- **Autonomous Flow**: Using `ax flow run` for non-IDE or fully automated environments.
-- **IDE Integrated**: Using `ax mcp` to empower IDEs (Cursor/Trae) with Axon's planning and context tools.
-
----
-
-## 🏛️ System Architecture
-
-Axon acts as the "Brain" (Planning & Context) while **OpenCode** acts as the "Hands" (Coding & Execution).
-
-```mermaid
-graph TD
-    User[User] --> CLI[Axon CLI]
-    CLI --> Spec[Spec Engine]
-    CLI --> Plan[Beads Planner]
-    CLI --> Exec[Agent Orchestrator]
-    
-    Spec -->|Generates| OpenSpec[.openspec/spec.md]
-    Plan -->|Reads| OpenSpec
-    Plan -->|Generates| Graph[.beads/graph.json]
-    
-    Exec -->|Reads| Graph
-    Exec -->|Uses| Skills[.skills/]
-    Exec -->|Delegates to| OpenCode[**OpenCode Core**]
-    
-    OpenCode -->|Calls| OMO[**OhMyOpenCode**]
-    OMO -->|Connects| LLM[LLM Providers]
-    
-    OpenCode -->|Writes| Code[Source Code]
+```bash
+ax doctor
 ```
 
-### Core Components
+Ensure all dependencies are installed.
 
-*   **OpenSpec**: A markdown-based format for defining software specifications.
-*   **Beads**: A task graph system that breaks complex features into small, manageable units of work (beads).
-*   **OpenCode**: The underlying agentic engine that performs the actual coding work for each bead.
-*   **OhMyOpenCode (OMO)**: The universal LLM provider middleware that powers Axon, supporting 75+ providers (Anthropic, OpenAI, etc.).
-*   **Skills**: A library of reusable prompts and code templates. Axon supports multiple skill directory conventions:
-    - `.skills/`: Local project-specific skills (configured in `.axon/config.yaml`).
-    - `.agents/skills/`: Universal skills following the OpenCode/Official convention.
-    - `.agent/skills/`: Skills following the Antigravity agent convention.
-    - `~/.axon/skills/`: User-wide global skills.
-
----
-
-## 🚀 QUICK START
-
-### Greenfield (CLI / CI)
+### 2. Initialize Project
 
 ```bash
 ax init my-project
 cd my-project
-ax flow run --work all --skills suggest
-ax status
 ```
 
-### Existing repo adoption
+### 3. Execute Tasks
 
 ```bash
-cd existing-repo
-ax init .
-ax docs add-dir ./docs
-ax plan
-ax work
+ax drive "Implement user login"
+ax drive "Create REST API"
+ax drive "Add unit tests"
 ```
 
-### IDE workflow (MCP)
+## Core Concepts
+
+### ax drive
+
+Main entry point - converts natural language requirements to code:
 
 ```bash
-ax mcp --llm off   # IDE owns the LLM (recommended)
-ax mcp --llm auto  # Axon runs LLM calls for flow/work tools
+ax drive "Implement JWT auth with login/register/logout"
+ax drive "Add user management CRUD API"
+ax drive "Fix login page styling"
 ```
 
-### Troubleshooting: “No executable tasks”
+Options:
+- `--dry-run` Preview without executing
+- `--no-verify` Skip verification
+
+### Beads (Task Graph)
+
+Axon breaks large tasks into atomic Beads:
+- Each Bead has independent status
+- Supports dependency relationships
+- Resume from interruption
+
+### Skills
+
+Manage best practices with skills.sh:
 
 ```bash
-ax status --beads
-ax work --bead <bead-id>  # re-run a failed task
-ax plan                   # regenerate graph if dependencies are wrong
+ax skills find "JWT"
+ax skills add vercel-labs/agent-skills
+ax skills list
 ```
 
-### LLM setup checklist (best practices)
+## Workflow
 
-1. Choose your mode:
-   - **IDE-owned LLM (recommended)**: `ax mcp --llm off`
-   - **Axon-owned LLM**: use OMO/OpenCode, then run `ax config test`
-2. Verify connectivity before long runs: `ax config test --provider <p> --model <m>`
-3. Persist non-secret defaults in the project: `ax config set-model <model> -p <provider>`
-4. Keep secrets out of git: prefer OMO config or environment variables; do not commit keys to `.axon/config.yaml`
+1. ax drive "<requirement>"
+2. Generate Spec
+3. Generate Beads
+4. Execute Sequentially
+5. Verify Results
+6. Update Status
 
----
+## Project Structure
 
-## 🧩 Basic Features (基本功能说明)
+```
+my-project/
+├── .axon/          # Axon config
+├── .beads/         # Task graph
+├── .openspec/      # Spec documents
+├── .skills/        # Skills
+└── src/            # Code
+```
 
-### Spec (OpenSpec)
-- Source of truth: `.openspec/spec.md`
-- Commands: `ax spec init`, `ax spec analyze`, `ax spec edit`, `ax spec show`
+## Verification
 
-### Plan (Beads graph)
-- Output: `.beads/graph.json` (DAG of tasks)
-- Command: `ax plan`
+Axon automatically verifies after execution:
+- Type checking (TypeScript)
+- Lint
+- Tests
 
-### Work (Execute beads)
-- Commands: `ax work`, `ax work --all`, `ax work --bead <id>`
-- Diagnostics: `ax status` / `ax status --beads`
-- Git safety: blocks risky runs on dirty trees / protected branches
+## FAQ
 
-### Flow (End-to-end)
-- Command: `ax flow run`
-- Stages: spec → prd → tech → design → plan → work → checks → verify
-- Outputs: `PRD.md`, `TECH.md`, `ARCHITECTURE.md`, `VERIFY.md`
+**Q: How to skip verification?**
+A: `ax drive "<task>" --no-verify`
 
-### MCP (IDE integration)
-- Command: `ax mcp --llm off|auto`
-- Use-case: let IDE call `axon.*` tools to keep specs/plans/artifacts consistent
+**Q: How to view progress?**
+A: `ax status`
 
-### Verify (Quality)
-- `run_checks` runs configured commands (e.g. `bun test`, `bun run type-check`)
-- `verify_requirements` generates `VERIFY.md` from spec/PRD/graph/checks
+**Q: How to resume from interruption?**
+A: Run `ax drive` directly - it resumes automatically.
 
-### Skills (Reusable expertise)
-- Paths: `.skills/`, `.agents/skills/`, `.agent/skills/`, global skills
-- Discover: `ax skills find [query]` (official skills.sh) / `ax skills search <query>` (local)
-- Install & maintain: `ax skills install <owner/repo@skill>`, `ax skills check`, `ax skills update`
+## Advanced
 
-### Docs (Context library)
-- Commands: `ax docs add`, `ax docs add-dir`, `ax docs search`, `ax docs show`
+### Custom Verification Commands
 
-### Clean (Project hygiene)
-- Commands: `ax clean --logs|--beads|--skills|--clutter|--all`
+Configure in `.axon/config.yaml`:
 
----
+```yaml
+verification:
+  test_command: bun test
+  type_check: bun run type-check
+  lint: bun run lint
+```
 
-## 🔗 More
-- Project overview: [README.md](../README.md)
-- Workflow playbooks: [2026-02-10-workflow-playbooks.md](./plans/2026-02-10-workflow-playbooks.md)
-- Release notes: [CHANGELOG.md](../CHANGELOG.md)
+### Environment Variables
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...  # Required
+```
+
+## Language Switching
+
+Axon auto-detects system language:
+
+```bash
+# English
+LANG=en_US.UTF-8 ax drive "..."
+
+# Chinese
+LANG=zh_CN.UTF-8 ax drive "..."
+```
+
+## References
+
+- [Axon GitHub](https://github.com/arrislink/axon)
+- [Chinese Guide](./GUIDE.zh-CN.md)

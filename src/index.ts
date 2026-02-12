@@ -1,105 +1,78 @@
 #!/usr/bin/env bun
 /**
- * Axon CLI - AI-Powered Development Operating System
+ * Axon 2.0 CLI - AI-Powered Development Operating System
  *
- * Entry point for the CLI application
+ * Simplified Architecture: Perception -> Planning -> Execution -> Verification
  */
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import {
-  cleanCommand,
-  configCommand,
-  docsCommand,
-  doctorCommand,
-  flowCommand,
-  initCommand,
-  mcpCommand,
-  planCommand,
-  skillsCommand,
-  specCommand,
-  statusCommand,
-  workCommand,
-} from './commands';
+import { doctorCommand, driveCommand, initCommand, skillsCommand, statusCommand } from './commands';
 import { handleError } from './utils/errors';
 import { t } from './utils/i18n';
 
-// Dynamically get version from package.json - use import to inline during build
 import pkg from '../package.json';
-const VERSION = pkg.version || '1.6.0';
+const VERSION = pkg.version || '2.0.0';
 
 const program = new Command();
 
-program.name('ax').description(
-  `${chalk.green('🧠')} ${chalk.bold('Axon')} - ${t('AI-Powered Development Operating System', 'AI 驱动的开发操作系统')} (v${VERSION})
-  
-  ${t('From requirements to code, let AI be your development partner, not a tool.', '从需求到代码，让 AI 成为你的开发伙伴，而非工具。')}`,
-);
-
 program
+  .name('ax')
+  .description(
+    `${chalk.green('🧠')} ${chalk.bold('Axon 2.0')} - ${t('AI-Driven Development OS', 'AI 驱动的开发操作系统')} (v${VERSION})
+
+${t('From requirements to code, let AI be your partner.', '从需求到代码，让 AI 成为你的开发伙伴。')}`,
+  )
   .version(VERSION, '-v, --version', t('Show version', '显示版本信息'))
-  .helpOption('-h, --help', t('Show help information', '显示帮助信息'));
+  .helpOption('-h, --help', t('Show help', '显示帮助'));
 
 program.configureHelp({
-  subcommandTerm: (cmd) => chalk.cyan(cmd.name().padEnd(15)),
+  subcommandTerm: (cmd) => chalk.cyan(cmd.name().padEnd(12)),
   subcommandDescription: (cmd) => cmd.description(),
-  commandUsage: (cmd) => `${chalk.bold(cmd.name())} [options] [command]`,
 });
 
-// version command
+// Version command
 program
   .command('version')
-  .description(t('Show version information', '显示版本详细信息'))
+  .description(t('Show version info', '显示版本信息'))
   .action(() => {
-    console.log(`${chalk.green('🧠')} ${chalk.bold('Axon')} v${VERSION}`);
-    console.log(chalk.dim(`Node: ${process.version}`));
-    console.log(chalk.dim(`Arch: ${process.arch} (${process.platform})`));
+    console.log(`${chalk.green('🧠')} Axon v${VERSION}`);
   });
 
-// Register commands - Organized by lifecycle
+// Core commands
 program.addCommand(initCommand);
-program.addCommand(flowCommand);
+program.addCommand(driveCommand);
 program.addCommand(statusCommand);
-
-program.addCommand(specCommand);
-program.addCommand(planCommand);
-program.addCommand(workCommand);
-
 program.addCommand(skillsCommand);
-program.addCommand(docsCommand);
-program.addCommand(configCommand);
 program.addCommand(doctorCommand);
-program.addCommand(cleanCommand);
-program.addCommand(mcpCommand);
 
-// Custom help
+// Help text
 program.addHelpText(
   'after',
   `
-${chalk.bold(t('Examples:', '使用示例:'))}
-  ${chalk.cyan('ax init my-project')}      ${t('Initialize a new project', '初始化新项目')}
-  ${chalk.cyan('ax spec init')}           ${t('Create specification interactively', '交互式创建需求规格')}
-  ${chalk.cyan('ax flow run')}            ${t('Run end-to-end workflow', '执行端到端工作流')}
-  ${chalk.cyan('ax status')}              ${t('View project status', '查看项目状态')}
-  ${chalk.cyan('ax clean')}               ${t('Clean logs and artifacts', '清理日志与产物')}
+${chalk.bold(t('Commands:', '命令:'))}
+  ${chalk.cyan('ax init <name>')}    ${t('Initialize project', '初始化项目')}
+  ${chalk.cyan('ax drive "<task>"')} ${t('Execute task with AI', 'AI 执行开发任务')}
+  ${chalk.cyan('ax status')}         ${t('Show progress', '显示进度')}
+  ${chalk.cyan('ax skills add <pkg>')} ${t('Install skill', '安装技能')}
+  ${chalk.cyan('ax doctor')}         ${t('Check environment', '检查环境')}
 
 ${chalk.bold(t('Quick Start:', '快速开始:'))}
-  1. ${chalk.cyan('ax init my-app')}      ${t('Create project', '创建项目')}
-  2. ${chalk.cyan('cd my-app')}           ${t('Enter directory', '进入目录')}
-  3. ${chalk.cyan('ax flow run')}         ${t('Define & Build', '定义并构建')}
+  1. ${chalk.cyan('ax init my-app')}
+  2. ${chalk.cyan('ax drive "实现用户认证功能"')}
+  3. ${chalk.cyan('ax status')}
 
-${chalk.dim(t('Documentation:', '项目文档:'))} ${chalk.blue('https://github.com/arrislink/axon')}
-${chalk.dim(t('Issues:', '问题反馈:'))} ${chalk.blue('https://github.com/arrislink/axon/issues')}
+${chalk.dim(t('Docs:', '文档:'))} ${chalk.blue('docs/GUIDE.md')}
 `,
 );
 
-// Global error handler
+// Error handling
 process.on('uncaughtException', handleError);
 process.on('unhandledRejection', (reason) => {
   handleError(reason as Error);
 });
 
-// Parse and execute
+// Run
 try {
   await program.parseAsync(process.argv);
 } catch (error) {

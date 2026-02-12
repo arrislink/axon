@@ -1,16 +1,16 @@
 /**
- * Command exports
+ * Axon 2.0 Command Exports
+ *
+ * Simplified command structure:
+ * - drive: Main entry point (Perception -> Planning -> Execution -> Verification)
+ * - init: Initialize project
+ * - skills: Manage skills
+ * - status: Show project status
+ * - doctor: Environment check
  */
 
-export * from './init';
-export * from './spec';
-export * from './plan';
-export * from './work';
-export * from './skills';
-export * from './status';
-export * from './doctor';
-export * from './config';
-export * from './docs';
-export * from './flow';
-export * from './mcp';
-export * from './clean';
+export { driveCommand } from './drive';
+export { initCommand } from './init';
+export { skillsCommand } from './skills';
+export { statusCommand } from './status';
+export { doctorCommand } from './doctor';

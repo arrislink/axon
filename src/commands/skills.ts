@@ -1,373 +1,134 @@
 /**
- * ax skills command - Manage skill templates
+ * ax skills command - Manage skills (Axon 2.0)
+ *
+ * Wraps skills.sh for discovery and uses local SkillsManager for matching.
  */
 
-import { existsSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { execSync } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { ConfigManager } from '../core/config';
-import { SkillsLibrary } from '../core/skills';
-import { AxonError } from '../utils/errors';
+import { SkillsManager } from '../core/perception/skills';
 import { t } from '../utils/i18n';
 import { logger } from '../utils/logger';
-import { spinner } from '../utils/spinner';
 
 export const skillsCommand = new Command('skills').description(
-  t('Manage skill library (v1.5.0 Official Integration)', '管理技能库 (v1.5.0 官方集成)'),
+  t('Manage skills library', '管理技能库'),
 );
 
-// ax skills search
-skillsCommand
-  .command('search <query>')
-  .description(t('Search skill templates', '搜索技能模板'))
-  .option('-l, --limit <n>', t('Number of results to return', '返回结果数量'), '5')
-  .action(async (query: string, options) => {
-    const projectRoot = process.cwd();
-    const limit = Number.parseInt(options.limit, 10);
-
-    let localPath = join(projectRoot, '.skills');
-    const officialLocalPath = join(projectRoot, '.agents', 'skills');
-    const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
-
-    // Use config if in Axon project
-    if (ConfigManager.isAxonProject(projectRoot)) {
-      const configManager = new ConfigManager(projectRoot);
-      const config = configManager.get();
-      localPath = join(projectRoot, config.tools.skills.local_path);
-      globalPath = config.tools.skills.global_path;
-    }
-
-    const library = new SkillsLibrary([localPath, officialLocalPath, agentLocalPath, globalPath]);
-    const results = await library.search(query, limit);
-    spinner.stop();
-
-    if (results.length === 0) {
-      logger.warn(`未找到匹配 "${query}" 的技能`);
-      logger.info('尝试使用不同的关键词搜索');
-      return;
-    }
-
-    logger.title(`搜索结果: "${query}"`);
-
-    for (const { skill, score, matchedOn } of results) {
-      console.log(`\n${chalk.bold(skill.metadata.name)} ${chalk.dim(`(${score}% 匹配)`)}`);
-      console.log(`  ${chalk.dim('描述:')} ${skill.metadata.description || '无'}`);
-      console.log(`  ${chalk.dim('标签:')} ${skill.metadata.tags.join(', ') || '无'}`);
-      console.log(`  ${chalk.dim('难度:')} ${skill.metadata.difficulty}`);
-      console.log(`  ${chalk.dim('平均 tokens:')} ${skill.metadata.tokens_avg}`);
-      console.log(`  ${chalk.dim('路径:')} ${skill.path}`);
-      console.log(`  ${chalk.dim('匹配字段:')} ${matchedOn.join(', ')}`);
-    }
-
-    logger.blank();
-  });
-
-// ax skills find (Wrapper for npx skills find)
+// ax skills find
 skillsCommand
   .command('find [query]')
-  .description(t('Find official skills from skills.sh', '从 skills.sh 查找官方技能'))
+  .description(t('Find skills from skills.sh', '从 skills.sh 查找技能'))
   .action(async (query: string) => {
-    const { spawnSync } = await import('node:child_process');
-    const args = ['skills', 'find'];
+    const args = ['npx', 'skills', 'find'];
     if (query) args.push(query);
+    execSync(args.join(' '), { stdio: 'inherit' });
+  });
 
-    spawnSync('npx', args, { stdio: 'inherit' });
+// ax skills add
+skillsCommand
+  .command('add <source>')
+  .description(t('Install a skill from skills.sh', '从 skills.sh 安装技能'))
+  .action(async (source: string) => {
+    logger.info(`Installing skill: ${source}`);
+    try {
+      execSync(`npx skills add ${source} -a opencode -y`, { stdio: 'inherit' });
+      logger.success(`Installed: ${source}`);
+    } catch {
+      logger.error(`Failed to install: ${source}`);
+    }
   });
 
 // ax skills list
 skillsCommand
   .command('list')
-  .description(t('List all skills', '列出所有技能'))
-  .option('-t, --tags <tags>', t('Filter by tags (comma-separated)', '按标签过滤 (逗号分隔)'))
-  .option(
-    '-d, --difficulty <level>',
-    t('Filter by difficulty (easy/medium/hard)', '按难度过滤 (easy/medium/hard)'),
-  )
-  .action(async (options) => {
+  .description(t('List installed skills', '列出已安装的技能'))
+  .action(async () => {
     const projectRoot = process.cwd();
+    const manager = new SkillsManager(projectRoot);
+    const skills = await manager.list();
 
-    let localPath = join(projectRoot, '.skills');
-    const officialLocalPath = join(projectRoot, '.agents', 'skills');
-    const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
-
-    if (ConfigManager.isAxonProject(projectRoot)) {
-      const configManager = new ConfigManager(projectRoot);
-      const config = configManager.get();
-      localPath = join(projectRoot, config.tools.skills.local_path);
-      globalPath = config.tools.skills.global_path;
-    }
-
-    const library = new SkillsLibrary([localPath, officialLocalPath, agentLocalPath, globalPath]);
-
-    const filter: { tags?: string[]; difficulty?: string } = {};
-    if (options.tags) {
-      filter.tags = options.tags.split(',').map((t: string) => t.trim());
-    }
-    if (options.difficulty) {
-      filter.difficulty = options.difficulty;
-    }
-
-    const skills = await library.list(filter);
-    spinner.stop();
+    console.log(`\n${chalk.bold('Installed Skills')}\n`);
 
     if (skills.length === 0) {
-      logger.warn('技能库为空');
-      logger.info('使用 `ax skills save` 添加技能');
+      console.log(chalk.dim('No skills installed.\n'));
+      console.log(`Use ${chalk.cyan('ax skills add <name>')} to install.\n`);
       return;
     }
 
-    logger.title(`技能库 (${skills.length} 个技能)`);
-
-    // Group by tag
-    const byTag = new Map<string, typeof skills>();
-    for (const skill of skills) {
-      const tag = skill.metadata.tags[0] || '其他';
-      if (!byTag.has(tag)) {
-        byTag.set(tag, []);
+    for (const skill of skills.slice(0, 20)) {
+      console.log(`${chalk.cyan('•')} ${chalk.bold(skill.name)}`);
+      console.log(`  ${chalk.dim(skill.description || 'No description')}`);
+      if (skill.tags?.length) {
+        console.log(`  ${chalk.dim('Tags:')} ${skill.tags.join(', ')}`);
       }
-      byTag.get(tag)?.push(skill);
+      console.log('');
     }
 
-    for (const [tag, tagSkills] of byTag) {
-      console.log(`\n${chalk.bold.blue(tag)} (${tagSkills.length})`);
-      for (const skill of tagSkills) {
-        console.log(
-          `  ${chalk.cyan('•')} ${skill.metadata.name} ${chalk.dim(`[${skill.metadata.difficulty}]`)}`,
-        );
-      }
+    if (skills.length > 20) {
+      console.log(chalk.dim(`... and ${skills.length - 20} more\n`));
     }
-
-    logger.blank();
   });
 
-// ax skills save
+// ax skills show
 skillsCommand
-  .command('save <path>')
-  .description(t('Save file as skill template', '将文件保存为技能模板'))
-  .option('-n, --name <name>', t('Skill name', '技能名称'))
-  .option('-t, --tags <tags>', t('Tags (comma-separated)', '标签 (逗号分隔)'))
-  .option('-d, --description <desc>', t('Description', '描述'))
-  .action(async (filePath: string, options) => {
+  .command('show <name>')
+  .description(t('Show skill details', '显示技能详情'))
+  .action(async (name: string) => {
     const projectRoot = process.cwd();
+    const manager = new SkillsManager(projectRoot);
+    const skills = await manager.loadInstalled();
 
-    if (!ConfigManager.isAxonProject(projectRoot)) {
-      throw new AxonError('当前目录不是 Axon 项目', 'SKILLS_ERROR', [
-        '请先运行 `ax init` 初始化项目',
-      ]);
+    const skill = skills.find((s) => s.name.toLowerCase() === name.toLowerCase());
+
+    if (!skill) {
+      logger.error(`Skill not found: ${name}`);
+      return;
     }
 
-    if (!existsSync(filePath)) {
-      throw new AxonError(`文件不存在: ${filePath}`, 'SKILLS_ERROR');
-    }
-
-    const configManager = new ConfigManager(projectRoot);
-    const config = configManager.get();
-    const library = new SkillsLibrary([
-      join(projectRoot, config.tools.skills.local_path),
-      config.tools.skills.global_path,
-    ]);
-
-    const content = await Bun.file(filePath).text();
-    const name = options.name || basename(filePath).replace(/\.[^.]+$/, '');
-    const tags = options.tags ? options.tags.split(',').map((t: string) => t.trim()) : ['custom'];
-
-    const skill = {
-      metadata: {
-        name,
-        description: options.description || '',
-        tags,
-        models: ['claude-sonnet-4'],
-        tokens_avg: Math.ceil(content.length / 4),
-        difficulty: 'medium' as const,
-        last_updated: new Date().toISOString().split('T')[0],
-      },
-      content,
-      path: '',
-    };
-
-    const targetPath = join(projectRoot, config.tools.skills.local_path, `${name}.md`);
-    await library.save(skill, targetPath);
-
-    logger.success(`技能已保存: ${targetPath}`);
+    console.log(`\n${chalk.bold(skill.name)}\n`);
+    console.log(`${chalk.dim('Description:')} ${skill.description || 'N/A'}`);
+    console.log(`${chalk.dim('Tags:')} ${skill.tags?.join(', ') || 'None'}`);
+    console.log(`${chalk.dim('Source:')} ${skill.source}\n`);
+    console.log(chalk.dim('--- Content ---'));
+    console.log(skill.content.slice(0, 1000));
+    console.log('\n');
   });
 
-// ax skills install
+// ax skills init
 skillsCommand
-  .command('install <name>')
-  .description(t('Install a skill from global library', '从全局库安装技能到当前项目'))
-  .option('--symlink', t('Create a symbolic link instead of copying', '创建符号链接而不是直接复制'))
-  .option('--path <dir>', t('Custom local skills directory', '自定义本地技能目录'))
-  .option('--all', t('Install all skills in the package', '安装包中的所有技能'))
-  .option('-s, --skill <skills>', t('Specific skills to install', '安装指定技能'))
-  .option('-a, --agent <agents>', t('Target agents', '目标 Agent'))
-  .option('-y, --yes', t('Skip confirmation prompts', '确认所有提示'))
-  .action(async (name: string, options) => {
+  .command('init <name>')
+  .description(t('Create a new skill', '创建新技能'))
+  .action(async (name: string) => {
     const projectRoot = process.cwd();
+    const skillPath = join(projectRoot, '.skills', name);
 
-    if (!ConfigManager.isAxonProject(projectRoot)) {
-      throw new AxonError('当前目录不是 Axon 项目', 'SKILLS_ERROR', [
-        '请先运行 `ax init` 初始化项目',
-      ]);
-    }
-
-    const configManager = new ConfigManager(projectRoot);
-    const config = configManager.get();
-
-    const localPath = options.path
-      ? join(projectRoot, options.path)
-      : join(projectRoot, config.tools.skills.local_path);
-    const globalPath = config.tools.skills.global_path;
-    const library = new SkillsLibrary([
-      localPath,
-      join(projectRoot, '.agents', 'skills'),
-      join(projectRoot, '.agent', 'skills'),
-      globalPath,
-    ]);
-
-    // Check if it's an official package (org/repo or URL)
-    if (name.includes('/') || name.startsWith('http')) {
-      spinner.info(
-        t(`Detecting official skill package: ${name}...`, `检测到官方技能包: ${name}...`),
-      );
-      const { spawnSync } = await import('node:child_process');
-      const args = ['skills', 'add', name];
-      // Note: Official skills tool does not support --path for add
-      if (options.symlink) args.push('--symlink');
-      if (options.all) args.push('--all');
-      if (options.skill) args.push('--skill', options.skill);
-      if (options.agent) args.push('--agent', options.agent);
-      if (options.yes) args.push('--yes');
-
-      const result = spawnSync('npx', args, { stdio: 'inherit' });
-      if (result.status === 0) {
-        logger.success(
-          t(`Successfully installed official package: ${name}`, `成功安装官方技能包: ${name}`),
-        );
-      }
+    if (existsSync(skillPath)) {
+      logger.error(`Skill already exists: ${name}`);
       return;
     }
 
-    spinner.start(t(`Finding skill: ${name}...`, `正在查找技能: ${name}...`));
-    const results = await library.search(name, 1);
+    mkdirSync(skillPath, { recursive: true });
 
-    if (
-      results.length === 0 ||
-      results[0].skill.metadata.name.toLowerCase() !== name.toLowerCase()
-    ) {
-      spinner.info(
-        t(
-          `Skill not found locally, trying official library: ${name}...`,
-          `本地未找到技能，尝试从官方库查找: ${name}...`,
-        ),
-      );
+    const skillContent = `---
+name: ${name}
+description: 
+tags: [custom]
+---
 
-      const { spawnSync } = await import('node:child_process');
-      const args = ['skills', 'add', name];
-      if (options.symlink) args.push('--symlink');
-      if (options.all) args.push('--all');
-      if (options.skill) args.push('--skill', options.skill);
-      if (options.agent) args.push('--agent', options.agent);
-      if (options.yes) args.push('--yes');
+## Implementation
 
-      const result = spawnSync('npx', args, { stdio: 'inherit' });
-      if (result.status === 0) {
-        logger.success(
-          t(
-            `Successfully installed from official library: ${name}`,
-            `成功从官方库安装技能: ${name}`,
-          ),
-        );
-      } else {
-        spinner.fail(t(`Skill not found: ${name}`, `未找到技能: ${name}`));
-      }
-      return;
-    }
+Describe the best practice or pattern here.
 
-    const { skill } = results[0];
-    const targetPath = join(localPath, `${name}.md`);
+## Examples
 
-    if (existsSync(targetPath)) {
-      spinner.warn(t(`Skill already installed: ${name}`, `技能已存在: ${name}`));
-      return;
-    }
+\`\`\`typescript
+// Your code example here
+\`\`\`
+`;
 
-    if (options.symlink) {
-      const { symlinkSync, mkdirSync } = await import('node:fs');
-      const dir = dirname(targetPath);
-      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-      symlinkSync(skill.path, targetPath);
-      spinner.succeed(
-        t(`Symlinked skill: ${name} -> ${targetPath}`, `已成功链接技能: ${name} -> ${targetPath}`),
-      );
-    } else {
-      await library.save(skill, targetPath);
-      spinner.succeed(
-        t(`Installed skill: ${name} to ${targetPath}`, `已成功安装技能: ${name} 到 ${targetPath}`),
-      );
-    }
-  });
-
-// ax skills stats
-skillsCommand
-  .command('stats')
-  .description(t('Show skill library statistics', '显示技能库统计'))
-  .action(async () => {
-    const projectRoot = process.cwd();
-
-    let localPath = join(projectRoot, '.skills');
-    const officialLocalPath = join(projectRoot, '.agents', 'skills');
-    const agentLocalPath = join(projectRoot, '.agent', 'skills');
-    let globalPath = join(process.env.HOME || '~', '.axon', 'skills');
-
-    if (ConfigManager.isAxonProject(projectRoot)) {
-      const configManager = new ConfigManager(projectRoot);
-      const config = configManager.get();
-      localPath = join(projectRoot, config.tools.skills.local_path);
-      globalPath = config.tools.skills.global_path;
-    }
-
-    spinner.start('分析技能库...');
-    const library = new SkillsLibrary([localPath, officialLocalPath, agentLocalPath, globalPath]);
-    const stats = await library.getStats();
-    spinner.stop();
-
-    logger.title('技能库统计');
-
-    console.log(`${chalk.dim('总技能数:')} ${stats.total}`);
-
-    if (Object.keys(stats.byTag).length > 0) {
-      console.log(`\n${chalk.bold('按标签:')}`);
-      for (const [tag, count] of Object.entries(stats.byTag).sort((a, b) => b[1] - a[1])) {
-        console.log(`  ${tag}: ${count}`);
-      }
-    }
-
-    if (Object.keys(stats.byDifficulty).length > 0) {
-      console.log(`\n${chalk.bold('按难度:')}`);
-      for (const [diff, count] of Object.entries(stats.byDifficulty)) {
-        console.log(`  ${diff}: ${count}`);
-      }
-    }
-  });
-
-// ax skills check
-skillsCommand
-  .command('check')
-  .description(t('Check for skill updates from official library', '从官方库检查技能更新'))
-  .action(async () => {
-    const { spawnSync } = await import('node:child_process');
-    spawnSync('npx', ['skills', 'check'], { stdio: 'inherit' });
-  });
-
-// ax skills update
-skillsCommand
-  .command('update')
-  .description(t('Update all skills from official library', '从官方库更新所有技能'))
-  .action(async () => {
-    const { spawnSync } = await import('node:child_process');
-    logger.info(t('Updating all skills to latest versions...', '正在更新所有技能到最新版本...'));
-    spawnSync('npx', ['skills', 'update'], { stdio: 'inherit' });
+    writeFileSync(join(skillPath, 'SKILL.md'), skillContent, 'utf-8');
+    logger.success(`Created skill: ${skillPath}`);
   });
