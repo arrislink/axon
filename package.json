@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "2.3.0",
+  "version": "2.0.0",
   "description": "AI-Driven Development OS - From requirements to code",
   "type": "module",
   "sideEffects": false,
