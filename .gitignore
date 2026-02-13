@@ -64,3 +64,7 @@ temp/
 # Test coverage
 coverage/
 .nyc_output/
+
+# Bun build cache
+.bun-build
+*.bun-build
