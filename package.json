@@ -1,6 +1,6 @@
 {
   "name": "@arrislink/axon",
-  "version": "2.9.0",
+  "version": "2.0.0",
   "description": "AI-Driven Development OS - From requirements to code",
   "type": "module",
   "sideEffects": false,
@@ -36,10 +36,11 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build && bun run test",
-    "publish:patch": "bun run prepublishOnly && npm version patch && npm publish",
-    "publish:minor": "bun run prepublishOnly && npm version minor && npm publish",
-    "publish:major": "bun run prepublishOnly && npm version major && npm publish",
-    "publish:beta": "bun run prepublishOnly && npm version prerelease --preid=beta && npm publish --tag beta"
+    "publish:patch": "bun run prepublishOnly && npm publish",
+    "publish:minor": "bun run prepublishOnly && npm publish",
+    "publish:major": "bun run prepublishOnly && npm publish",
+    "publish:beta": "bun run prepublishOnly && npm publish --tag beta",
+    "tag": "git tag -a v$npm_package_version -m \"v$npm_package_version\" && git push origin v$npm_package_version"
   },
   "keywords": [
     "ai",
